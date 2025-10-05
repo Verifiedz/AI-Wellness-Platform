@@ -1,0 +1,18 @@
+# Build and user-specific files
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Environment files
+.env
+appsettings.Development.json
+
+# Generated files
+*.db
+*.db-shm
+*.db-wal
