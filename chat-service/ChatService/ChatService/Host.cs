@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -31,5 +32,5 @@ public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplet
 [JsonSerializable(typeof(Todo[]))]
 internal partial class AppJsonSerializerContext : JsonSerializerContext
 {
-
+    
 }
