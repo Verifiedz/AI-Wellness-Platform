@@ -1,8 +1,6 @@
 ﻿using System;
 
-public class Class1
+private sealed record Chat(string User, Guid ReferenceId,string Message,Status status)
 {
-	public Class1()
-	{
-	}
+	
 }
