@@ -17,6 +17,7 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
 
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<WellnessTipService>();
+builder.Services.AddSingleton<FirebaseService>();
 
 var app = builder.Build();
 
