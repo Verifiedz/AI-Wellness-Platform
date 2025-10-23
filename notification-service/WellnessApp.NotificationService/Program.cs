@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WellnessApp.NotificationService.Data;
+using WellnessApp.NotificationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,11 +15,16 @@ builder.Services.AddDbContext<NotificationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL"))
 );
 
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<WellnessTipService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapOpenApi();
 }
 
