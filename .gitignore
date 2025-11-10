@@ -11,8 +11,11 @@ obj/
 # Environment files
 .env
 appsettings.Development.json
+appsettings.json
 
 # Generated files
 *.db
 *.db-shm
 *.db-wal
+/notification-service/WellnessApp.NotificationService/appsettings.json
+/notification-service/WellnessApp.NotificationService/firebase-adminsdk.json
