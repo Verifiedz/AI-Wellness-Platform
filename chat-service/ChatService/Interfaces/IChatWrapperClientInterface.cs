@@ -1,6 +1,6 @@
 ﻿using ChatService.DTOs;
 
-namespace ChatService.APIs;
+namespace ChatService.Interfaces;
 
 public interface IChatWrapperClientInterface
 {
