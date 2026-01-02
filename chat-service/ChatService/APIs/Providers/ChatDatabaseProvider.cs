@@ -12,14 +12,14 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
 
     private readonly Dictionary<string, string> storeProceduresCall = new()
     {
-        {"create", "CALL public.chat_create_storeprocedure($1,$2,$3,$4,$5,$6)"},
-        {"update", "CALL public.chat_update_storeprocedure($1,$2,$3,$4,$5,$6)"},
-        {"delete", "CALL public.chat_delete_storeprocedure($1)"},
-        {"select", "SELECT * FROM public.chat_select_function($1)"}
+        {"create", "CALL public.chat_create_storeprocedure($1,$2,$3,$4,$5,$6,$7)"},
+        {"update", "CALL public.chat_update_storeprocedure($1,$2,$3,$4,$5,$6,$7)"}, 
+        {"delete", "CALL public.chat_delete_storeprocedure($1)"}, 
+        {"select", "SELECT * FROM public.chat_select_function($1)"},
+        {"select_by_session", "SELECT * FROM public.chat_select_by_session_function($1)"}
     };
 
-    public ChatDatabaseProvider(IConfigurationService configuration)
-    {
+    public ChatDatabaseProvider(IConfigurationService configuration) {
         _configuration = configuration;
         var connectionString = _configuration.getConnectionString();
         _dataSource = NpgsqlDataSource.Create(connectionString);
@@ -33,12 +33,13 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         Console.WriteLine(selectStoreProcedure("create"));
         using var command = new NpgsqlCommand(selectStoreProcedure("create"), conn);
 
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Integer, chat.chatUserId);
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Uuid, chat.chatReferenceId);
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Varchar, chat.message);
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Varchar, chat.status.ToString());
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Boolean, chat.isBookmarked);
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.TimestampTz, chat.CreatedDate);
+        command.Parameters.AddWithValue(chat.chatUserId);
+        command.Parameters.AddWithValue(chat.chatReferenceId);
+        command.Parameters.AddWithValue(chat.message);
+        command.Parameters.AddWithValue(chat.sessionId);
+        command.Parameters.AddWithValue(chat.status.ToString());
+        command.Parameters.AddWithValue(chat.isBookmarked);
+        command.Parameters.AddWithValue(chat.CreatedDate);
 
         await command.ExecuteNonQueryAsync();
     }
@@ -51,12 +52,12 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         await conn.OpenAsync();
         using var command = new NpgsqlCommand(selectStoreProcedure("delete"), conn);
 
-        command.Parameters.AddWithValue(NpgsqlTypes.NpgsqlDbType.Uuid, chatReferenceId);
+        command.Parameters.AddWithValue (chatReferenceId);
         await command.ExecuteNonQueryAsync();
 
     }
 
-    public async Task<Chat?> getChatAsync(Guid chatReferenceId)
+    public async Task<Chat> getChatAsync(Guid chatReferenceId)
     {
         using var conn = new NpgsqlConnection(_configuration.getConnectionString());
         await conn.OpenAsync();
@@ -72,14 +73,42 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         return new Chat
         {
             chatReferenceId = reader.GetGuid(0),
-            chatUserId = reader.GetInt32(1),
+            chatUserId = reader.GetGuid(1),
             message = reader.GetString(2),
-            status = Enum.Parse<Status>(reader.GetString(3)),
-            isBookmarked = reader.GetBoolean(4),
-            CreatedDate = reader.GetDateTime(5),
+            sessionId = reader.GetGuid(3),
+            status = Enum.Parse<Status>(reader.GetString(4)),
+            isBookmarked = reader.GetBoolean(5),
+            CreatedDate = reader.GetDateTime(6),
         };
     }
-    public async Task setIsBookmarkedAsync(bool isBookmarked)
+
+    public async Task<IReadOnlyList<Chat>> getChatsBySessionAsync(Guid sessionId)
+{
+    var chats = new List<Chat>();
+
+    using var conn = await _dataSource.OpenConnectionAsync();
+    using var cmd = new NpgsqlCommand(selectStoreProcedure("select_by_session"), conn);
+    
+    cmd.Parameters.AddWithValue(sessionId);
+
+    using var reader = await cmd.ExecuteReaderAsync();
+
+    while (await reader.ReadAsync())
+    {
+        chats.Add(new Chat
+        {
+            chatReferenceId = reader.GetGuid(0),
+            chatUserId = reader.GetGuid(1),
+            message = reader.GetString(2),
+            sessionId = reader.GetGuid(3),
+            status = Enum.Parse<Status>(reader.GetString(4)),
+            isBookmarked = reader.GetBoolean(5),
+            CreatedDate = reader.GetDateTime(6)
+        });
+    }
+
+    return chats;
+}    public async Task setIsBookmarkedAsync(Guid chatReferenceId)
     {
         throw new NotImplementedException();
     }

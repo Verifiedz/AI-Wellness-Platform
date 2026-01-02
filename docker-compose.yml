@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  chat-db:
+    image: postgres:16
+    container_name: chat_service_db
+    environment:
+      POSTGRES_USER: wasim
+      POSTGRES_PASSWORD: Wasim1921
+      POSTGRES_DB: chatservicedb
+    ports:
+      - "5432:5432" # Host Port : Container Port
+    volumes:
+      - chat_db_data:/var/lib/postgresql/data
+      - ./chat-service/Database/Scripts:/docker-entrypoint-initdb.d
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: dockerfile
+    container_name: chat_service_api
+    depends_on:
+      - chat-db
+    ports:
+      - "5050:8080" 
+    environment:
+      ConnectionStrings__PostgreSqlConnectionString: "Host=chat-db;Port=5432;Database=chatservicedb;Username=wasim;Password=Wasim1921;"
+      ASPNETCORE_URLS: "http://+:8080"
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: wellness_redis
+    restart: always
+    ports:
+      - "6379:6379"
+volumes:
+  chat_db_data:
