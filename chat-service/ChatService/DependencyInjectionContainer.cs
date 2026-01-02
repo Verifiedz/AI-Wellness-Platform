@@ -48,16 +48,15 @@ public static class DependencyInjectionContainer
             };
         });
 
-    // 2. Add Authorization
-    services.AddAuthorization();
+      services.AddAuthorization();
 
-    // 3. Add Redis (For your next step)
-    services.AddStackExchangeRedisCache(options =>
-    {
-        options.Configuration = configuration.GetConnectionString("Redis");
-        options.InstanceName = "ChatService_";
-    });  
-          
+      services.AddStackExchangeRedisCache(options =>
+      {
+        options.Configuration = configuration.GetConnectionString("Redis"); 
+        options.InstanceName = "AIWellness_";
+      });
+
+      services.AddScoped<ICacheServiceProvider, CacheServiceProvider>();         
  
     }
 }
