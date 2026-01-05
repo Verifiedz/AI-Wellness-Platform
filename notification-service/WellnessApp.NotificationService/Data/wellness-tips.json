@@ -1,0 +1,254 @@
+{
+  "tips": [
+    {
+      "id": 1,
+      "content": "Take a 5-minute walk between study sessions to refresh your mind and boost focus.",
+      "category": "Physical"
+    },
+    {
+      "id": 2,
+      "content": "Drink a glass of water first thing in the morning to kickstart your metabolism.",
+      "category": "Physical"
+    },
+    {
+      "id": 3,
+      "content": "Practice the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds.",
+      "category": "Physical"
+    },
+    {
+      "id": 4,
+      "content": "Set a specific bedtime and stick to it, even on weekends.",
+      "category": "Sleep"
+    },
+    {
+      "id": 5,
+      "content": "Write down three things you're grateful for today.",
+      "category": "Mental"
+    },
+    {
+      "id": 6,
+      "content": "Take three deep breaths before starting a challenging task.",
+      "category": "Mental"
+    },
+    {
+      "id": 7,
+      "content": "Eat a healthy breakfast within an hour of waking up.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 8,
+      "content": "Limit caffeine intake after 2 PM for better sleep quality.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 9,
+      "content": "Stretch for 5 minutes after waking up to energize your body.",
+      "category": "Physical"
+    },
+    {
+      "id": 10,
+      "content": "Put your phone away 30 minutes before bedtime.",
+      "category": "Sleep"
+    },
+    {
+      "id": 11,
+      "content": "Reach out to a friend or family member you haven't talked to in a while.",
+      "category": "Social"
+    },
+    {
+      "id": 12,
+      "content": "Take a 10-minute study break every hour to maintain productivity.",
+      "category": "Academic"
+    },
+    {
+      "id": 13,
+      "content": "Practice saying 'no' to commitments that don't align with your priorities.",
+      "category": "Mental"
+    },
+    {
+      "id": 14,
+      "content": "Keep healthy snacks like nuts or fruit within easy reach.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 15,
+      "content": "Spend 10 minutes outdoors today, even if it's just sitting on a bench.",
+      "category": "Physical"
+    },
+    {
+      "id": 16,
+      "content": "Create a to-do list with only 3 priority items for today.",
+      "category": "Productivity"
+    },
+    {
+      "id": 17,
+      "content": "Try a 5-minute meditation or mindfulness exercise.",
+      "category": "Mental"
+    },
+    {
+      "id": 18,
+      "content": "Stand up and move around for 2 minutes every 30 minutes of studying.",
+      "category": "Physical"
+    },
+    {
+      "id": 19,
+      "content": "Prepare your clothes and bag the night before to reduce morning stress.",
+      "category": "Productivity"
+    },
+    {
+      "id": 20,
+      "content": "Aim for 7-9 hours of sleep tonight.",
+      "category": "Sleep"
+    },
+    {
+      "id": 21,
+      "content": "Listen to your favorite uplifting song when you need an energy boost.",
+      "category": "Mental"
+    },
+    {
+      "id": 22,
+      "content": "Eat lunch away from your desk or study space.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 23,
+      "content": "Do 10 jumping jacks to wake up your body and mind.",
+      "category": "Physical"
+    },
+    {
+      "id": 24,
+      "content": "Write down one thing that stressed you today and one way you handled it.",
+      "category": "Mental"
+    },
+    {
+      "id": 25,
+      "content": "Set boundaries with social media - try a 30-minute phone-free period.",
+      "category": "Mental"
+    },
+    {
+      "id": 26,
+      "content": "Drink water before reaching for a snack - sometimes thirst feels like hunger.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 27,
+      "content": "Tidy your study space for 5 minutes to create a calmer environment.",
+      "category": "Productivity"
+    },
+    {
+      "id": 28,
+      "content": "Practice good posture - shoulders back, feet flat on the floor.",
+      "category": "Physical"
+    },
+    {
+      "id": 29,
+      "content": "Join a study group or club to build connections with peers.",
+      "category": "Social"
+    },
+    {
+      "id": 30,
+      "content": "Take a power nap (15-20 minutes max) if you're feeling exhausted.",
+      "category": "Sleep"
+    },
+    {
+      "id": 31,
+      "content": "Celebrate a small win from today, no matter how minor.",
+      "category": "Mental"
+    },
+    {
+      "id": 32,
+      "content": "Try a new fruit or vegetable this week.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 33,
+      "content": "Use the stairs instead of the elevator when possible.",
+      "category": "Physical"
+    },
+    {
+      "id": 34,
+      "content": "Set an alarm to remind yourself to drink water throughout the day.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 35,
+      "content": "Practice self-compassion - talk to yourself like you would a good friend.",
+      "category": "Mental"
+    },
+    {
+      "id": 36,
+      "content": "Create a relaxing bedtime routine (reading, light stretching, journaling).",
+      "category": "Sleep"
+    },
+    {
+      "id": 37,
+      "content": "Smile at someone today - kindness is contagious.",
+      "category": "Social"
+    },
+    {
+      "id": 38,
+      "content": "Break large assignments into smaller, manageable tasks.",
+      "category": "Academic"
+    },
+    {
+      "id": 39,
+      "content": "Try box breathing: Inhale 4 counts, hold 4, exhale 4, hold 4.",
+      "category": "Mental"
+    },
+    {
+      "id": 40,
+      "content": "Pack a healthy lunch instead of relying on fast food.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 41,
+      "content": "Do some light stretching while watching TV or during breaks.",
+      "category": "Physical"
+    },
+    {
+      "id": 42,
+      "content": "Keep your bedroom cool (60-67°F) for optimal sleep.",
+      "category": "Sleep"
+    },
+    {
+      "id": 43,
+      "content": "Volunteer for a cause you care about, even for just an hour.",
+      "category": "Social"
+    },
+    {
+      "id": 44,
+      "content": "Use a planner or app to organize your assignments and deadlines.",
+      "category": "Academic"
+    },
+    {
+      "id": 45,
+      "content": "Notice five things you can see, four you can touch, three you hear, two you smell, one you taste.",
+      "category": "Mental"
+    },
+    {
+      "id": 46,
+      "content": "Limit processed foods and aim for whole, natural ingredients.",
+      "category": "Nutrition"
+    },
+    {
+      "id": 47,
+      "content": "Dance to your favorite song for an instant mood lift.",
+      "category": "Physical"
+    },
+    {
+      "id": 48,
+      "content": "Avoid screens at least 30 minutes before sleep.",
+      "category": "Sleep"
+    },
+    {
+      "id": 49,
+      "content": "Ask for help when you need it - it's a sign of strength, not weakness.",
+      "category": "Mental"
+    },
+    {
+      "id": 50,
+      "content": "Attend at least one campus event or activity this month.",
+      "category": "Social"
+    }
+  ]
+}
