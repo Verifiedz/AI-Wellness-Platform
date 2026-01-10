@@ -56,7 +56,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
 
     }
 
-    public async Task<Chat?> getChatAsync(Guid chatReferenceId)
+    public async Task<Chat> getChatAsync(Guid chatReferenceId)
     {
         using var conn = new NpgsqlConnection(_configuration.getConnectionString());
         await conn.OpenAsync();
@@ -79,6 +79,12 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
             CreatedDate = reader.GetDateTime(5),
         };
     }
+
+    public async Task<IReadOnlyList<Chat>> GetChatsAsync(Guid chatReferenceId){
+      
+      throw new NotImplementedException();
+    }
+
     public async Task setIsBookmarkedAsync(bool isBookmarked)
     {
         throw new NotImplementedException();
