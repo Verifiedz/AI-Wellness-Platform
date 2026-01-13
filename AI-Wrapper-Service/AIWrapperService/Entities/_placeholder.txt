@@ -1,0 +1,4 @@
+This folder is reserved for future entity/model classes.
+Currently, the AI Wrapper Service is stateless (no database).
+
+When persistence is added later, domain entities will be placed here.
