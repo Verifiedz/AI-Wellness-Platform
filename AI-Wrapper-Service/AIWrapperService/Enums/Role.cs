@@ -1,2 +1,10 @@
 namespace AIWrapperService.Enums;
-public enum Role { system, user, assistant }
+
+/// Supported chat message roles.
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum Role
+{
+    System,
+    User,
+    Assistant
+}
