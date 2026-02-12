@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: coolguy123
     ports:
-      - "5432:5432"
+      - "5433:5433"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
@@ -24,7 +24,7 @@ services:
       ASPNETCORE_ENVIRONMENT: "Development"
       ConnectionStrings__NotificationDatabase: "Host=db;Database=wellness_notifications;Username=postgres;Password=coolguy123"
     ports:
-      - "8080:8080"
+      - "8082:8082"
 
 volumes:
   db_data:
