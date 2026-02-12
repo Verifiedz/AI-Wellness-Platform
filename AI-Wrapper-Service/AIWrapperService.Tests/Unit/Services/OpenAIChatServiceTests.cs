@@ -13,7 +13,7 @@ namespace AIWrapperService.Tests.Unit.Services;
 public class OpenAIChatServiceTests
 {
     [Fact]
-    public async Task CompleteAsync_WithValidRequest_ReturnsSuccessfulResponse()
+    public async Task GetChatResponseAsync_WithValidRequest_ReturnsSuccessfulResponse()
     {
         // Arrange
         var mockHandler = TestHelpers.CreateMockHttpHandler();
@@ -25,19 +25,17 @@ public class OpenAIChatServiceTests
         var request = TestHelpers.CreateTestChatRequest();
 
         // Act
-        var result = await service.CompleteAsync(request);
+        var result = await service.GetChatResponseAsync(request);
 
         // Assert
         result.Should().NotBeNull();
-        result.SessionId.Should().Be("test-session-123");
-        result.Model.Should().Be("gpt-4o-mini");
-        result.Reply.Should().NotBeEmpty();
-        result.PromptTokens.Should().Be(150);
-        result.CompletionTokens.Should().Be(95);
+        result.chatUserId.Should().NotBeEmpty();
+        result.message.Should().NotBeEmpty();
+        result.sessionId.Should().NotBeEmpty();
     }
 
     [Fact]
-    public async Task CompleteAsync_WithCustomModel_UsesSpecifiedModel()
+    public async Task GetChatResponseAsync_WithValidSessionId_PreservesSessionId()
     {
         // Arrange
         var mockHandler = TestHelpers.CreateMockHttpHandler();
@@ -46,26 +44,23 @@ public class OpenAIChatServiceTests
         var logger = new Mock<ILogger<OpenAIChatService>>().Object;
         var service = new OpenAIChatService(httpClient, config, logger);
 
-        var request = new ChatRequestDto
-        {
-            SessionId = "test-session",
-            Messages = new List<ChatMessageDto>
-            {
-                new() { Role = Role.User, Content = "Hello" }
-            },
-            Model = "gpt-4",
-            Temperature = 0.5
-        };
+        var sessionId = Guid.NewGuid();
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: "Hello",
+            Context: "",
+            sessionId: sessionId
+        );
 
         // Act
-        var result = await service.CompleteAsync(request);
+        var result = await service.GetChatResponseAsync(request);
 
         // Assert
-        result.Model.Should().Be("gpt-4"); // Service returns the requested model
+        result.sessionId.Should().Be(sessionId);
     }
 
     [Fact]
-    public async Task CompleteAsync_WhenOpenAIReturnsError_ThrowsHttpRequestException()
+    public async Task GetChatResponseAsync_WhenOpenAIReturnsError_ThrowsHttpRequestException()
     {
         // Arrange
         var mockHandler = TestHelpers.CreateMockHttpHandlerWithError(
@@ -80,7 +75,7 @@ public class OpenAIChatServiceTests
         var request = TestHelpers.CreateTestChatRequest();
 
         // Act & Assert
-        await Assert.ThrowsAsync<HttpRequestException>(() => service.CompleteAsync(request));
+        await Assert.ThrowsAsync<HttpRequestException>(() => service.GetChatResponseAsync(request));
     }
 
     [Fact]

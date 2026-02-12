@@ -6,26 +6,26 @@ namespace AIWrapperService.APIs;
 /// </summary>
 public static class ChatApi
 {
-    private const string EndpointPath = "/v1/chat/complete";
+    private const string EndpointPath = "/chat/ChatResponse";
 
     /// <summary>
     /// Maps chat API endpoints to the application.
     /// </summary>
-    /// <param name="app">The endpoint route builder.</param>
-    /// <returns>The endpoint route builder for chaining.</returns>
     public static IEndpointRouteBuilder MapChatApi(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/v1/chat")
+        var group = app.MapGroup("/chat")
             .WithTags("Chat");
 
-        group.MapPost("/complete", CompleteChatAsync)
+        group.MapPost("/ChatResponse", CompleteChatAsync)
             .WithName("ChatComplete")
             .WithSummary("Complete a chat conversation using the configured LLM")
-            .Produces<ChatResponseDto>(StatusCodes.Status200OK)
+            .Produces<ChatResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status429TooManyRequests)
-            .ProducesProblem(StatusCodes.Status502BadGateway);
+            .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .ProducesProblem(StatusCodes.Status502BadGateway)
+            .ProducesProblem(StatusCodes.Status504GatewayTimeout);
 
         return app;
     }
@@ -33,22 +33,10 @@ public static class ChatApi
     /// <summary>
     /// Handles POST /v1/chat/complete requests.
     /// </summary>
-    /// <example>
-    /// curl -X POST http://localhost:5160/v1/chat/complete \
-    ///   -H "Content-Type: application/json" \
-    ///   -H "X-Internal-API-Key: your-secret-key" \
-    ///   -d '{
-    ///     "sessionId": "sess_12345",
-    ///     "messages": [
-    ///       {"role": "user", "content": "I am feeling stressed today"}
-    ///     ],
-    ///     "temperature": 0.7
-    ///   }'
-    /// </example>
     private static async Task<IResult> CompleteChatAsync(
-        ChatRequestDto request,
+        ChatRequest request,
         IOpenAIChatService chatService,
-        ILogger<ChatRequestDto> logger,
+        ILogger<ChatRequest> logger,
         CancellationToken ct)
     {
         var traceId = Activity.Current?.Id ?? Guid.NewGuid().ToString();
@@ -60,8 +48,8 @@ public static class ChatApi
             if (validationErrors.Any())
             {
                 logger.LogWarning(
-                    "Validation failed for session {SessionId}. Errors: {Errors}",
-                    request.SessionId,
+                    "Validation failed for user {ChatUserId}. Errors: {Errors}",
+                    request.chatUserId,
                     string.Join(", ", validationErrors));
 
                 return Results.Problem(
@@ -77,7 +65,7 @@ public static class ChatApi
             }
 
             // Call service
-            var response = await chatService.CompleteAsync(request, ct);
+            var response = await chatService.GetChatResponseAsync(request, ct);
             return Results.Ok(response);
         }
         catch (InvalidOperationException ex)
@@ -141,45 +129,26 @@ public static class ChatApi
     /// <summary>
     /// Validates the chat request and returns a list of error messages.
     /// </summary>
-    private static List<string> ValidateRequest(ChatRequestDto request)
+    private static List<string> ValidateRequest(ChatRequest request)
     {
         var errors = new List<string>();
 
-        // SessionId validation
-        if (string.IsNullOrWhiteSpace(request.SessionId))
+        // chatUserId validation
+        if (request.chatUserId == Guid.Empty)
         {
-            errors.Add("SessionId cannot be empty.");
+            errors.Add("chatUserId is required.");
         }
 
-        // Messages validation
-        if (request.Messages == null || request.Messages.Count == 0)
+        // messageRequest validation
+        if (string.IsNullOrWhiteSpace(request.messageRequest))
         {
-            errors.Add("Messages list cannot be empty.");
-        }
-        else
-        {
-            for (int i = 0; i < request.Messages.Count; i++)
-            {
-                var message = request.Messages[i];
-
-                // Validate role
-                if (!Enum.IsDefined(typeof(Role), message.Role))
-                {
-                    errors.Add($"Message[{i}]: Invalid role '{message.Role}'.");
-                }
-
-                // Validate content
-                if (string.IsNullOrWhiteSpace(message.Content))
-                {
-                    errors.Add($"Message[{i}]: Content cannot be empty.");
-                }
-            }
+            errors.Add("messageRequest cannot be empty.");
         }
 
-        // Temperature validation
-        if (request.Temperature < 0.0 || request.Temperature > 1.0)
+        // sessionId validation
+        if (request.sessionId == null || request.sessionId == Guid.Empty)
         {
-            errors.Add("Temperature must be between 0.0 and 1.0.");
+            errors.Add("sessionId is required.");
         }
 
         return errors;

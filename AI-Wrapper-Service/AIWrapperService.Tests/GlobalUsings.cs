@@ -14,5 +14,4 @@ global using System.Net.Http.Json;
 
 // Project namespaces
 global using AIWrapperService.DTOs;
-global using AIWrapperService.Enums;
 global using AIWrapperService.Interfaces;

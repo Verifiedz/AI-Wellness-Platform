@@ -28,9 +28,10 @@ public class ChatApiCompletionTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "test-session-123",
-            messages = new[] { new { role = "user", content = "I feel stressed today" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "I feel stressed today",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -39,45 +40,14 @@ public class ChatApiCompletionTests
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<ChatResponseDto>();
+        var result = await response.Content.ReadFromJsonAsync<ChatResponse>();
         result.Should().NotBeNull();
-        result!.SessionId.Should().Be("test-session-123");
-        result.Reply.Should().NotBeNullOrEmpty();
-        result.Model.Should().Be("gpt-4o-mini");
-        result.PromptTokens.Should().Be(150);
-        result.CompletionTokens.Should().Be(95);
+        result!.chatUserId.Should().NotBeEmpty();
+        result.message.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
-    public async Task ChatComplete_WithCustomModel_UsesSpecifiedModel()
-    {
-        // Arrange
-        var mockHandler = CreateMockOpenAIHandler(model: "gpt-4");
-        using var factory = new CustomWebApplicationFactory<Program>
-        {
-            MockHttpHandler = mockHandler.Object
-        };
-        using var client = factory.CreateClient();
-
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "test-session",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            model = "gpt-4",
-            temperature = 0.5
-        });
-
-        // Act
-        var response = await client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ChatResponseDto>();
-        result!.Model.Should().Be("gpt-4");
-    }
-
-    [Fact]
-    public async Task ChatComplete_WithMultipleMessages_ProcessesConversation()
+    public async Task ChatComplete_WithNullSessionId_Returns400()
     {
         // Arrange
         var mockHandler = CreateMockOpenAIHandler();
@@ -89,14 +59,37 @@ public class ChatApiCompletionTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "conversation-session",
-            messages = new[]
-            {
-                new { role = "user", content = "I've been feeling anxious lately" },
-                new { role = "assistant", content = "I hear you. Can you tell me more about what's been causing your anxiety?" },
-                new { role = "user", content = "Work has been really stressful" }
-            },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = ""
+            // sessionId omitted (null) - now required
+        });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ChatComplete_PreservesSessionId()
+    {
+        // Arrange
+        var sessionId = Guid.NewGuid();
+        var mockHandler = CreateMockOpenAIHandler();
+        using var factory = new CustomWebApplicationFactory<Program>
+        {
+            MockHttpHandler = mockHandler.Object
+        };
+        using var client = factory.CreateClient();
+
+        var request = CreateAuthenticatedRequest(new
+        {
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = sessionId
         });
 
         // Act
@@ -104,13 +97,41 @@ public class ChatApiCompletionTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ChatResponseDto>();
-        result.Should().NotBeNull();
-        result!.Reply.Should().NotBeNullOrEmpty();
+        var result = await response.Content.ReadFromJsonAsync<ChatResponse>();
+        result!.sessionId.Should().Be(sessionId);
     }
 
     [Fact]
-    public async Task ChatComplete_WithSystemMessage_DoesNotInjectDefaultPrompt()
+    public async Task ChatComplete_PreservesChatUserId()
+    {
+        // Arrange
+        var chatUserId = Guid.NewGuid();
+        var mockHandler = CreateMockOpenAIHandler();
+        using var factory = new CustomWebApplicationFactory<Program>
+        {
+            MockHttpHandler = mockHandler.Object
+        };
+        using var client = factory.CreateClient();
+
+        var request = CreateAuthenticatedRequest(new
+        {
+            chatUserId = chatUserId,
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
+        });
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<ChatResponse>();
+        result!.chatUserId.Should().Be(chatUserId);
+    }
+
+    [Fact]
+    public async Task ChatComplete_PreservesContext()
     {
         // Arrange
         var mockHandler = CreateMockOpenAIHandler();
@@ -122,13 +143,10 @@ public class ChatApiCompletionTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "custom-system-session",
-            messages = new[]
-            {
-                new { role = "system", content = "You are a helpful assistant." },
-                new { role = "user", content = "Hello" }
-            },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "Previous conversation context here",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -136,10 +154,12 @@ public class ChatApiCompletionTests
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<ChatResponse>();
+        result!.Context.Should().Be("Previous conversation context here");
     }
 
     [Fact]
-    public async Task ChatComplete_WithMinTemperature_Succeeds()
+    public async Task ChatComplete_WithInvalidChatUserId_Returns400()
     {
         // Arrange
         var mockHandler = CreateMockOpenAIHandler();
@@ -151,20 +171,21 @@ public class ChatApiCompletionTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "low-temp-session",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.0
+            chatUserId = 0, // Invalid
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task ChatComplete_WithMaxTemperature_Succeeds()
+    public async Task ChatComplete_WithEmptyMessageRequest_Returns400()
     {
         // Arrange
         var mockHandler = CreateMockOpenAIHandler();
@@ -176,48 +197,22 @@ public class ChatApiCompletionTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "high-temp-session",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 1.0
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "", // Invalid
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
         var response = await client.SendAsync(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
-    [Fact]
-    public async Task ChatComplete_ResponseIncludesCorrectSessionId()
-    {
-        // Arrange
-        var mockHandler = CreateMockOpenAIHandler();
-        using var factory = new CustomWebApplicationFactory<Program>
-        {
-            MockHttpHandler = mockHandler.Object
-        };
-        using var client = factory.CreateClient();
-
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "unique-session-id-12345",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
-        });
-
-        // Act
-        var response = await client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ChatResponseDto>();
-        result!.SessionId.Should().Be("unique-session-id-12345");
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     private static HttpRequestMessage CreateAuthenticatedRequest(object body)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/complete")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")
         {
             Content = JsonContent.Create(body)
         };
@@ -225,9 +220,9 @@ public class ChatApiCompletionTests
         return request;
     }
 
-    private static Mock<HttpMessageHandler> CreateMockOpenAIHandler(string model = "gpt-4o-mini")
+    private static Mock<HttpMessageHandler> CreateMockOpenAIHandler()
     {
-        var responseContent = $$"""
+        var responseContent = """
         {
             "choices": [{
                 "message": {
@@ -238,7 +233,7 @@ public class ChatApiCompletionTests
                 "prompt_tokens": 150,
                 "completion_tokens": 95
             },
-            "model": "{{model}}"
+            "model": "gpt-4o-mini"
         }
         """;
 

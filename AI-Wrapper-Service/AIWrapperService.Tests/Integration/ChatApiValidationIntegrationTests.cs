@@ -34,14 +34,34 @@ public class ChatApiValidationIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task ChatComplete_WithEmptySessionId_Returns400()
+    public async Task ChatComplete_WithValidRequest_Returns200()
     {
         // Arrange
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
+        });
+
+        // Act
+        var response = await _client.SendAsync(request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task ChatComplete_WithEmptyChatUserId_Returns400()
+    {
+        // Arrange
+        var request = CreateAuthenticatedRequest(new
+        {
+            chatUserId = Guid.Empty,
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -53,36 +73,19 @@ public class ChatApiValidationIntegrationTests : IDisposable
         var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         problemDetails.Should().NotBeNull();
         problemDetails!.Title.Should().Be("Validation Failed");
-        problemDetails.Detail.Should().Contain("SessionId");
+        problemDetails.Detail.Should().Contain("chatUserId");
     }
 
     [Fact]
-    public async Task ChatComplete_WithWhitespaceSessionId_Returns400()
+    public async Task ChatComplete_WithEmptyMessageRequest_Returns400()
     {
         // Arrange
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "   ",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
-        });
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task ChatComplete_WithEmptyMessagesList_Returns400()
-    {
-        // Arrange
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "test-session",
-            messages = Array.Empty<object>(),
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -93,18 +96,19 @@ public class ChatApiValidationIntegrationTests : IDisposable
 
         var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         problemDetails.Should().NotBeNull();
-        problemDetails!.Detail.Should().Contain("Messages");
+        problemDetails!.Detail.Should().Contain("messageRequest");
     }
 
     [Fact]
-    public async Task ChatComplete_WithNullMessages_Returns400()
+    public async Task ChatComplete_WithWhitespaceMessageRequest_Returns400()
     {
         // Arrange
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "test-session",
-            messages = (object?)null,
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "   ",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -115,54 +119,15 @@ public class ChatApiValidationIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task ChatComplete_WithEmptyMessageContent_Returns400()
+    public async Task ChatComplete_WithNullSessionId_Returns400()
     {
-        // Arrange
+        // Arrange - sessionId is required from Chat Service
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "test-session",
-            messages = new[] { new { role = "user", content = "" } },
-            temperature = 0.7
-        });
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Detail.Should().Contain("Content");
-    }
-
-    [Fact]
-    public async Task ChatComplete_WithWhitespaceMessageContent_Returns400()
-    {
-        // Arrange
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "test-session",
-            messages = new[] { new { role = "user", content = "   " } },
-            temperature = 0.7
-        });
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-    }
-
-    [Fact]
-    public async Task ChatComplete_WithTemperatureBelowZero_Returns400()
-    {
-        // Arrange
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "test-session",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = -0.1
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = ""
+            // sessionId omitted
         });
 
         // Act
@@ -173,29 +138,26 @@ public class ChatApiValidationIntegrationTests : IDisposable
 
         var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         problemDetails.Should().NotBeNull();
-        problemDetails!.Detail.Should().Contain("Temperature");
+        problemDetails!.Detail.Should().Contain("sessionId");
     }
 
     [Fact]
-    public async Task ChatComplete_WithTemperatureAboveOne_Returns400()
+    public async Task ChatComplete_WithEmptyContext_Returns200()
     {
-        // Arrange
+        // Arrange - empty context is valid
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "test-session",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 1.5
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
         var response = await _client.SendAsync(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-
-        var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
-        problemDetails.Should().NotBeNull();
-        problemDetails!.Detail.Should().Contain("Temperature");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -204,9 +166,10 @@ public class ChatApiValidationIntegrationTests : IDisposable
         // Arrange
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "",
-            messages = new[] { new { role = "user", content = "" } },
-            temperature = 2.0
+            chatUserId = Guid.Empty,
+            messageRequest = "",
+            Context = "",
+            sessionId = Guid.Empty
         });
 
         // Act
@@ -224,7 +187,7 @@ public class ChatApiValidationIntegrationTests : IDisposable
     public async Task ChatComplete_WithInvalidJson_Returns400()
     {
         // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/complete")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")
         {
             Content = new StringContent("{ invalid json }", System.Text.Encoding.UTF8, "application/json")
         };
@@ -238,12 +201,12 @@ public class ChatApiValidationIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task ChatComplete_WithMissingContentType_Returns415()
+    public async Task ChatComplete_WithMissingContentType_Returns415Or400()
     {
         // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/complete")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")
         {
-            Content = new StringContent("{\"sessionId\": \"test\"}")
+            Content = new StringContent("{\"chatUserId\": 1}")
         };
         request.Headers.Add("X-Internal-API-Key", ValidApiKey);
 
@@ -255,30 +218,9 @@ public class ChatApiValidationIntegrationTests : IDisposable
         response.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.UnsupportedMediaType);
     }
 
-    [Theory]
-    [InlineData("user")]
-    [InlineData("assistant")]
-    [InlineData("system")]
-    public async Task ChatComplete_WithValidRole_Succeeds(string role)
-    {
-        // Arrange
-        var request = CreateAuthenticatedRequest(new
-        {
-            sessionId = "test-session",
-            messages = new[] { new { role = role, content = "Hello" } },
-            temperature = 0.7
-        });
-
-        // Act
-        var response = await _client.SendAsync(request);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-    }
-
     private HttpRequestMessage CreateAuthenticatedRequest(object body)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/complete")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")
         {
             Content = JsonContent.Create(body)
         };

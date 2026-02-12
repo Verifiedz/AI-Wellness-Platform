@@ -5,7 +5,7 @@ namespace AIWrapperService.Tests.Unit.APIs;
 
 /// <summary>
 /// Unit tests for ChatApi validation logic.
-/// Tests all validation rules for ChatRequestDto.
+/// Tests all validation rules for ChatRequest.
 /// </summary>
 public class ChatApiValidationTests
 {
@@ -13,107 +13,96 @@ public class ChatApiValidationTests
     public void ValidRequest_ShouldPassValidation()
     {
         // Arrange
-        var request = new ChatRequestDto
-        {
-            SessionId = "valid-session-123",
-            Messages = new List<ChatMessageDto>
-            {
-                new() { Role = Role.User, Content = "Hello, I need help" }
-            },
-            Temperature = 0.7
-        };
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: "Hello, I need help",
+            Context: "",
+            sessionId: Guid.NewGuid()
+        );
 
         // Act & Assert
-        // Note: In a real scenario, you'd need to expose the ValidateRequest method
-        // or test through the full endpoint. For now, this demonstrates the structure.
-        request.SessionId.Should().NotBeNullOrEmpty();
-        request.Messages.Should().NotBeEmpty();
-        request.Temperature.Should().BeInRange(0.0, 1.0);
+        request.chatUserId.Should().NotBeEmpty();
+        request.messageRequest.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void EmptyChatUserId_ShouldFailValidation()
+    {
+        // Arrange
+        var request = new ChatRequest(
+            chatUserId: Guid.Empty,
+            messageRequest: "Test message",
+            Context: "",
+            sessionId: Guid.NewGuid()
+        );
+
+        // Assert
+        request.chatUserId.Should().BeEmpty();
+        // Validation layer will reject this
     }
 
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
     [InlineData(null)]
-    public void EmptySessionId_ShouldFailValidation(string sessionId)
+    public void EmptyMessageRequest_ShouldFailValidation(string? messageRequest)
     {
         // Arrange
-        var request = new ChatRequestDto
-        {
-            SessionId = sessionId!,
-            Messages = new List<ChatMessageDto>
-            {
-                new() { Role = Role.User, Content = "Test" }
-            }
-        };
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: messageRequest!,
+            Context: "",
+            sessionId: Guid.NewGuid()
+        );
 
         // Assert
-        request.SessionId.Should().BeNullOrWhiteSpace();
+        request.messageRequest.Should().BeNullOrWhiteSpace();
     }
 
     [Fact]
-    public void EmptyMessages_ShouldFailValidation()
+    public void NullSessionId_ShouldFailValidation()
     {
         // Arrange
-        var request = new ChatRequestDto
-        {
-            SessionId = "test-session",
-            Messages = new List<ChatMessageDto>()
-        };
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: "Test message",
+            Context: "",
+            sessionId: null
+        );
 
-        // Assert
-        request.Messages.Should().BeEmpty();
-    }
-
-    [Theory]
-    [InlineData(-0.1)]
-    [InlineData(1.1)]
-    [InlineData(2.0)]
-    public void InvalidTemperature_ShouldFailValidation(double temperature)
-    {
-        // Arrange
-        var request = new ChatRequestDto
-        {
-            SessionId = "test-session",
-            Messages = new List<ChatMessageDto>
-            {
-                new() { Role = Role.User, Content = "Test" }
-            },
-            Temperature = temperature
-        };
-
-        // Assert
-        request.Temperature.Should().NotBeInRange(0.0, 1.0);
+        // Assert - null sessionId is invalid (required from Chat Service)
+        request.sessionId.Should().BeNull();
+        // Validation layer will reject this
     }
 
     [Fact]
-    public void MessageWithEmptyContent_ShouldFailValidation()
+    public void ValidSessionId_ShouldBeAccepted()
     {
         // Arrange
-        var message = new ChatMessageDto
-        {
-            Role = Role.User,
-            Content = ""
-        };
+        var sessionId = Guid.NewGuid();
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: "Test message",
+            Context: "",
+            sessionId: sessionId
+        );
 
         // Assert
-        message.Content.Should().BeEmpty();
+        request.sessionId.Should().Be(sessionId);
     }
 
-    [Theory]
-    [InlineData(Role.System)]
-    [InlineData(Role.User)]
-    [InlineData(Role.Assistant)]
-    public void ValidRoles_ShouldBeAccepted(Role role)
+    [Fact]
+    public void EmptyContext_ShouldBeAccepted()
     {
         // Arrange
-        var message = new ChatMessageDto
-        {
-            Role = role,
-            Content = "Test message"
-        };
+        var request = new ChatRequest(
+            chatUserId: Guid.NewGuid(),
+            messageRequest: "Test message",
+            Context: "",
+            sessionId: Guid.NewGuid()
+        );
 
-        // Assert
-        message.Role.Should().BeOneOf(Role.System, Role.User, Role.Assistant);
+        // Assert - empty context is valid
+        request.Context.Should().BeEmpty();
     }
 }

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace AIWrapperService.Middleware;
 
-/// Middleware to enforce X-Internal-API-Key authentication for /v1/** routes.
+/// Middleware to enforce X-Internal-API-Key authentication for /chat/** routes.
 /// Rejects requests with missing or invalid keys using RFC-7807 ProblemDetails.
 public class InternalApiKeyMiddleware
 {
@@ -34,35 +34,37 @@ public class InternalApiKeyMiddleware
     {
         var path = context.Request.Path.Value ?? string.Empty;
 
-        // Only enforce on /v1/** routes
-        if (path.StartsWith("/v1/", StringComparison.OrdinalIgnoreCase))
+        // Skip authentication for non-protected routes
+        if (!path.StartsWith("/chat/", StringComparison.OrdinalIgnoreCase))
         {
-            if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var providedKey)
-                || string.IsNullOrWhiteSpace(providedKey))
-            {
-                _logger.LogWarning("Missing {Header} header for path {Path}", ApiKeyHeader, path);
-                await WriteProblemDetails(
-                    context,
-                    StatusCodes.Status401Unauthorized,
-                    "Authentication Required",
-                    $"The {ApiKeyHeader} header is missing or empty");
-                return;
-            }
+            await _next(context);
+            return;
+        }
 
-            // Use constant-time comparison to prevent timing attacks
-            var providedKeyBytes = Encoding.UTF8.GetBytes(providedKey!);
-            var isValid = CryptographicOperations.FixedTimeEquals(providedKeyBytes, _expectedApiKeyBytes);
+        // Validate API key header exists
+        if (!context.Request.Headers.TryGetValue(ApiKeyHeader, out var providedKey)
+            || string.IsNullOrWhiteSpace(providedKey))
+        {
+            _logger.LogWarning("Missing {Header} header for path {Path}", ApiKeyHeader, path);
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status401Unauthorized,
+                "Authentication Required",
+                $"The {ApiKeyHeader} header is missing or empty");
+            return;
+        }
 
-            if (!isValid)
-            {
-                _logger.LogWarning("Invalid {Header} for path {Path}", ApiKeyHeader, path);
-                await WriteProblemDetails(
-                    context,
-                    StatusCodes.Status401Unauthorized,
-                    "Invalid Credentials",
-                    $"The provided {ApiKeyHeader} is invalid");
-                return;
-            }
+        // Validate API key value (constant-time comparison to prevent timing attacks)
+        var providedKeyBytes = Encoding.UTF8.GetBytes(providedKey!);
+        if (!CryptographicOperations.FixedTimeEquals(providedKeyBytes, _expectedApiKeyBytes))
+        {
+            _logger.LogWarning("Invalid {Header} for path {Path}", ApiKeyHeader, path);
+            await WriteProblemDetails(
+                context,
+                StatusCodes.Status401Unauthorized,
+                "Invalid Credentials",
+                $"The provided {ApiKeyHeader} is invalid");
+            return;
         }
 
         await _next(context);

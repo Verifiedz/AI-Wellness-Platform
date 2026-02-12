@@ -100,25 +100,19 @@ public static class TestHelpers
     }
 
     /// <summary>
-    /// Creates a test ChatRequestDto with default values.
+    /// Creates a test ChatRequest with default values.
     /// </summary>
-    public static ChatRequestDto CreateTestChatRequest(
-        string sessionId = "test-session-123",
-        string? userMessage = null,
-        double temperature = 0.7)
+    public static ChatRequest CreateTestChatRequest(
+        Guid? chatUserId = null,
+        string? messageRequest = null,
+        string context = "",
+        Guid? sessionId = null)
     {
-        return new ChatRequestDto
-        {
-            SessionId = sessionId,
-            Messages = new List<ChatMessageDto>
-            {
-                new ChatMessageDto
-                {
-                    Role = Role.User,
-                    Content = userMessage ?? "I feel stressed today"
-                }
-            },
-            Temperature = temperature
-        };
+        return new ChatRequest(
+            chatUserId: chatUserId ?? Guid.NewGuid(),
+            messageRequest: messageRequest ?? "I feel stressed today",
+            Context: context,
+            sessionId: sessionId ?? Guid.NewGuid()
+        );
     }
 }

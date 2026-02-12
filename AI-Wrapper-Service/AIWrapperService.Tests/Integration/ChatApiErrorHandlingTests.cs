@@ -28,9 +28,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "error-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -58,9 +59,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "rate-limit-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -83,9 +85,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "auth-error-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -108,9 +111,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "service-unavailable-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -133,9 +137,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "timeout-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -162,9 +167,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "connection-fail-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -175,7 +181,7 @@ public class ChatApiErrorHandlingTests
     }
 
     [Fact]
-    public async Task ChatComplete_WhenOpenAIReturnsInvalidJson_Returns502()
+    public async Task ChatComplete_WhenOpenAIReturnsInvalidJson_Returns502Or500()
     {
         // Arrange
         var mockHandler = CreateMockHandlerWithInvalidResponse();
@@ -187,9 +193,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "invalid-json-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -215,9 +222,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "trace-id-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -243,9 +251,10 @@ public class ChatApiErrorHandlingTests
 
         var request = CreateAuthenticatedRequest(new
         {
-            sessionId = "instance-path-test",
-            messages = new[] { new { role = "user", content = "Hello" } },
-            temperature = 0.7
+            chatUserId = Guid.NewGuid(),
+            messageRequest = "Hello",
+            Context = "",
+            sessionId = Guid.NewGuid()
         });
 
         // Act
@@ -254,12 +263,12 @@ public class ChatApiErrorHandlingTests
         // Assert
         var problemDetails = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         problemDetails.Should().NotBeNull();
-        problemDetails!.Instance.Should().Be("/v1/chat/complete");
+        problemDetails!.Instance.Should().Be("/chat/ChatResponse");
     }
 
     private static HttpRequestMessage CreateAuthenticatedRequest(object body)
     {
-        var request = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/complete")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")
         {
             Content = JsonContent.Create(body)
         };
