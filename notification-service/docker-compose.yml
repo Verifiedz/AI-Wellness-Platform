@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: wellness_notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: coolguy123
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: dockerfile   # or Dockerfile, match your filename
+    depends_on:
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__NotificationDatabase: "Host=db;Database=wellness_notifications;Username=postgres;Password=coolguy123"
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
