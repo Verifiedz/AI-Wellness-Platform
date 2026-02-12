@@ -10,7 +10,9 @@ public interface IChatDatabaseProvider
 
     public Task deleteChatAsync(Guid chatReferenceId);
 
-    public Task<Chat?> getChatAsync(Guid chatReferenceId);
+    public Task<Chat> getChatAsync(Guid chatReferenceId);
+    
+    public Task<IReadOnlyList<Chat>> getChatsBySessionAsync(Guid sessionId);
 
-    public Task setIsBookmarkedAsync(bool isBookmarked);
+    public Task setIsBookmarkedAsync(Guid chatReferenceId);
 }
