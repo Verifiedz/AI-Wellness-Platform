@@ -1,0 +1,59 @@
+# .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.pidb
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Visual Studio Code
+.vscode/
+.vs/
+
+# Environment files
+.env
+*.env
+!.env.example
+
+# Firebase service account (sensitive)
+firebase-service-account.json
+*-firebase-adminsdk-*.json
+
+# Database dumps
+*.sql.backup
+*.dump
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# User-specific files
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Rider
+.idea/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
