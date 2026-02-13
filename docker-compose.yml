@@ -30,7 +30,7 @@ services:
       # Note: Host is now 'notification-db' to match the service name above
       ConnectionStrings__NotificationDatabase: "Host=notification-db;Database=wellness_notifications;Username=postgres;Password=coolguy123"
     ports:
-      - "8082:8080"
+      - "5002:8080"
 
   # ---------------------------------------------------------------------------
   # CHAT Service + AI Wrapper STACK
@@ -60,13 +60,13 @@ services:
       dockerfile: Dockerfile
     container_name: ai_wrapper_service_api
     ports:
-      - "8081:8080"
+      - "5001:8080"
     environment:
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_ENVIRONMENT: "Production"
-      OPENAIAPIKEY: "${OPENAI_API_KEY}"
-      AISERVICEINTERNALAPIKEY: "${AI_SERVICE_INTERNAL_API_KEY}"
-      AISERVICE__RATELIMITPERMINUTE: "60"
+      OpenAI__ApiKey: "${OPENAI_API_KEY}"
+      AiService__InternalApiKey: "${AI_SERVICE_INTERNAL_API_KEY}"
+      AiService__RateLimitPerMinute: "60"
 
   chat-service:
     build:

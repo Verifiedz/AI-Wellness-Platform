@@ -22,6 +22,18 @@ public class UserContextMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // Allow certain internal endpoints (called directly from other services)
+        // to bypass user-context enforcement. These endpoints do not rely on the
+        // authenticated user from YARP headers and instead carry their own
+        // identification in the request body.
+        var path = context.Request.Path.Value ?? string.Empty;
+        if (path.Equals("/api/notifications/send-code", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogDebug("Bypassing UserContextMiddleware for internal endpoint {Path}", path);
+            await _next(context);
+            return;
+        }
+
         // Extract user ID from YARP header
         var userIdHeader = context.Request.Headers["X-User-Id"].ToString();
         var emailHeader = context.Request.Headers["X-User-Email"].ToString();

@@ -19,7 +19,6 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20) UNIQUE,
     isactive BOOLEAN DEFAULT TRUE,
     isemailverified BOOLEAN DEFAULT FALSE,
-    isphoneverified BOOLEAN DEFAULT FALSE,
     createdat TIMESTAMPTZ DEFAULT now(),
     updatedat TIMESTAMPTZ DEFAULT now(),
     lastloginat TIMESTAMPTZ,
