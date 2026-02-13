@@ -15,11 +15,11 @@ services:
       - "5433:5432"
     volumes:
       - notification_db_data:/var/lib/postgresql/data
-      - ./database:/docker-entrypoint-initdb.d
+      - ./notification-service/database:/docker-entrypoint-initdb.d
 
   notification-service:
     build:
-      context: .
+      context: ./notification-service
       dockerfile: dockerfile
     container_name: notification_service_api
     depends_on:
