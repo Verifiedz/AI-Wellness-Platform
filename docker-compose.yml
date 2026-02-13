@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # NOTIFICATION STACK
+  # ---------------------------------------------------------------------------
+  notification-db:
+    image: postgres:16
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: wellness_notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: coolguy123
+    ports:
+      - "5433:5432"
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: notification_service_api
+    depends_on:
+      - notification-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      # Note: Host is now 'notification-db' to match the service name above
+      ConnectionStrings__NotificationDatabase: "Host=notification-db;Database=wellness_notifications;Username=postgres;Password=coolguy123"
+    ports:
+      - "8082:8080"
+
+  # ---------------------------------------------------------------------------
+  # CHAT Service + AI Wrapper STACK
+  # ---------------------------------------------------------------------------
+  chat-db:
+    image: postgres:16
+    container_name: chat_service_db
+    environment:
+      POSTGRES_USER: wasim
+      POSTGRES_PASSWORD: Wasim1921
+      POSTGRES_DB: chatservicedb
+    ports:
+     - "5432:5432"
+    volumes:
+      - chat_db_data:/var/lib/postgresql/data
+      - ./chat-service/Database/Scripts:/docker-entrypoint-initdb.d
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: wellness_redis
+    restart: always
+    ports:
+      - "6379:6379"
+  ai-wrapper-service:
+    build:
+      context: ./AI-Wrapper-Service
+      dockerfile: Dockerfile
+    container_name: ai_wrapper_service_api
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      OPENAIAPIKEY: "${OPENAI_API_KEY}"
+      AISERVICEINTERNALAPIKEY: "${AI_SERVICE_INTERNAL_API_KEY}"
+      AISERVICE__RATELIMITPERMINUTE: "60"
+
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: dockerfile
+    container_name: chat_service_api
+    depends_on:
+      - chat-db
+      - redis-cache
+      - ai-wrapper-service
+    ports:
+      - "5050:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      # Database Connection
+      ConnectionStrings__PostgreSqlConnectionString: "Host=chat-db;Port=5432;Database=chatservicedb;Username=wasim;Password=Wasim1921;"
+      # Redis Connection (Matches container_name of redis-cache)
+      ConnectionStrings__Redis: "wellness_redis:6379"
+      # AI Wrapper Connection (Matches container_name of ai-wrapper-service)
+      AiWrapperSettings__BaseUrl: "http://ai_wrapper_service_api:8080/"
+
+# ---------------------------------------------------------------------------
+# VOLUMES
+# ---------------------------------------------------------------------------
+volumes:
+  notification_db_data:
+  chat_db_data:

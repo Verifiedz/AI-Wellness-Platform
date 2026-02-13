@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
-using System.Security.AccessControl;
-
+﻿
 namespace ChatService.Interfaces;
 
 public interface IConfigurationService
 {
 
-    public string getApiKey(string apiKey);
+     public string getApiKey();
 
-    public string getConnectionString();
+     public string getConnectionString();
+     
+     public string getBaseUrl();
 }

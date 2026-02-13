@@ -13,7 +13,7 @@ public class ConfigurationService : IConfigurationService
         _configuration = config;
         _chatServiceOptions = options;
     }
-    public string getApiKey(string apiKey)
+    public string getApiKey()
     {
         return _chatServiceOptions.ApiKey;
     }
@@ -23,6 +23,8 @@ public class ConfigurationService : IConfigurationService
        return _chatServiceOptions.PostgreSqlConnectionString;
     }
 
-
+    public string getBaseUrl(){
+      return _chatServiceOptions.BaseUrl;
+    }
 
 }
