@@ -87,10 +87,44 @@ services:
       ConnectionStrings__Redis: "wellness_redis:6379"
       # AI Wrapper Connection (Matches container_name of ai-wrapper-service)
       AiWrapperSettings__BaseUrl: "http://ai_wrapper_service_api:8080/"
+# ---------------------------------------------------------------------------
+# AUTHENTICATION STACK
+# ---------------------------------------------------------------------------
+  auth-db:
+    image: postgres:16
+    container_name: auth_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: PostPass
+      POSTGRES_DB: authdb
+    ports:
+      - ":434:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+      - ./auth-service/Database:/docker-entrypoint-initdb.d
 
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service_api
+    depends_on:
+      - auth-db
+    ports:
+      - "5051:8080"
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=auth-db;Port=5432;Database=authdb;Username=postgres;Password=PostPass;"
+      Jwt__Key: ";5XIR!d1IBBAS]$;{6Z&GiMG@GaXv.nN"
+      Jwt__Issuer: "AIWellness"
+      Jwt__Audience: "AIWellnessUsers"
+      Jwt__ExpiryInMinutes: "60"
+      ReverseProxy__Clusters__chat-cluster__Destinations__chat-service__Address: "http://chat-service:8080/"
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Production"
 # ---------------------------------------------------------------------------
 # VOLUMES
 # ---------------------------------------------------------------------------
 volumes:
   notification_db_data:
   chat_db_data:
+  auth_db_data:
