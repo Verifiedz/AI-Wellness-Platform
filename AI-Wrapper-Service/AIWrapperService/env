@@ -1,0 +1,4 @@
+
+OPENAI_API_KEY=OPENAI_API_KEY
+OpenAIBaseUrl=https://api.openai.com/v1/
+AI_SERVICE_INTERNAL_API_KEY=test-internal-key-123
