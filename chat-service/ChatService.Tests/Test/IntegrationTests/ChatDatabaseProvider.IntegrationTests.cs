@@ -30,7 +30,7 @@ public class ChatDatabaseProviderIntegrationTests
         //Arrange the data
         var chat = new Chat
         {
-            chatUserId = 14,
+            chatUserId = Guid.NewGuid(),
             chatReferenceId = Guid.NewGuid(),
             message = "how are you sir?",
             status = enums.Status.dummy1,
@@ -57,7 +57,7 @@ public class ChatDatabaseProviderIntegrationTests
         var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         var expected = new Chat
         {
-            chatUserId = 15,
+            chatUserId = Guid.NewGuid(),
             chatReferenceId = Guid.NewGuid(),
             message = "how are you sir?",
             status = enums.Status.dummy1,
@@ -83,11 +83,16 @@ public class StubConfigurationService : IConfigurationService
     public StubConfigurationService() {
         _stubchatServiceOptions = new ChatServiceOptions
         {
-            PostgreSqlConnectionString = "Server=localhost;Port=5432;Database=chatservicedb;User Id=postgres;Password=Wasim1921;Pooling=true;"
+            PostgreSqlConnectionString = "Server=localhost;Port=5432;Database=chatservicedb;User Id=wasim;Password=Wasim1921;Pooling=true;"
         };
     }
-    public string getApiKey(string apiKey) => "fake-key";
+    public string getApiKey() => _stubchatServiceOptions.ApiKey;
 
     public string getConnectionString() =>
         _stubchatServiceOptions.PostgreSqlConnectionString;
+
+    public string getBaseUrl(){
+      return _stubchatServiceOptions.BaseUrl;
+
+    }
 }

@@ -1,7 +1,7 @@
 ﻿namespace ChatService.DTOs;
 
 public sealed record ChatResponse
-    (int chatUserId,
-    Guid chatReferenceId, 
+    (Guid chatUserId, 
     string message, 
-    string Context);
+    string Context,
+    Guid sessionId);

@@ -1,0 +1,2 @@
+# Notification service is defined in the root docker-compose.yml
+# Run from repository root: docker compose up -d

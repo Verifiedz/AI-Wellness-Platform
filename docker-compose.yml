@@ -1,0 +1,128 @@
+
+services:
+  # ---------------------------------------------------------------------------
+  # NOTIFICATION STACK
+  # ---------------------------------------------------------------------------
+  notification-db:
+    image: postgres:16
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: wellness_notifications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: coolguy123
+    ports:
+      - "5433:5432"
+    volumes:
+      - notification_db_data:/var/lib/postgresql/data
+      - ./notification-service/database:/docker-entrypoint-initdb.d
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: dockerfile
+    container_name: notification_service_api
+    depends_on:
+      - notification-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__NotificationDatabase: "Host=notification-db;Database=wellness_notifications;Username=postgres;Password=coolguy123"
+    ports:
+      - "8082:8080"
+
+  # ---------------------------------------------------------------------------
+  # CHAT Service + AI Wrapper STACK
+  # ---------------------------------------------------------------------------
+  chat-db:
+    image: postgres:16
+    container_name: chat_service_db
+    environment:
+      POSTGRES_USER: wasim
+      POSTGRES_PASSWORD: Wasim1921
+      POSTGRES_DB: chatservicedb
+    ports:
+     - "5435:5432"
+    volumes:
+      - chat_db_data:/var/lib/postgresql/data
+      - ./chat-service/Database/Scripts:/docker-entrypoint-initdb.d
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: wellness_redis
+    restart: always
+    ports:
+      - "6379:6379"
+  ai-wrapper-service:
+    build:
+      context: ./AI-Wrapper-Service
+      dockerfile: Dockerfile
+    container_name: ai_wrapper_service_api
+    ports:
+      - "8081:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      - AiService__InternalApiKey=test-internal-key-123
+      - OpenAI__ApiKey=OpenAI__ApiKey
+      - AiService__RateLimitPerMinute=60
+  chat-service:
+    build:
+      context: ./chat-service
+      dockerfile: dockerfile
+    container_name: chat_service_api
+    depends_on:
+      - chat-db
+      - redis-cache
+      - ai-wrapper-service
+    ports:
+      - "5050:8080"
+    environment:
+      ASPNETCORE_URLS: "http://+:8080"
+      ChatService__BaseUrl: "http://ai_wrapper_service_api:8080/"
+      ChatService__ApiKey: "test-internal-key-123"
+      ConnectionStrings__PostgreSqlConnectionString: "Host=chat-db;Port=5432;Database=chatservicedb;Username=wasim;Password=Wasim1921;"
+      ConnectionStrings__Redis: "redis-cache:6379"
+      Jwt__Key: ";5XIR!d1IBBAS]$;{6Z&GiMG@GaXv.nN"
+      Jwt__Issuer: "AIWellness"
+      Jwt__Audience: "AIWellnessUsers"
+#----------------------------------------------------------------------------
+# AUTHENTICATION STACK
+# ---------------------------------------------------------------------------
+  auth-db:
+    image: postgres:16
+    container_name: auth_service_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: PostPass
+      POSTGRES_DB: authdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+      - ./auth-service/Database:/docker-entrypoint-initdb.d
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service_api
+    depends_on:
+      - auth-db
+    ports:
+      - "5051:8080"
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=auth-db;Port=5432;Database=authdb;Username=postgres;Password=PostPass;"
+      Jwt__Key: ";5XIR!d1IBBAS]$;{6Z&GiMG@GaXv.nN"
+      Jwt__Issuer: "AIWellness"
+      Jwt__Audience: "AIWellnessUsers"
+      Jwt__ExpiryInMinutes: "60"
+      ReverseProxy__Clusters__chat-cluster__Destinations__chat-service__Address: "http://chat-service:8080/"
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Production"
+# ---------------------------------------------------------------------------
+# VOLUMES
+# ---------------------------------------------------------------------------
+volumes:
+  notification_db_data:
+  chat_db_data:
+  auth_db_data:
