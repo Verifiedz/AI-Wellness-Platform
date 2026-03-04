@@ -56,4 +56,24 @@ export const authApi = {
   getCurrentUser(token) {
     return requestWithToken("/api/auth/user-info", token);
   },
+
+  register(username, email, password, phone = null) {
+    return apiClient.post("/api/auth/register", { username, email, password, phone });
+  },
+
+  verifyEmail(email, code) {
+    return apiClient.post("/api/auth/verify-email", { email, code });
+  },
+
+  resendVerification(email) {
+    return apiClient.post("/api/auth/resend-verification", { email });
+  },
+
+  forgotPassword(email) {
+    return apiClient.post("/api/auth/forgot-password", { email });
+  },
+
+  resetPassword(email, code, newPassword, newPassword2) {
+    return apiClient.post("/api/auth/reset-password", { email, code, newPassword, newPassword2 });
+  },
 };

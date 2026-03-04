@@ -54,6 +54,14 @@ public class CodeDeliveryService
         if (normalizedChannel == "auto" && !smsSent && !emailSent && !string.IsNullOrWhiteSpace(email))
             emailSent = await TrySendEmailAsync(email, subject, body);
 
+        if (!emailSent && !smsSent)
+        {
+            _logger.LogWarning(
+                "NO DELIVERY PROVIDER CONFIGURED — code logged for development testing. " +
+                "Type={CodeType}, Email={Email}, Code={Code}",
+                codeType, email, code);
+        }
+
         return (emailSent, smsSent);
     }
 

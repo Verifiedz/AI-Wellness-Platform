@@ -89,6 +89,8 @@ export function AuthProvider({ children }) {
             loginData.message ??
             loginData.Message ??
             "Enter your verification code to continue.",
+          twoFactorExpiresAt:
+            loginData.twoFactorExpiresAt ?? loginData.TwoFactorExpiresAt ?? null,
         };
       }
 
