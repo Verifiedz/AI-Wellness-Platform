@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,10 +51,21 @@ builder.Services.AddCors(options =>
     }
     else
     {
-      policy.WithOrigins("https://your-production-domain.com")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
+      var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+      if (allowedOrigins.Length > 0)
+      {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+      }
+      else
+      {
+        // Explicitly block cross-origin requests if production origins are not configured.
+        policy.SetIsOriginAllowed(_ => false)
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+      }
     }
   });
 });

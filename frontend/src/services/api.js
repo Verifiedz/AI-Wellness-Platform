@@ -70,25 +70,37 @@ class ApiClient {
       }
 
       const response = await fetch(url, options);
+      const data = await response.json().catch(() => null);
+      const message =
+        data?.message ||
+        data?.error ||
+        response.statusText ||
+        `Request failed with status ${response.status}`;
 
       /* --- status-specific handling --- */
-      if (response.status === 404) {
-        return { status: 404, data: null, error: "Not found" };
-      }
       if (response.status === 401) {
-        return { status: 401, data: null, error: "Unauthorized" };
+        return { status: 401, data: null, error: message || "Unauthorized" };
       }
-
-      const data = await response.json().catch(() => null);
+      if (response.status === 403) {
+        return { status: 403, data: null, error: message || "Forbidden" };
+      }
+      if (response.status === 404) {
+        return { status: 404, data: null, error: message || "Not found" };
+      }
+      if (response.status === 429) {
+        return {
+          status: 429,
+          data: null,
+          error: message || "Too many requests",
+          retryAfter: response.headers.get("Retry-After"),
+        };
+      }
 
       if (!response.ok) {
         return {
           status: response.status,
           data: null,
-          error:
-            data?.message ||
-            data?.error ||
-            `Request failed with status ${response.status}`,
+          error: message,
           details: data?.details || null,
         };
       }

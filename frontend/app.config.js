@@ -3,7 +3,7 @@
  *
  * Environment variables:
  *   EXPO_PUBLIC_API_URL  – Base URL for the YARP gateway (default: http://localhost:5051)
- *   EXPO_PUBLIC_DEV_MODE – "true" to enable dev-mode query params (auto-enabled in __DEV__)
+ *   EXPO_PUBLIC_DEV_MODE – "true" to enable dev-mode query params (must stay false in production)
  *
  * Firebase:
  *   Place google-services.json (Android) and GoogleService-Info.plist (iOS) in the project root.

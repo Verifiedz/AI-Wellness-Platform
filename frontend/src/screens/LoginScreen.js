@@ -22,22 +22,49 @@ import { API_BASE_URL, DEV_MODE } from "../config";
  * screen with a proper email / password form that calls the Auth API.
  */
 export function LoginScreen() {
-  const { login } = useAuth();
-  const [userId, setUserId] = useState("");
+  const { login, verifyTwoFactor } = useAuth();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [pendingTwoFactorEmail, setPendingTwoFactorEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!userId.trim()) {
-      Alert.alert("Validation", "Please enter a User ID.");
+    if (!email.trim() || !password) {
+      Alert.alert("Validation", "Please enter your email and password.");
       return;
     }
 
     setIsLoading(true);
     try {
-      await login(userId.trim(), email.trim());
+      const result = await login(email.trim(), password);
+      if (result?.requiresTwoFactor) {
+        setPendingTwoFactorEmail(result.email || email.trim());
+        Alert.alert(
+          "Two-Factor Verification",
+          result.message || "Enter the verification code sent to your email."
+        );
+      }
     } catch (error) {
       Alert.alert("Login Error", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyTwoFactor = async () => {
+    if (!pendingTwoFactorEmail || !twoFactorCode.trim()) {
+      Alert.alert("Validation", "Please enter your verification code.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await verifyTwoFactor(pendingTwoFactorEmail, twoFactorCode.trim());
+      setTwoFactorCode("");
+      setPendingTwoFactorEmail("");
+    } catch (error) {
+      Alert.alert("Verification Error", error.message);
     } finally {
       setIsLoading(false);
     }
@@ -66,23 +93,12 @@ export function LoginScreen() {
             <View style={styles.devBanner}>
               <Ionicons name="code-slash" size={16} color="#856404" />
               <Text style={styles.devBannerText}>
-                Dev Mode — Placeholder Login
+                Dev Mode — Using real Auth API
               </Text>
             </View>
           )}
 
-          <Text style={styles.label}>User ID</Text>
-          <TextInput
-            style={styles.input}
-            value={userId}
-            onChangeText={setUserId}
-            placeholder="Enter your user ID"
-            placeholderTextColor={Colors.textLight}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <Text style={styles.label}>Email (optional)</Text>
+          <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
             value={email}
@@ -90,6 +106,18 @@ export function LoginScreen() {
             placeholder="Enter your email"
             placeholderTextColor={Colors.textLight}
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            placeholderTextColor={Colors.textLight}
+            secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
           />
@@ -104,6 +132,33 @@ export function LoginScreen() {
               {isLoading ? "Logging in…" : "Log In"}
             </Text>
           </TouchableOpacity>
+
+          {pendingTwoFactorEmail ? (
+            <>
+              <Text style={styles.label}>Verification Code</Text>
+              <TextInput
+                style={styles.input}
+                value={twoFactorCode}
+                onChangeText={setTwoFactorCode}
+                placeholder="Enter 2FA code"
+                placeholderTextColor={Colors.textLight}
+                keyboardType="number-pad"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <TouchableOpacity
+                style={[styles.button, isLoading && styles.buttonDisabled]}
+                onPress={handleVerifyTwoFactor}
+                disabled={isLoading}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.buttonText}>
+                  {isLoading ? "Verifying…" : "Verify Code"}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : null}
 
           <Text style={styles.apiInfo}>API: {API_BASE_URL}</Text>
         </View>

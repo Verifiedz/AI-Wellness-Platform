@@ -23,4 +23,11 @@ public class SendCodeRequest
     [RegularExpression("^(email_verify|2fa|password_reset)$",
         ErrorMessage = "Type must be one of: email_verify, 2fa, password_reset")]
     public string Type { get; set; } = string.Empty;
+
+    [Phone(ErrorMessage = "Invalid phone number")]
+    public string? Phone { get; set; }
+
+    [RegularExpression("^(auto|email|sms|both)$",
+        ErrorMessage = "Channel must be one of: auto, email, sms, both")]
+    public string Channel { get; set; } = "auto";
 }

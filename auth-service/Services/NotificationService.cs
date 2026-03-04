@@ -15,19 +15,22 @@ public class NotificationService : INotificationService
     _configuration = configuration;
   }
 
-  public async Task SendVerificationCodeAsync(Guid userId, string email, string code, string type)
+  public async Task SendVerificationCodeAsync(Guid userId, string email, string code, string type, string? phone = null, string channel = "auto")
   {
     try
     {
       var endpoint = _configuration["NotificationService:SendCodeEndpoint"]
           ?? "/api/notifications/send-code";
+      var configuredChannel = _configuration["NotificationService:DeliveryChannel"];
 
       var payload = new
       {
         UserId = userId,
         Email = email,
+        Phone = phone,
         Code = code,
         Type = type,
+        Channel = string.IsNullOrWhiteSpace(configuredChannel) ? channel : configuredChannel,
         Timestamp = DateTime.UtcNow
       };
 

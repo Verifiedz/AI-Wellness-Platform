@@ -19,6 +19,7 @@ builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<DatabaseService>();
 builder.Services.AddScoped<NotificationService.Api.Services.NotificationService>();
 builder.Services.AddScoped<WellnessTipService>();
+builder.Services.AddHttpClient<CodeDeliveryService>();
 
 // Push notification provider: Expo Push API (works with Expo Go on iOS & Android)
 builder.Services.AddHttpClient<ExpoPushService>();
@@ -32,14 +33,34 @@ builder.Services.AddScoped<IUserContext, HttpUserContext>();
 // Register background services
    builder.Services.AddHostedService<NotificationService.Api.BackgroundServices.NotificationScheduler>();
 
-// Add CORS (optional - configure as needed)
+// Add CORS with strict production defaults.
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("NotificationCors", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+            if (allowedOrigins.Length > 0)
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
+            else
+            {
+                // Explicitly block cross-origin requests if production origins are not configured.
+                policy.SetIsOriginAllowed(_ => false)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
+        }
     });
 });
 
@@ -64,7 +85,7 @@ catch (Exception ex)
 // Configure the HTTP request pipeline
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("NotificationCors");
 
 // Global exception handling middleware (first in pipeline)
 app.UseMiddleware<ExceptionHandlingMiddleware>();

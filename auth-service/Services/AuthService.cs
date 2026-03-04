@@ -80,7 +80,7 @@ public class AuthService : IAuthService
     await _userRepository.CreateVerificationCodeAsync(user.Id, verificationCode, "email_verify", ipAddress);
 
     await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
-    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify");
+    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify", user.Phone);
 
     var token = _jwtService.GenerateJwtToken(user);
 
@@ -127,7 +127,7 @@ public class AuthService : IAuthService
     await _userRepository.CreateTwoFactorCodeAsync(user.Id, twoFactorCode, ipAddress);
 
     _logger.LogInformation($"2FA Code for {user.Email}: {twoFactorCode}");
-    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, twoFactorCode, "2fa");
+    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, twoFactorCode, "2fa", user.Phone);
 
     await _userRepository.UpdateLastLoginAsync(user.Id);
     await LogSuccessfulLoginAttempt(user.Id, ipAddress, userAgent);
@@ -197,7 +197,7 @@ public class AuthService : IAuthService
 
     await _userRepository.CreateVerificationCodeAsync(user.Id, verificationCode, "email_verify", ipAddress);
     await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
-    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify");
+    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify", user.Phone);
   }
 
   public async Task InitiatePasswordResetAsync(ForgotPasswordRequest request)
@@ -220,7 +220,7 @@ public class AuthService : IAuthService
 
     await _userRepository.CreateVerificationCodeAsync(user.Id, resetCode, "password_reset", ipAddress);
     await _emailService.SendPasswordResetEmailAsync(user.Email, resetCode);
-    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, resetCode, "password_reset");
+    await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, resetCode, "password_reset", user.Phone);
   }
 
   public async Task ResetPasswordAsync(ResetPasswordRequest request)

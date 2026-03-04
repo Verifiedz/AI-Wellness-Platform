@@ -3,6 +3,7 @@ namespace NotificationService.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Api.Models.Requests;
 using NotificationService.Api.Models.Responses;
+using NotificationService.Api.Services;
 
 /// <summary>
 /// Controller for internal service-to-service notification delivery.
@@ -13,13 +14,16 @@ using NotificationService.Api.Models.Responses;
 public class NotificationCodeController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly CodeDeliveryService _codeDeliveryService;
     private readonly ILogger<NotificationCodeController> _logger;
 
     public NotificationCodeController(
         IConfiguration configuration,
+        CodeDeliveryService codeDeliveryService,
         ILogger<NotificationCodeController> logger)
     {
         _configuration = configuration;
+        _codeDeliveryService = codeDeliveryService;
         _logger = logger;
     }
 
@@ -31,7 +35,7 @@ public class NotificationCodeController : ControllerBase
     [ProducesResponseType(typeof(SendCodeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public IActionResult SendCode([FromBody] SendCodeRequest request)
+    public async Task<IActionResult> SendCode([FromBody] SendCodeRequest request)
     {
         if (!ValidateApiKey())
         {
@@ -58,13 +62,30 @@ public class NotificationCodeController : ControllerBase
         }
 
         _logger.LogInformation(
-            "Verification code received — Type: {Type}, Email: {Email}, UserId: {UserId}",
-            request.Type, request.Email, request.UserId);
+            "Verification code received - Type: {Type}, Email: {Email}, UserId: {UserId}, Channel: {Channel}",
+            request.Type, request.Email, request.UserId, request.Channel);
+
+        var (emailSent, smsSent) = await _codeDeliveryService.SendAsync(
+            request.Email,
+            request.Phone,
+            request.Type,
+            request.Code,
+            request.Channel);
+
+        if (!emailSent && !smsSent)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, new ErrorResponse
+            {
+                Error = "DeliveryFailed",
+                Message = "Unable to deliver verification code via configured providers",
+                Timestamp = DateTime.UtcNow
+            });
+        }
 
         return Ok(new SendCodeResponse
         {
             Success = true,
-            Message = $"Code delivery queued for {request.Email} (type: {request.Type})"
+            Message = $"Code delivered. EmailSent={emailSent}, SmsSent={smsSent}"
         });
     }
 
