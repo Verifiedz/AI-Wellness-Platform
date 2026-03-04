@@ -38,6 +38,26 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowFrontend", policy =>
+  {
+    if (builder.Environment.IsDevelopment())
+    {
+      policy.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    }
+    else
+    {
+      policy.WithOrigins("https://your-production-domain.com")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    }
+  });
+});
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
     .AddTransforms(context =>
@@ -64,6 +84,10 @@ builder.Services.AddHttpClient<INotificationService, NotificationService>((servi
   var config = serviceProvider.GetRequiredService<IConfiguration>();
   client.BaseAddress = new Uri(config["NotificationService:BaseUrl"]
       ?? throw new InvalidOperationException("NotificationService:BaseUrl not configured"));
+
+  var apiKey = config["NotificationService:ApiKey"];
+  if (!string.IsNullOrEmpty(apiKey))
+    client.DefaultRequestHeaders.Add("X-Internal-Api-Key", apiKey);
 });
 
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
@@ -72,13 +96,14 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddLogging();
 
 var app = builder.Build();
 
 app.UseRateLimiting();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -119,6 +119,8 @@ services:
       Jwt__ExpiryInMinutes: "60"
       ReverseProxy__Clusters__chat-cluster__Destinations__chat-service__Address: "http://chat-service:8080/"
       ReverseProxy__Clusters__notification-cluster__Destinations__notification-service__Address: "http://notification-service:8080/"
+      NotificationService__BaseUrl: "http://notification-service:8080"
+      NotificationService__ApiKey: "notification-internal-key-123"
       ASPNETCORE_URLS: "http://+:8080"
       ASPNETCORE_ENVIRONMENT: "Production"
 # ---------------------------------------------------------------------------

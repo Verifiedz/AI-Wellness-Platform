@@ -20,8 +20,17 @@ public class UserContextMiddleware
         _logger = logger;
     }
 
+    private static readonly string[] ExcludedPaths = ["/api/health", "/api/ping", "/api/notifications/send-code"];
+
     public async Task InvokeAsync(HttpContext context)
     {
+        var path = context.Request.Path.Value ?? "";
+        if (ExcludedPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase)))
+        {
+            await _next(context);
+            return;
+        }
+
         // Extract user ID from YARP header
         var userIdHeader = context.Request.Headers["X-User-Id"].ToString();
         var emailHeader = context.Request.Headers["X-User-Email"].ToString();
