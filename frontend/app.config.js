@@ -2,7 +2,7 @@
  * Expo app configuration.
  *
  * Environment variables:
- *   EXPO_PUBLIC_API_URL  – Base URL for the backend API (default: http://localhost:5085)
+ *   EXPO_PUBLIC_API_URL  – Base URL for the YARP gateway (default: http://localhost:5051)
  *   EXPO_PUBLIC_DEV_MODE – "true" to enable dev-mode query params (auto-enabled in __DEV__)
  *
  * Firebase:
@@ -53,7 +53,7 @@ export default {
       ],
     ],
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5085",
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5051",
       eas: {
         projectId: "79057051-8f94-4dd2-b705-d8c5d2d5c060",
       },

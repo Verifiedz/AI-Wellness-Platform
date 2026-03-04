@@ -5,6 +5,7 @@ using AIWellness.Auth.Services.Abstractions;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,7 +39,25 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(context =>
+    {
+      context.AddRequestTransform(transformContext =>
+      {
+        var user = transformContext.HttpContext.User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+          var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+          var email = user.FindFirst(ClaimTypes.Email)?.Value;
+
+          if (userId is not null)
+            transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-User-Id", userId);
+          if (email is not null)
+            transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-User-Email", email);
+        }
+        return ValueTask.CompletedTask;
+      });
+    });
 
 builder.Services.AddHttpClient<INotificationService, NotificationService>((serviceProvider, client) =>
 {
