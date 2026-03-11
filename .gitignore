@@ -17,5 +17,4 @@ appsettings.Development.json
 *.db-shm
 *.db-wal
 
-# Documentation (internal)
-AI-Wrapper-Service/docs/
+journal-service-demo/

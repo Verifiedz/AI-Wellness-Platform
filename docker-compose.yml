@@ -14,6 +14,11 @@ services:
     volumes:
       - notification_db_data:/var/lib/postgresql/data
       - ./notification-service/database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wellness_notifications"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   notification-service:
     build:
@@ -21,7 +26,8 @@ services:
       dockerfile: dockerfile
     container_name: notification_service_api
     depends_on:
-      - notification-db
+      notification-db:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
@@ -47,6 +53,11 @@ services:
     volumes:
       - chat_db_data:/var/lib/postgresql/data
       - ./chat-service/Database/Scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wasim -d chatservicedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   redis-cache:
     image: redis:7-alpine
@@ -87,6 +98,44 @@ services:
       Jwt__Key: ';5XIR!d1IBBAS]$;{6Z&GiMG@GaXv.nN'
       Jwt__Issuer: 'AIWellness'
       Jwt__Audience: 'AIWellnessUsers'
+  # ---------------------------------------------------------------------------
+  # JOURNAL STACK
+  # ---------------------------------------------------------------------------
+  journal-db:
+    image: postgres:16
+    container_name: journal_service_db
+    environment:
+      POSTGRES_DB: wellness_journal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${JOURNAL_DB_PASSWORD}
+    ports:
+      - '5436:5432'
+    volumes:
+      - journal_db_data:/var/lib/postgresql/data
+      - ./journal-service/database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wellness_journal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  journal-service:
+    build:
+      context: ./journal-service
+      dockerfile: dockerfile
+    container_name: journal_service_api
+    depends_on:
+      journal-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: 'Production'
+      ASPNETCORE_URLS: 'http://+:8080'
+      ConnectionStrings__JournalDatabase: 'Host=journal-db;Database=wellness_journal;Username=postgres;Password=${JOURNAL_DB_PASSWORD}'
+      Gateway__SharedSecret: '${JOURNAL_INTERNAL_API_KEY}'
+      Gateway__RequireSharedSecret: 'true'
+    ports:
+      - '8083:8080'
+
   #----------------------------------------------------------------------------
   # AUTHENTICATION STACK
   # ---------------------------------------------------------------------------
@@ -111,6 +160,7 @@ services:
     depends_on:
       - auth-db
       - notification-service
+      - journal-service
     ports:
       - '5051:8080'
     environment:
@@ -121,6 +171,7 @@ services:
       Jwt__ExpiryInMinutes: '60'
       ReverseProxy__Clusters__chat-cluster__Destinations__chat-service__Address: 'http://chat-service:8080/'
       ReverseProxy__Clusters__notification-cluster__Destinations__notification-service__Address: 'http://notification-service:8080/'
+      ReverseProxy__Clusters__journal-cluster__Destinations__journal-service__Address: 'http://journal-service:8080/'
       NotificationService__BaseUrl: 'http://notification-service:8080'
       NotificationService__ApiKey: '${NOTIFICATION_INTERNAL_API_KEY}'
       ASPNETCORE_URLS: 'http://+:8080'
@@ -131,4 +182,5 @@ services:
 volumes:
   notification_db_data:
   chat_db_data:
+  journal_db_data:
   auth_db_data:

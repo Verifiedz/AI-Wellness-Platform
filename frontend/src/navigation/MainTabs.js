@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "../screens/HomeScreen";
-import { JournalScreen } from "../screens/JournalScreen";
+import { JournalStack } from "./JournalStack";
 import { AIChatScreen } from "../screens/AIChatScreen";
 import { SettingsStack } from "./SettingsStack";
 import { Colors } from "../theme/colors";
@@ -40,7 +40,11 @@ export function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Journal" component={JournalScreen} />
+      <Tab.Screen
+        name="Journal"
+        component={JournalStack}
+        options={{ headerShown: false }}
+      />
       <Tab.Screen name="AI Chat" component={AIChatScreen} />
       <Tab.Screen
         name="SettingsTab"
