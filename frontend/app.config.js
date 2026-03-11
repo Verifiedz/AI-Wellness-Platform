@@ -33,6 +33,7 @@ export default {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#4A90D9",
       },
+      softwareKeyboardLayoutMode: "resize",
       edgeToEdgeEnabled: true,
       package: "com.wellness.app",
       // Uncomment when you have the Firebase JSON:

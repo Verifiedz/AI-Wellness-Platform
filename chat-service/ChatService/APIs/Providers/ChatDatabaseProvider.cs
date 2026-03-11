@@ -1,4 +1,3 @@
-﻿using System.Runtime.CompilerServices;
 using ChatService.DTOs;
 using ChatService.enums;
 using ChatService.Interfaces;
@@ -13,7 +12,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
     private readonly Dictionary<string, string> storeProceduresCall = new()
     {
         {"create", "CALL public.chat_create_storeprocedure($1,$2,$3,$4,$5,$6,$7)"},
-        {"update", "CALL public.chat_update_storeprocedure($1,$2,$3,$4,$5,$6,$7)"}, 
+        {"update", "CALL public.chat_update_storeprocedure($1,$2,$3,$4,$5,$6,$7)"},
         {"delete", "CALL public.chat_delete_storeprocedure($1)"}, 
         {"select", "SELECT * FROM public.chat_select_function($1)"},
         {"select_by_session", "SELECT * FROM public.chat_select_by_session_function($1)"}
@@ -57,7 +56,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
 
     }
 
-    public async Task<Chat> getChatAsync(Guid chatReferenceId)
+    public async Task<Chat?> getChatAsync(Guid chatReferenceId)
     {
         using var conn = new NpgsqlConnection(_configuration.getConnectionString());
         await conn.OpenAsync();
@@ -108,14 +107,20 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
     }
 
     return chats;
-}    public async Task setIsBookmarkedAsync(Guid chatReferenceId)
-    {
-        throw new NotImplementedException();
-    }
+}
 
-    public async Task updateChatAsync(Guid chatReferenceId)
+    public async Task updateChatAsync(Chat chat)
     {
-        throw new NotImplementedException();
+        using var conn = await _dataSource.OpenConnectionAsync();
+        using var cmd = new NpgsqlCommand(selectStoreProcedure("update"), conn);
+        cmd.Parameters.AddWithValue(chat.chatUserId);
+        cmd.Parameters.AddWithValue(chat.chatReferenceId);
+        cmd.Parameters.AddWithValue(chat.message);
+        cmd.Parameters.AddWithValue(chat.sessionId);
+        cmd.Parameters.AddWithValue(chat.status.ToString());
+        cmd.Parameters.AddWithValue(chat.isBookmarked);
+        cmd.Parameters.AddWithValue(chat.CreatedDate);
+        await cmd.ExecuteNonQueryAsync();
     }
 
     private string selectStoreProcedure(string key)

@@ -125,6 +125,9 @@ class ApiClient {
   put(path, body) {
     return this._request("PUT", path, body);
   }
+  patch(path, body) {
+    return this._request("PATCH", path, body);
+  }
   delete(path) {
     return this._request("DELETE", path);
   }

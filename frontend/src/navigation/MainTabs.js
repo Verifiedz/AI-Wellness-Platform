@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "../screens/HomeScreen";
 import { JournalStack } from "./JournalStack";
-import { AIChatScreen } from "../screens/AIChatScreen";
+import { ChatStack } from "./ChatStack";
 import { SettingsStack } from "./SettingsStack";
 import { Colors } from "../theme/colors";
 
@@ -45,7 +45,19 @@ export function MainTabs() {
         component={JournalStack}
         options={{ headerShown: false }}
       />
-      <Tab.Screen name="AI Chat" component={AIChatScreen} />
+      <Tab.Screen
+        name="AI Chat"
+        component={ChatStack}
+        options={{ headerShown: false }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate("AI Chat", {
+              screen: "AIChatConversation",
+              params: { sessionId: null, forceNewAt: Date.now() },
+            });
+          },
+        })}
+      />
       <Tab.Screen
         name="SettingsTab"
         component={SettingsStack}

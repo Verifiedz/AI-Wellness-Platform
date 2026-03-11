@@ -10,6 +10,7 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
 
   private readonly Dictionary<string,string> storeProceduresCall = new (){
     {"create","CALL public.session_create_storeprocedure($1,$2,$3,$4)"},
+    {"set_bookmark","CALL public.session_set_bookmark_storeprocedure($1,$2)"},
     {"select","SELECT * FROM public.session_select_fuction($1)"},
     {"select_by_user", "SELECT * FROM public.session_select_function_by_user($1)"}
   };
@@ -57,7 +58,11 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
   }
 
   public async Task setBookmarkAsync(Guid sessionID, bool isBookmarked){
-    throw new NotImplementedException();
+    using var conn = await _datasource.OpenConnectionAsync();
+    using var command = new NpgsqlCommand(selectStoreProcedure("set_bookmark"), conn);
+    command.Parameters.AddWithValue(sessionID);
+    command.Parameters.AddWithValue(isBookmarked);
+    await command.ExecuteNonQueryAsync();
   }
   public async Task<IReadOnlyList<ChatSession>> getSessionsbyUserAsync(Guid UserId){
     var sessions = new List<ChatSession>();

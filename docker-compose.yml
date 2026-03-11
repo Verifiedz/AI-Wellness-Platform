@@ -76,7 +76,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
       - AiService__InternalApiKey=test-internal-key-123
-      - OpenAI__ApiKey=OpenAI__ApiKey
+      - OpenAI__ApiKey=${OPENAI_API_KEY:-}
       - AiService__RateLimitPerMinute=60
   chat-service:
     build:
@@ -95,7 +95,7 @@ services:
       ChatService__ApiKey: 'test-internal-key-123'
       ConnectionStrings__PostgreSqlConnectionString: 'Host=chat-db;Port=5432;Database=chatservicedb;Username=wasim;Password=Wasim1921;'
       ConnectionStrings__Redis: 'redis-cache:6379'
-      Jwt__Key: ';5XIR!d1IBBAS]$;{6Z&GiMG@GaXv.nN'
+      Jwt__Key: '${JWT_KEY}'
       Jwt__Issuer: 'AIWellness'
       Jwt__Audience: 'AIWellnessUsers'
   # ---------------------------------------------------------------------------
