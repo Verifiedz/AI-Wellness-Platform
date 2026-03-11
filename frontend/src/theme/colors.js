@@ -1,7 +1,7 @@
 /**
- * Centralised colour palette for the Wellness App.
+ * Centralized color palettes for light/dark themes.
  */
-export const Colors = {
+export const LightColors = {
   primary: "#4A90D9",
   primaryDark: "#357ABD",
   primaryLight: "#7BB3E0",
@@ -25,3 +25,34 @@ export const Colors = {
   disabled: "#B2BEC3",
   overlay: "rgba(0,0,0,0.5)",
 };
+
+export const DarkColors = {
+  primary: "#5A9FE6",
+  primaryDark: "#3A7FC6",
+  primaryLight: "#8CBDED",
+
+  secondary: "#8C7BFF",
+  accent: "#27D8D2",
+
+  background: "#0F141A",
+  surface: "#1A232D",
+
+  text: "#E6EDF3",
+  textSecondary: "#B3C1CF",
+  textLight: "#7E8C99",
+
+  border: "#2C3A47",
+
+  error: "#FF7B72",
+  success: "#3FB950",
+  warning: "#E3B341",
+
+  disabled: "#586069",
+  overlay: "rgba(0,0,0,0.65)",
+};
+
+/**
+ * Backwards compatibility for screens that still import Colors directly.
+ * New code should prefer useTheme() and `colors`.
+ */
+export const Colors = LightColors;

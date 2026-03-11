@@ -11,11 +11,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { API_BASE_URL, DEV_MODE } from "../config";
 
 export function LoginScreen({ navigation, route }) {
   const { login } = useAuth();
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
 
   const prefillEmail = route.params?.email ?? "";
   const verified = route.params?.verified ?? false;
@@ -225,7 +228,7 @@ export function LoginScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { authApi } from "../services/authApi";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 
 const PASSWORD_MIN_LENGTH = 8;
 
@@ -34,6 +34,9 @@ function validateFields({ code, newPassword, confirmPassword }) {
 }
 
 export function ResetPasswordScreen({ navigation, route }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const email = route.params?.email ?? "";
 
   const [code, setCode] = useState("");
@@ -231,7 +234,7 @@ export function ResetPasswordScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

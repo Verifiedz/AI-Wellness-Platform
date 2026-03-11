@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { journalApi } from "../services/journalApi";
 
 const MOODS = [
@@ -42,6 +42,9 @@ const EMOTIONS = [
 ];
 
 export function JournalScreen({ navigation }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [energyLevel, setEnergyLevel] = useState(5);
@@ -431,7 +434,7 @@ export function JournalScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

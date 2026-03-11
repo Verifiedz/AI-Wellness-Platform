@@ -13,9 +13,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../context/ThemeContext";
 import { AIChatScreen } from "../screens/AIChatScreen";
 import { chatApi } from "../services/chatApi";
-import { Colors } from "../theme/colors";
 
 const Drawer = createDrawerNavigator();
 const SESSION_NAMES_KEY = "chat_session_names_v1";
@@ -26,6 +26,9 @@ function formatDefaultTitle(sessionId) {
 }
 
 function ChatDrawerContent({ navigation }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const [sessions, setSessions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
@@ -298,6 +301,9 @@ function ChatDrawerContent({ navigation }) {
 }
 
 export function ChatStack() {
+  const { colors } = useTheme();
+  const Colors = colors;
+
   return (
     <Drawer.Navigator
       screenOptions={{
@@ -318,7 +324,7 @@ export function ChatStack() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   drawerRoot: {
     flex: 1,
     backgroundColor: Colors.background,

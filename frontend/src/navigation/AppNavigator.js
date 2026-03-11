@@ -1,10 +1,10 @@
 import React from "react";
 import { View, ActivityIndicator } from "react-native";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { AuthStack } from "./AuthStack";
 import { MainTabs } from "./MainTabs";
-import { Colors } from "../theme/colors";
 
 /**
  * Navigation ref – allows navigating from outside React components
@@ -18,6 +18,33 @@ export function navigate(name, params) {
 
 export function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
+  const { colors, isDarkMode } = useTheme();
+
+  const navigationTheme = isDarkMode
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: colors.primary,
+          background: colors.background,
+          card: colors.surface,
+          text: colors.text,
+          border: colors.border,
+          notification: colors.accent,
+        },
+      }
+    : {
+        ...DefaultTheme,
+        colors: {
+          ...DefaultTheme.colors,
+          primary: colors.primary,
+          background: colors.background,
+          card: colors.surface,
+          text: colors.text,
+          border: colors.border,
+          notification: colors.accent,
+        },
+      };
 
   if (isLoading) {
     return (
@@ -26,16 +53,16 @@ export function AppNavigator() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: Colors.background,
+          backgroundColor: colors.background,
         }}
       >
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={navigationTheme}>
       {isLoggedIn ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );

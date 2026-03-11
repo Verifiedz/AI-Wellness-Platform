@@ -5,7 +5,7 @@ import { HomeScreen } from "../screens/HomeScreen";
 import { JournalStack } from "./JournalStack";
 import { ChatStack } from "./ChatStack";
 import { SettingsStack } from "./SettingsStack";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 
 const Tab = createBottomTabNavigator();
 
@@ -17,6 +17,8 @@ const TAB_ICONS = {
 };
 
 export function MainTabs() {
+  const { colors } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -25,16 +27,16 @@ export function MainTabs() {
           const iconName = focused ? icons.focused : icons.default;
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: Colors.surface,
-          borderTopColor: Colors.border,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           paddingBottom: 5,
           paddingTop: 5,
           height: 60,
         },
-        headerStyle: { backgroundColor: Colors.primary },
+        headerStyle: { backgroundColor: colors.primary },
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "600" },
       })}

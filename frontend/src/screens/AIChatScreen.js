@@ -14,8 +14,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { chatApi } from "../services/chatApi";
-import { Colors } from "../theme/colors";
 
 function formatMessageTime(value) {
   if (!value) return "";
@@ -26,6 +26,9 @@ function formatMessageTime(value) {
 
 export function AIChatScreen({ route, navigation }) {
   const { user } = useAuth();
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const listRef = useRef(null);
   const headerHeight = useHeaderHeight();
 
@@ -246,7 +249,7 @@ export function AIChatScreen({ route, navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

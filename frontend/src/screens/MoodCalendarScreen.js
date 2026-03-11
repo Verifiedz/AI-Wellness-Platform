@@ -24,7 +24,7 @@ import {
   getDay,
   getDaysInMonth,
 } from "date-fns";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 import { journalApi } from "../services/journalApi";
 
 const MOOD_COLORS = {
@@ -38,6 +38,9 @@ const MOOD_COLORS = {
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function MoodCalendarScreen({ navigation }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState("monthly");
   const [entries, setEntries] = useState([]);
@@ -404,7 +407,7 @@ export function MoodCalendarScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

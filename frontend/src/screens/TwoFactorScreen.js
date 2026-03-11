@@ -11,9 +11,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 
 export function TwoFactorScreen({ navigation, route }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const email = route.params?.email ?? "";
   const serverMessage = route.params?.message ?? "";
   const expiresAt = route.params?.expiresAt ?? null;
@@ -174,7 +177,7 @@ export function TwoFactorScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

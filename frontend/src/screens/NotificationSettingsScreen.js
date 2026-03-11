@@ -11,13 +11,13 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { notificationApi } from "../services/notificationApi";
-import { Colors } from "../theme/colors";
 import {
   getDeviceTimezone,
   localTimeToUtc,
   utcToLocalTime,
   formatTimeForDisplay,
 } from "../utils/time";
+import { useTheme } from "../context/ThemeContext";
 
 /**
  * Notification preferences screen.
@@ -28,6 +28,9 @@ import {
  * - Saves via POST /api/notifications/preferences.
  */
 export function NotificationSettingsScreen() {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const [isEnabled, setIsEnabled] = useState(false);
   const [preferredTime, setPreferredTime] = useState("09:00"); // local HH:mm
   const [timezone, setTimezone] = useState(getDeviceTimezone());
@@ -272,7 +275,7 @@ const cardShadow = {
   elevation: 2,
 };
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   contentContainer: { padding: 16, paddingBottom: 40 },
   center: {

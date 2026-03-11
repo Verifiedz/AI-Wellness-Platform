@@ -11,12 +11,15 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { authApi } from "../services/authApi";
-import { Colors } from "../theme/colors";
+import { useTheme } from "../context/ThemeContext";
 
 const RESEND_COOLDOWN = 60;
 const MAX_RESEND_ATTEMPTS = 3;
 
 export function VerifyEmailScreen({ navigation, route }) {
+  const { colors } = useTheme();
+  const Colors = colors;
+  const styles = createStyles(Colors);
   const email = route.params?.email ?? "";
 
   const [code, setCode] = useState("");
@@ -178,7 +181,7 @@ export function VerifyEmailScreen({ navigation, route }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (Colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,

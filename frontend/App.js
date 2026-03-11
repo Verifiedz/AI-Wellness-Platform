@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { TipProvider, useTip } from "./src/context/TipContext";
+import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
 import { AppNavigator, navigate } from "./src/navigation/AppNavigator";
 import { apiClient } from "./src/services/api";
 import { notificationApi } from "./src/services/notificationApi";
@@ -27,6 +28,7 @@ import {
 function AppContent() {
   const { isLoggedIn, token, user } = useAuth();
   const { setTip } = useTip();
+  const { isDarkMode } = useTheme();
   const notificationListener = useRef();
   const responseListener = useRef();
 
@@ -114,7 +116,7 @@ function AppContent() {
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={isDarkMode ? "light" : "dark"} />
       <AppNavigator />
     </>
   );
@@ -125,10 +127,12 @@ function AppContent() {
  */
 export default function App() {
   return (
-    <AuthProvider>
-      <TipProvider>
-        <AppContent />
-      </TipProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TipProvider>
+          <AppContent />
+        </TipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
