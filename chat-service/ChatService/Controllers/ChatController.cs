@@ -11,11 +11,13 @@ public class ChatController : ControllerBase
 {
   private readonly IChatService _chatService;
   private readonly ISessionService _sessionService;
+  private readonly ILogger<ChatController> _logger;
 
-  public ChatController(IChatService chatService, ISessionService sessionService)
+  public ChatController(IChatService chatService, ISessionService sessionService, ILogger<ChatController> logger)
   {
     _chatService = chatService;
     _sessionService = sessionService;
+    _logger = logger;
   }
 
   [Authorize]
@@ -44,7 +46,8 @@ public class ChatController : ControllerBase
     }
     catch (Exception ex)
     {
-      return StatusCode(StatusCodes.Status500InternalServerError, ex.ToString());
+      _logger.LogError(ex, "Error: {Message}", ex.Message);
+      return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the chat request.");
     }
   }
 
@@ -72,7 +75,7 @@ public class ChatController : ControllerBase
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"[ERROR] {ex.Message}");
+      _logger.LogError(ex, "Error: {Message}", ex.Message);
       return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving chats.");
     }
   }
@@ -97,7 +100,7 @@ public class ChatController : ControllerBase
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"[ERROR] {ex.Message}");
+      _logger.LogError(ex, "Error: {Message}", ex.Message);
       return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while retrieving sessions.");
     }
   }
@@ -131,7 +134,7 @@ public class ChatController : ControllerBase
     }
     catch (Exception ex)
     {
-      Console.WriteLine($"[ERROR] {ex.Message}");
+      _logger.LogError(ex, "Error: {Message}", ex.Message);
       return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while updating the bookmark.");
     }
   }

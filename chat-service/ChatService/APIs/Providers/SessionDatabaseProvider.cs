@@ -1,5 +1,6 @@
 using ChatService.entities;
 using ChatService.Interfaces;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -7,6 +8,7 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
 
   private readonly IConfigurationService _configuration;
   private readonly NpgsqlDataSource _datasource;
+  private readonly ILogger<SessionDatabaseProvider> _logger;
 
   private readonly Dictionary<string,string> storeProceduresCall = new (){
     {"create","CALL public.session_create_storeprocedure($1,$2,$3,$4)"},
@@ -15,16 +17,17 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
     {"select_by_user", "SELECT * FROM public.session_select_function_by_user($1)"}
   };
   
-  public SessionDatabaseProvider(IConfigurationService configuration)
+  public SessionDatabaseProvider(IConfigurationService configuration, ILogger<SessionDatabaseProvider> logger)
   {
     _configuration = configuration;
+    _logger = logger;
     var connectionstring = _configuration.getConnectionString();
     _datasource = NpgsqlDataSource.Create(connectionstring);
   }
 
   public async Task createSessionAsync(ChatSession chatSession){
     using var conn = await _datasource.OpenConnectionAsync();
-    Console.WriteLine(selectStoreProcedure("create"));
+    _logger.LogDebug("Executing stored procedure: {Procedure}", selectStoreProcedure("create"));
     
 
     using var command = new NpgsqlCommand(selectStoreProcedure("create"),conn);

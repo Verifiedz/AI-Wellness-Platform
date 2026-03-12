@@ -45,8 +45,8 @@ services:
     image: postgres:16
     container_name: chat_service_db
     environment:
-      POSTGRES_USER: wasim
-      POSTGRES_PASSWORD: Wasim1921
+      POSTGRES_USER: ${CHAT_DB_USER}
+      POSTGRES_PASSWORD: ${CHAT_DB_PASSWORD}
       POSTGRES_DB: chatservicedb
     ports:
       - '5435:5432'
@@ -54,7 +54,7 @@ services:
       - chat_db_data:/var/lib/postgresql/data
       - ./chat-service/Database/Scripts:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U wasim -d chatservicedb']
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d chatservicedb']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -63,6 +63,7 @@ services:
     image: redis:7-alpine
     container_name: wellness_redis
     restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - '6379:6379'
   ai-wrapper-service:
@@ -75,8 +76,9 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
-      - AiService__InternalApiKey=test-internal-key-123
+      - AiService__InternalApiKey=${AI_INTERNAL_API_KEY}
       - OpenAI__ApiKey=${OPENAI_API_KEY:-}
+      - OpenAI__BaseUrl=${OPENAI_BASE_URL:-https://api.openai.com/v1/}
       - AiService__RateLimitPerMinute=60
   chat-service:
     build:
@@ -92,9 +94,9 @@ services:
     environment:
       ASPNETCORE_URLS: 'http://+:8080'
       ChatService__BaseUrl: 'http://ai_wrapper_service_api:8080/'
-      ChatService__ApiKey: 'test-internal-key-123'
-      ConnectionStrings__PostgreSqlConnectionString: 'Host=chat-db;Port=5432;Database=chatservicedb;Username=wasim;Password=Wasim1921;'
-      ConnectionStrings__Redis: 'redis-cache:6379'
+      ChatService__ApiKey: '${AI_INTERNAL_API_KEY}'
+      ConnectionStrings__PostgreSqlConnectionString: 'Host=chat-db;Port=5432;Database=chatservicedb;Username=${CHAT_DB_USER};Password=${CHAT_DB_PASSWORD};'
+      ConnectionStrings__Redis: 'redis-cache:6379,password=${REDIS_PASSWORD}'
       Jwt__Key: '${JWT_KEY}'
       Jwt__Issuer: 'AIWellness'
       Jwt__Audience: 'AIWellnessUsers'
@@ -161,6 +163,7 @@ services:
       - auth-db
       - notification-service
       - journal-service
+      - chat-service
     ports:
       - '5051:8080'
     environment:
@@ -174,6 +177,7 @@ services:
       ReverseProxy__Clusters__journal-cluster__Destinations__journal-service__Address: 'http://journal-service:8080/'
       NotificationService__BaseUrl: 'http://notification-service:8080'
       NotificationService__ApiKey: '${NOTIFICATION_INTERNAL_API_KEY}'
+      Cors__AllowedOrigins__0: '${CORS_ORIGIN_0:-}'
       ASPNETCORE_URLS: 'http://+:8080'
       ASPNETCORE_ENVIRONMENT: 'Production'
 # ---------------------------------------------------------------------------

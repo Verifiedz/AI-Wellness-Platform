@@ -26,14 +26,7 @@ import {
 } from "date-fns";
 import { useTheme } from "../context/ThemeContext";
 import { journalApi } from "../services/journalApi";
-
-const MOOD_COLORS = {
-  great: "#00B894",
-  good: "#4A90D9",
-  okay: "#FDCB6E",
-  low: "#B2BEC3",
-  tough: "#E17055",
-};
+import { MOOD_COLORS } from "../constants/journal";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 

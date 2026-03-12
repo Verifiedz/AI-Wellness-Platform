@@ -1,6 +1,7 @@
 using ChatService.DTOs;
 using ChatService.enums;
 using ChatService.Interfaces;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 namespace ChatService.APIs.Providers;
 
@@ -8,6 +9,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
 {
     private readonly IConfigurationService _configuration;
     private readonly NpgsqlDataSource _dataSource;
+    private readonly ILogger<ChatDatabaseProvider> _logger;
 
     private readonly Dictionary<string, string> storeProceduresCall = new()
     {
@@ -18,8 +20,9 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         {"select_by_session", "SELECT * FROM public.chat_select_by_session_function($1)"}
     };
 
-    public ChatDatabaseProvider(IConfigurationService configuration) {
+    public ChatDatabaseProvider(IConfigurationService configuration, ILogger<ChatDatabaseProvider> logger) {
         _configuration = configuration;
+        _logger = logger;
         var connectionString = _configuration.getConnectionString();
         _dataSource = NpgsqlDataSource.Create(connectionString);
     }
@@ -29,7 +32,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         using var conn = new NpgsqlConnection(connectionString);
         await conn.OpenAsync();
 
-        Console.WriteLine(selectStoreProcedure("create"));
+        _logger.LogDebug("Executing stored procedure: {Procedure}", selectStoreProcedure("create"));
         using var command = new NpgsqlCommand(selectStoreProcedure("create"), conn);
 
         command.Parameters.AddWithValue(chat.chatUserId);

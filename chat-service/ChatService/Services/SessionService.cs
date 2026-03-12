@@ -1,15 +1,18 @@
 namespace ChatService.Services;
 using ChatService.entities;
 using ChatService.Interfaces;
+using Microsoft.Extensions.Logging;
 public class SessionService : ISessionService
-{ 
+{
   private readonly ISessionDatabaseProvider _sessionDatabaseProvider;
   private readonly ICacheServiceProvider _cache;
+  private readonly ILogger<SessionService> _logger;
 
-  public SessionService(ISessionDatabaseProvider sessionDatabaseProvider, ICacheServiceProvider cache)
+  public SessionService(ISessionDatabaseProvider sessionDatabaseProvider, ICacheServiceProvider cache, ILogger<SessionService> logger)
   {
     _sessionDatabaseProvider = sessionDatabaseProvider;
     _cache = cache;
+    _logger = logger;
   }
     
   public async Task<ChatSession> GetOrCreateSessionAsync(Guid userId, Guid? specificSessionId = null)
@@ -21,11 +24,11 @@ public class SessionService : ISessionService
         
       if (cachedSession != null && cachedSession.UserId == userId)
       {
-        Console.WriteLine($"[CACHE HIT] Session {specificSessionId} found in Redis.");
+        _logger.LogDebug("Cache hit for session {SessionId}", specificSessionId);
         return cachedSession;
       }
 
-      Console.WriteLine($"[CACHE MISS] Fetching session {specificSessionId} from DB.");
+      _logger.LogDebug("Cache miss for session {SessionId}, fetching from DB", specificSessionId);
       var existingSession = await _sessionDatabaseProvider.getSessionAsync(specificSessionId.Value);
         
       if (existingSession != null && existingSession.UserId == userId)

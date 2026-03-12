@@ -11,7 +11,6 @@ public class AuthService : IAuthService
 {
   private readonly IUserRepository _userRepository;
   private readonly IPasswordValidator _passwordValidator;
-  private readonly IEmailService _emailService;
   private readonly INotificationService _notificationService;
   private readonly IJwtService _jwtService;
   private readonly IHttpContextAccessor _httpContextAccessor;
@@ -21,7 +20,6 @@ public class AuthService : IAuthService
   public AuthService(
       IUserRepository userRepository,
       IPasswordValidator passwordValidator,
-      IEmailService emailService,
       INotificationService notificationService,
       IJwtService jwtService,
       IHttpContextAccessor httpContextAccessor,
@@ -30,7 +28,6 @@ public class AuthService : IAuthService
   {
     _userRepository = userRepository;
     _passwordValidator = passwordValidator;
-    _emailService = emailService;
     _notificationService = notificationService;
     _jwtService = jwtService;
     _httpContextAccessor = httpContextAccessor;
@@ -79,7 +76,6 @@ public class AuthService : IAuthService
     var ipAddress = GetClientIpAddress();
     await _userRepository.CreateVerificationCodeAsync(user.Id, verificationCode, "email_verify", ipAddress);
 
-    await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
     await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify", user.Phone);
 
     var token = _jwtService.GenerateJwtToken(user);
@@ -196,7 +192,6 @@ public class AuthService : IAuthService
     var ipAddress = GetClientIpAddress();
 
     await _userRepository.CreateVerificationCodeAsync(user.Id, verificationCode, "email_verify", ipAddress);
-    await _emailService.SendVerificationEmailAsync(user.Email, verificationCode);
     await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, verificationCode, "email_verify", user.Phone);
   }
 
@@ -219,7 +214,6 @@ public class AuthService : IAuthService
     var ipAddress = GetClientIpAddress();
 
     await _userRepository.CreateVerificationCodeAsync(user.Id, resetCode, "password_reset", ipAddress);
-    await _emailService.SendPasswordResetEmailAsync(user.Email, resetCode);
     await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, resetCode, "password_reset", user.Phone);
   }
 

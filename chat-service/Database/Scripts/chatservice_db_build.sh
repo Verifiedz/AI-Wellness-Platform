@@ -1,12 +1,11 @@
 #!/bin/bash
+set -e
 
-# Configuration
-DB_NAME="chatservicedb"
-USER="wasim"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# FOR DOCKER/AUTOMATION: Set the password so psql doesn't ask every time
-# export PGPASSWORD='Wasim1921' 
+# Configuration - use env vars from PostgreSQL Docker container
+DB_NAME="${POSTGRES_DB:-chatservicedb}"
+USER="${POSTGRES_USER:-postgres}"
+export PGPASSWORD="${POSTGRES_PASSWORD}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" 
 
 echo "Starting Database Build for $DB_NAME..."
 

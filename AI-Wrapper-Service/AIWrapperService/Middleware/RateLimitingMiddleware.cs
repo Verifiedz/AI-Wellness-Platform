@@ -36,8 +36,8 @@ public class RateLimitingMiddleware : IDisposable
     {
         var path = context.Request.Path.Value ?? string.Empty;
 
-        // Only rate limit /v1/** routes
-        if (path.StartsWith("/v1/", StringComparison.OrdinalIgnoreCase))
+        // Only rate limit /chat/** routes
+        if (path.StartsWith("/chat/", StringComparison.OrdinalIgnoreCase))
         {
             var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
             var counter = _requestCounts.GetOrAdd(clientIp, _ => new RequestCounter());

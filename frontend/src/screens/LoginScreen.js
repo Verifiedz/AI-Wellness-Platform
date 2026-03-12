@@ -77,14 +77,18 @@ export function LoginScreen({ navigation, route }) {
         });
       }
     } catch (err) {
-      const msg = err.message || "Login failed";
+      const msg = err.message || "";
       if (/email not verified/i.test(msg)) {
         setUnverifiedEmail(email.trim());
         setError("Your email has not been verified yet.");
       } else if (/temporarily locked|too many failed/i.test(msg)) {
-        setError(msg);
+        setError("Your account is temporarily locked. Please try again later.");
+      } else if (/invalid credentials/i.test(msg)) {
+        setError("Incorrect email or password.");
+      } else if (/deactivated/i.test(msg)) {
+        setError("This account has been deactivated.");
       } else {
-        setError(msg);
+        setError("Login failed. Please try again.");
       }
     } finally {
       setIsLoading(false);
@@ -221,7 +225,7 @@ export function LoginScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.apiInfo}>API: {API_BASE_URL}</Text>
+          {DEV_MODE && <Text style={styles.apiInfo}>API: {API_BASE_URL}</Text>}
         </View>
       </View>
     </KeyboardAvoidingView>

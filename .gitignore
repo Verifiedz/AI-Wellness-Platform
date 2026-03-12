@@ -12,9 +12,15 @@ obj/
 .env
 appsettings.Development.json
 
+# Firebase credentials
+firebase-service-account.json
+
 # Generated files
 *.db
 *.db-shm
 *.db-wal
 
 journal-service-demo/
+
+# Documentation
+docs/

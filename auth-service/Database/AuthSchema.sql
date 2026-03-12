@@ -61,23 +61,8 @@ CREATE INDEX IF NOT EXISTS idx_login_attempts_user ON loginattempts (userid);
 
 CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON verificationcodes (userid);
 
--- Insert a test user for quick testing (optional)
--- Password: "password123" hashed with SHA256
-INSERT INTO
-    users (
-        username,
-        email,
-        passwordhash,
-        isactive,
-        isemailverified
-    )
-VALUES (
-        'testuser',
-        'test@example.com',
-        'qYJRrW8X8W7kQrNtW6f0U8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W8W==',
-        true,
-        true
-    );
+-- Test user removed for production. To create a test user for local development,
+-- run this INSERT manually against your local database.
 
 -- Verify the tables were created correctly
 SELECT table_name

@@ -107,11 +107,12 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
-builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddLogging();
 
 var app = builder.Build();
+
+app.UseMiddleware<AIWellness.Auth.Middleware.ExceptionHandlingMiddleware>();
 
 app.UseRateLimiting();
 
@@ -123,26 +124,29 @@ app.UseAuthorization();
 app.MapReverseProxy();
 app.MapControllers();
 
-app.MapGet("/db-test", async (IDbConnectionFactory dbFactory, ILogger<Program> logger) =>
+if (app.Environment.IsDevelopment())
 {
-  try
+  app.MapGet("/db-test", async (IDbConnectionFactory dbFactory, ILogger<Program> logger) =>
   {
-    using var connection = dbFactory.CreateConnection();
-    var userCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users");
-    var tables = await connection.QueryAsync<string>(
-        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name");
-    return Results.Ok(new
+    try
     {
-      Status = "Database connected successfully!",
-      UserCount = userCount,
-      Tables = tables.ToList()
-    });
-  }
-  catch (Exception ex)
-  {
-    logger.LogError(ex, "Database test failed");
-    return Results.Problem($"Database error: {ex.Message}");
-  }
-});
+      using var connection = dbFactory.CreateConnection();
+      var userCount = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM users");
+      var tables = await connection.QueryAsync<string>(
+          "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name");
+      return Results.Ok(new
+      {
+        Status = "Database connected successfully!",
+        UserCount = userCount,
+        Tables = tables.ToList()
+      });
+    }
+    catch (Exception ex)
+    {
+      logger.LogError(ex, "Database test failed");
+      return Results.Problem($"Database error: {ex.Message}");
+    }
+  });
+}
 
 app.Run();
