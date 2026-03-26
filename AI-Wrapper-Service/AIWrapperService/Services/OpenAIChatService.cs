@@ -84,12 +84,28 @@ Keep responses concise (3-4 sentences typically). Focus on empowerment, skill-bu
 
         try
         {
-            // Build messages array for OpenAI
             var messages = new List<object>
             {
-                new { role = "system", content = SystemPrompt },
-                new { role = "user", content = req.messageRequest }
+                new { role = "system", content = SystemPrompt }
             };
+
+            if (!string.IsNullOrWhiteSpace(req.Context))
+            {
+                try
+                {
+                    var history = JsonSerializer.Deserialize<List<ChatHistoryItem>>(req.Context, JsonOpts);
+                    if (history != null)
+                    {
+                        messages.AddRange(history.Select(h => (object)new { role = h.Role, content = h.Content }));
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to deserialize conversation history context");
+                }
+            }
+
+            messages.Add(new { role = "user", content = req.messageRequest });
 
             // Build OpenAI API payload
             var payload = new

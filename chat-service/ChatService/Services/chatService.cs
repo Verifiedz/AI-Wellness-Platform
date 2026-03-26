@@ -1,4 +1,5 @@
 namespace ChatService.Services;
+using System.Text.Json;
 using ChatService.Interfaces;
 using ChatService.DTOs;
 using ChatService.entities; 
@@ -30,8 +31,24 @@ public class chatService : IChatService
       throw new ArgumentException("Message cannot be empty");
     }
 
+    bool isNewSession = !chatRequest.sessionId.HasValue || chatRequest.sessionId == Guid.Empty;
     var session = await _sessionService.GetOrCreateSessionAsync(chatRequest.chatUserId, chatRequest.sessionId);
-    var updatedChatRequest = chatRequest with { sessionId = session.sessionID };
+
+    if (isNewSession)
+    {
+      var sessionName = ExtractSessionName(chatRequest.messageRequest);
+      await _sessionService.UpdateSessionNameAsync(session.sessionID, sessionName);
+    }
+
+    var previousMessages = await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID);
+    var history = previousMessages.Select((m, index) => new
+    {
+      role = index % 2 == 0 ? "user" : "assistant",
+      content = m.message
+    });
+    var contextJson = JsonSerializer.Serialize(history);
+
+    var updatedChatRequest = chatRequest with { sessionId = session.sessionID, Context = contextJson };
 
     var requestChatObject = CreateChatFromRequest(updatedChatRequest, session.sessionID);
     await _chatdatbaseProvider.createChatAsync(requestChatObject); 
@@ -77,6 +94,15 @@ public class chatService : IChatService
       isBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };
+  }
+
+  private static string ExtractSessionName(string message, int maxWords = 6, int maxLength = 100)
+  {
+    var words = message.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var name = string.Join(" ", words.Take(maxWords));
+    if (name.Length > maxLength)
+      name = name[..maxLength];
+    return name;
   }
 
   private Chat CreateChatFromResponse(ChatResponse chatResponse, Guid sessionId)

@@ -10,4 +10,6 @@ public Task<ChatSession> GetOrCreateSessionAsync(Guid userId, Guid? specificSess
 Task EndSessionAsync(Guid SessionId);
 Task<IReadOnlyList<ChatSession>> GetSessionsByUserAsync(Guid userId);
 Task BookmarkSessionAsync(Guid sessionId, Guid userId, bool isBookmarked);
+Task DeleteSessionAsync(Guid sessionId, Guid userId);
+Task UpdateSessionNameAsync(Guid sessionId, string sessionName);
 }

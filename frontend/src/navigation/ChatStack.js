@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,14 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  Alert,
+  Animated,
+  Platform,
   DeviceEventEmitter,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import { Swipeable } from "react-native-gesture-handler";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
@@ -111,15 +115,21 @@ function ChatDrawerContent({ navigation }) {
     };
   }, [loadSessions, navigation]);
 
+  const getSessionTitle = useCallback(
+    (session) =>
+      sessionNames[session.sessionId] || session.sessionName || formatDefaultTitle(session.sessionId),
+    [sessionNames]
+  );
+
   const displayedSessions = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     return sessions.filter((session) => {
       if (showBookmarkedOnly && !session.isBookmarked) return false;
-      const title = sessionNames[session.sessionId] || formatDefaultTitle(session.sessionId);
+      const title = getSessionTitle(session);
       if (!normalizedQuery) return true;
       return title.toLowerCase().includes(normalizedQuery);
     });
-  }, [searchQuery, sessionNames, sessions, showBookmarkedOnly]);
+  }, [getSessionTitle, searchQuery, sessions, showBookmarkedOnly]);
 
   const startNewChat = useCallback(() => {
     navigation.navigate(CHAT_ROUTE, { sessionId: null, forceNewAt: Date.now() });
@@ -127,11 +137,14 @@ function ChatDrawerContent({ navigation }) {
   }, [navigation]);
 
   const openSession = useCallback(
-    (sessionId) => {
-      navigation.navigate(CHAT_ROUTE, { sessionId });
+    (session) => {
+      navigation.navigate(CHAT_ROUTE, {
+        sessionId: session.sessionId,
+        sessionName: getSessionTitle(session),
+      });
       navigation.closeDrawer();
     },
-    [navigation]
+    [getSessionTitle, navigation]
   );
 
   const toggleSessionBookmark = useCallback(async (session) => {
@@ -157,13 +170,38 @@ function ChatDrawerContent({ navigation }) {
     }
   }, []);
 
+  const confirmDeleteSession = useCallback(
+    (session) => {
+      Alert.alert("Delete Chat", "Are you sure? This cannot be undone.", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setSessions((prev) => prev.filter((s) => s.sessionId !== session.sessionId));
+            const result = await chatApi.deleteSession(session.sessionId);
+            if (result.error) {
+              setError(result.error || "Failed to delete session.");
+              loadSessions();
+            } else {
+              const nextNames = { ...sessionNames };
+              delete nextNames[session.sessionId];
+              persistSessionNames(nextNames);
+            }
+          },
+        },
+      ]);
+    },
+    [loadSessions, persistSessionNames, sessionNames]
+  );
+
   const openRenameModal = useCallback(
     (session) => {
       setRenameSessionId(session.sessionId);
-      setRenameValue(sessionNames[session.sessionId] || formatDefaultTitle(session.sessionId));
+      setRenameValue(getSessionTitle(session));
       setRenameModalVisible(true);
     },
-    [sessionNames]
+    [getSessionTitle]
   );
 
   const saveSessionName = useCallback(async () => {
@@ -183,31 +221,59 @@ function ChatDrawerContent({ navigation }) {
     setRenameValue("");
   }, [persistSessionNames, renameSessionId, renameValue, sessionNames]);
 
+  const renderRightActions = useCallback(
+    (item) => (_progress, dragX) => {
+      const scale = dragX.interpolate({
+        inputRange: [-80, 0],
+        outputRange: [1, 0.5],
+        extrapolate: "clamp",
+      });
+      return (
+        <TouchableOpacity
+          style={styles.swipeDeleteAction}
+          onPress={() => confirmDeleteSession(item)}
+        >
+          <Animated.View style={{ transform: [{ scale }], alignItems: "center" }}>
+            <Ionicons name="trash" size={22} color="#fff" />
+            <Text style={styles.swipeDeleteText}>Delete</Text>
+          </Animated.View>
+        </TouchableOpacity>
+      );
+    },
+    [confirmDeleteSession, styles]
+  );
+
   const renderSession = ({ item }) => {
-    const title = sessionNames[item.sessionId] || formatDefaultTitle(item.sessionId);
+    const title = getSessionTitle(item);
     return (
-      <TouchableOpacity style={styles.sessionRow} onPress={() => openSession(item.sessionId)}>
-        <View style={styles.sessionMain}>
-          <Text style={styles.sessionTitle} numberOfLines={1}>
-            {title}
-          </Text>
-          <Text style={styles.sessionMeta} numberOfLines={1}>
-            {new Date(item.createdDate).toLocaleString()}
-          </Text>
-        </View>
-        <View style={styles.sessionActions}>
-          <TouchableOpacity onPress={() => openRenameModal(item)} hitSlop={8}>
-            <Ionicons name="pencil-outline" size={18} color={Colors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => toggleSessionBookmark(item)} hitSlop={8}>
-            <Ionicons
-              name={item.isBookmarked ? "bookmark" : "bookmark-outline"}
-              size={18}
-              color={item.isBookmarked ? Colors.warning : Colors.textSecondary}
-            />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
+      <Swipeable
+        renderRightActions={renderRightActions(item)}
+        overshootRight={false}
+        friction={2}
+      >
+        <TouchableOpacity style={styles.sessionRow} onPress={() => openSession(item)}>
+          <View style={styles.sessionMain}>
+            <Text style={styles.sessionTitle} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text style={styles.sessionMeta} numberOfLines={1}>
+              {new Date(item.createdDate).toLocaleString()}
+            </Text>
+          </View>
+          <View style={styles.sessionActions}>
+            <TouchableOpacity onPress={() => openRenameModal(item)} hitSlop={8}>
+              <Ionicons name="pencil-outline" size={18} color={Colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => toggleSessionBookmark(item)} hitSlop={8}>
+              <Ionicons
+                name={item.isBookmarked ? "bookmark" : "bookmark-outline"}
+                size={18}
+                color={item.isBookmarked ? Colors.warning : Colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Swipeable>
     );
   };
 
@@ -331,28 +397,32 @@ const createStyles = (Colors) => StyleSheet.create({
   },
   drawerContent: {
     flexGrow: 1,
-    paddingVertical: 14,
+    paddingVertical: 16,
     backgroundColor: Colors.background,
   },
   drawerInner: {
-    paddingHorizontal: 14,
-    paddingRight: 34,
+    paddingHorizontal: 16,
+    paddingRight: 30,
   },
   drawerHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   drawerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
+    fontSize: 24,
+    fontWeight: "800",
     color: Colors.text,
+    letterSpacing: -0.3,
   },
   bookmarkFilterButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
@@ -362,10 +432,10 @@ const createStyles = (Colors) => StyleSheet.create({
   searchBarDock: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingTop: 8,
-    paddingBottom: 12,
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 14,
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     backgroundColor: Colors.background,
@@ -377,34 +447,52 @@ const createStyles = (Colors) => StyleSheet.create({
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    gap: 6,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    gap: 8,
   },
   searchInput: {
     flex: 1,
-    height: 40,
+    height: 42,
     color: Colors.text,
+    fontSize: 14,
   },
   newChatFab: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: Colors.primary,
     alignItems: "center",
     justifyContent: "center",
+    ...Platform.select({
+      ios: {
+        shadowColor: Colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      },
+      android: { elevation: 3 },
+    }),
   },
   sessionRow: {
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: Colors.border,
-    padding: 12,
+    padding: 14,
     marginBottom: 8,
-    marginRight: 6,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06,
+        shadowRadius: 3,
+      },
+      android: { elevation: 1 },
+    }),
   },
   sessionMain: {
     flex: 1,
@@ -413,21 +501,24 @@ const createStyles = (Colors) => StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: Colors.text,
+    lineHeight: 20,
   },
   sessionMeta: {
-    marginTop: 3,
+    marginTop: 4,
     fontSize: 12,
     color: Colors.textSecondary,
   },
   sessionActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
   },
   emptyText: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textSecondary,
-    marginTop: 8,
+    marginTop: 12,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   errorText: {
     color: Colors.error,
@@ -443,38 +534,67 @@ const createStyles = (Colors) => StyleSheet.create({
   },
   modalCard: {
     width: "100%",
-    maxWidth: 320,
+    maxWidth: 340,
     backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: 18,
+    padding: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+      },
+      android: { elevation: 8 },
+    }),
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: Colors.text,
-    marginBottom: 10,
+    marginBottom: 14,
   },
   renameInput: {
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     color: Colors.text,
     backgroundColor: Colors.background,
+    fontSize: 15,
   },
   modalActions: {
-    marginTop: 14,
+    marginTop: 18,
     flexDirection: "row",
     justifyContent: "flex-end",
-    gap: 16,
+    gap: 20,
   },
   cancelText: {
     color: Colors.textSecondary,
     fontWeight: "600",
+    fontSize: 15,
+    paddingVertical: 4,
   },
   saveText: {
     color: Colors.primary,
     fontWeight: "700",
+    fontSize: 15,
+    paddingVertical: 4,
+  },
+  swipeDeleteAction: {
+    backgroundColor: Colors.error,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    borderRadius: 12,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  swipeDeleteText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 2,
   },
 });

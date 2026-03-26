@@ -139,6 +139,35 @@ public class ChatController : ControllerBase
     }
   }
 
+  [Authorize]
+  [HttpDelete("sessions/{sessionId}")]
+  public async Task<IActionResult> DeleteSession([FromRoute] Guid sessionId)
+  {
+    if (!TryResolveCurrentUserId(out var currentUserId, out var errorResult))
+    {
+      return errorResult!;
+    }
+
+    try
+    {
+      await _sessionService.DeleteSessionAsync(sessionId, currentUserId);
+      return NoContent();
+    }
+    catch (KeyNotFoundException ex)
+    {
+      return NotFound(ex.Message);
+    }
+    catch (ArgumentException ex)
+    {
+      return BadRequest(ex.Message);
+    }
+    catch (Exception ex)
+    {
+      _logger.LogError(ex, "Error: {Message}", ex.Message);
+      return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while deleting the session.");
+    }
+  }
+
   private bool TryResolveCurrentUserId(out Guid userId, out IActionResult? errorResult)
   {
     userId = Guid.Empty;

@@ -53,6 +53,7 @@ function normalizeSession(raw) {
     userId: String(userId ?? ""),
     isBookmarked: Boolean(raw.isBookmarked ?? raw.IsBookmarked),
     createdDate: raw.createdDate ?? raw.CreatedDate ?? null,
+    sessionName: raw.sessionName ?? raw.SessionName ?? null,
   };
 }
 
@@ -89,5 +90,9 @@ export const chatApi = {
     return apiClient.patch(`${BASE_PATH}/sessions/${sessionId}/bookmark`, {
       isBookmarked,
     });
+  },
+
+  deleteSession(sessionId) {
+    return apiClient.delete(`${BASE_PATH}/sessions/${sessionId}`);
   },
 };
