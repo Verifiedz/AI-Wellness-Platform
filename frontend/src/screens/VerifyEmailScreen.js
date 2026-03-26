@@ -90,6 +90,37 @@ export function VerifyEmailScreen({ navigation, route }) {
     }
   };
 
+  if (!email) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <View style={[styles.iconCircle, { backgroundColor: Colors.error }]}>
+              <Ionicons name="alert-circle" size={40} color="#fff" />
+            </View>
+            <Text style={styles.title}>Missing Email</Text>
+            <Text style={styles.subtitle}>
+              No email address was provided. Please register or log in first.
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("Register")}
+          >
+            <Text style={styles.buttonText}>Go to Register</Text>
+          </TouchableOpacity>
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={{ fontSize: 14, color: Colors.primary, fontWeight: "600" }}>
+                Back to Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}

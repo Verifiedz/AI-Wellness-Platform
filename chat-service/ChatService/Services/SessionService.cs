@@ -74,9 +74,15 @@ public class SessionService : ISessionService
     return newSession;
   }
 
-  public Task EndSessionAsync(Guid sessionId)
+  public async Task EndSessionAsync(Guid sessionId)
   {
-    throw new NotImplementedException();
+    if (sessionId == Guid.Empty)
+    {
+      throw new ArgumentException("sessionId was not provided");
+    }
+
+    await _cache.RemoveAsync($"session:{sessionId}");
+    _logger.LogInformation("Session {SessionId} ended and removed from cache", sessionId);
   }
 
   public async Task<IReadOnlyList<ChatSession>> GetSessionsByUserAsync(Guid userId)

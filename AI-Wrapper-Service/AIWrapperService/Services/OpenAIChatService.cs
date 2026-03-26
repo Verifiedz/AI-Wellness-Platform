@@ -8,8 +8,9 @@ public sealed class OpenAIChatService : IOpenAIChatService
 {
     private readonly HttpClient _http;
     private readonly ILogger<OpenAIChatService> _logger;
+    private readonly string _model;
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
-    private const string DefaultModel = "gpt-4o-mini";
+    private const string DefaultModel = "wellness-chat:latest";
     private const int TimeoutSeconds = 30;
     private const double DefaultTemperature = 0.7;
 
@@ -63,8 +64,8 @@ Keep responses concise (3-4 sentences typically). Focus on empowerment, skill-bu
     {
         _http = http;
         _logger = logger;
+        _model = config["OpenAI:Model"] ?? DefaultModel;
 
-        // Configure HTTP client once in constructor (not on every request)
         var baseUrl = config["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/";
         var apiKey = config["OpenAI:ApiKey"]
             ?? throw new InvalidOperationException("OpenAI:ApiKey is not configured");
@@ -110,7 +111,7 @@ Keep responses concise (3-4 sentences typically). Focus on empowerment, skill-bu
             // Build OpenAI API payload
             var payload = new
             {
-                model = DefaultModel,
+                model = _model,
                 temperature = DefaultTemperature,
                 messages
             };

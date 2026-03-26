@@ -59,8 +59,7 @@ export function AuthProvider({ children }) {
             }
           }
         }
-      } catch (error) {
-        console.warn('Failed to restore auth session:', error);
+      } catch {
         await clearSession();
       } finally {
         setIsLoading(false);

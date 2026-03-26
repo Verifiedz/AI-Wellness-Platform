@@ -90,7 +90,7 @@ public class chatService : IChatService
       chatReferenceId = Guid.NewGuid(),
       message = chatRequest.messageRequest,
       sessionId = sessionId,
-      status = enums.Status.dummy1, 
+      status = enums.Status.Active, 
       isBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };
@@ -123,7 +123,7 @@ public class chatService : IChatService
       chatReferenceId = Guid.NewGuid(),
       message = chatResponse.message,
       sessionId = sessionId,
-      status = enums.Status.dummy1, 
+      status = enums.Status.Active, 
       isBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };

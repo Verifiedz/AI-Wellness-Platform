@@ -37,22 +37,19 @@ export function SettingsScreen({ navigation }) {
     {
       icon: "person-outline",
       label: "Profile",
-      onPress: () =>
-        Alert.alert("Coming Soon", "Profile settings coming soon."),
+      onPress: () => navigation.navigate("ProfileSettings"),
       color: colors.secondary,
     },
     {
       icon: "shield-outline",
       label: "Privacy",
-      onPress: () =>
-        Alert.alert("Coming Soon", "Privacy settings coming soon."),
+      onPress: () => navigation.navigate("PrivacySettings"),
       color: colors.accent,
     },
     {
       icon: "help-circle-outline",
       label: "Help & Support",
-      onPress: () =>
-        Alert.alert("Coming Soon", "Help & Support coming soon."),
+      onPress: () => navigation.navigate("HelpSupport"),
       color: colors.textSecondary,
     },
   ];

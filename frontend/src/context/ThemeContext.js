@@ -14,8 +14,8 @@ export function ThemeProvider({ children }) {
       try {
         const value = await AsyncStorage.getItem(THEME_MODE_KEY);
         if (value === "dark") setIsDarkMode(true);
-      } catch (error) {
-        console.warn("Failed to restore theme mode:", error);
+      } catch {
+        // Theme restore failed — use default
       } finally {
         setIsThemeReady(true);
       }
@@ -26,8 +26,8 @@ export function ThemeProvider({ children }) {
     setIsDarkMode(enabled);
     try {
       await AsyncStorage.setItem(THEME_MODE_KEY, enabled ? "dark" : "light");
-    } catch (error) {
-      console.warn("Failed to persist theme mode:", error);
+    } catch {
+      // Theme persist failed — non-critical
     }
   }, []);
 

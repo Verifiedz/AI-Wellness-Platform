@@ -55,8 +55,8 @@ function ChatDrawerContent({ navigation }) {
         setSessionNames(parsed);
         return parsed;
       }
-    } catch (e) {
-      console.warn("Failed to parse saved session names", e);
+    } catch {
+      // Corrupted session names — reset
     }
 
     setSessionNames({});

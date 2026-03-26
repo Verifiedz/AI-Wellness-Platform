@@ -31,7 +31,7 @@ public static class ChatApi
     }
 
     /// <summary>
-    /// Handles POST /v1/chat/complete requests.
+    /// Handles POST /chat/ChatResponse requests.
     /// </summary>
     private static async Task<IResult> CompleteChatAsync(
         ChatRequest request,
