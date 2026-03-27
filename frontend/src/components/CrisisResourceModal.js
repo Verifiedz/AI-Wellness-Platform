@@ -15,45 +15,62 @@ import { Card } from "./Card";
 import { Button } from "./Button";
 import { Banner } from "./Banner";
 
+/** Crisis and mental health resources for university students in Canada */
 const HOTLINES = [
   {
+    id: "911",
+    name: "Emergency (police, ambulance, fire)",
+    region: "Canada",
+    number: "911",
+    uri: "tel:911",
+    icon: "call-outline",
+  },
+  {
     id: "988",
-    name: "988 Suicide & Crisis Lifeline",
-    region: "United States",
+    name: "988 Suicide Crisis Helpline",
+    region: "Canada — 24/7",
     number: "988",
     uri: "tel:988",
     icon: "call-outline",
   },
   {
-    id: "samaritans",
-    name: "Samaritans",
-    region: "United Kingdom",
-    number: "116 123",
-    uri: "tel:116123",
+    id: "kids-help-phone",
+    name: "Kids Help Phone",
+    region: "Canada — youth & young adults (call or text)",
+    number: "1-800-668-6868",
+    uri: "tel:+18006686868",
     icon: "call-outline",
   },
   {
-    id: "112",
-    name: "Emergency Services",
-    region: "European Union",
-    number: "112",
-    uri: "tel:112",
-    icon: "call-outline",
+    id: "kids-help-text",
+    name: "Kids Help Phone (text)",
+    region: "Canada",
+    number: "Text CONNECT to 686868",
+    uri: "sms:686868&body=CONNECT",
+    icon: "chatbox-outline",
   },
   {
-    id: "crisis-text",
-    name: "Crisis Text Line",
-    region: "United States",
+    id: "crisis-services-canada",
+    name: "Crisis Services Canada",
+    region: "Canada — 24/7 text support",
     number: "Text HOME to 741741",
     uri: "sms:741741&body=HOME",
     icon: "chatbox-outline",
   },
   {
-    id: "iasp",
-    name: "International Crisis Centres",
-    region: "Worldwide",
-    number: "Find local support",
-    uri: "https://www.iasp.info/resources/Crisis_Centres/",
+    id: "hope-wellness",
+    name: "Hope for Wellness Helpline",
+    region: "Canada — Indigenous peoples",
+    number: "1-855-242-3310",
+    uri: "tel:+18552423310",
+    icon: "call-outline",
+  },
+  {
+    id: "canada-mental-health",
+    name: "Mental health support (Government of Canada)",
+    region: "Canada — find services & info",
+    number: "More resources online",
+    uri: "https://www.canada.ca/en/public-health/services/mental-health-services/mental-health-get-help.html",
     icon: "globe-outline",
   },
 ];
@@ -90,7 +107,7 @@ export function CrisisResourceModal({ visible, onClose }) {
 
           <Banner
             variant="info"
-            message="Sakina is not a substitute for emergency services. If you are in immediate danger, please call your local emergency number."
+            message="Sakina is not a substitute for professional or emergency care. If you are in immediate danger, call 911. For suicide or mental health crisis, call or text 988."
             style={{ marginBottom: 16 }}
           />
 
@@ -141,7 +158,9 @@ export function CrisisResourceModal({ visible, onClose }) {
                         name={
                           hotline.uri.startsWith("http")
                             ? "open-outline"
-                            : "call-outline"
+                            : hotline.uri.startsWith("sms")
+                              ? "chatbox-outline"
+                              : "call-outline"
                         }
                         size={16}
                         color={colors.primary}

@@ -5,18 +5,22 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   FlatList,
   Modal,
   Alert,
-  Animated,
+  Keyboard,
   Platform,
   DeviceEventEmitter,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { Swipeable } from "react-native-gesture-handler";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Reanimated, { useAnimatedStyle } from "react-native-reanimated";
 import { createDrawerNavigator, DrawerContentScrollView } from "@react-navigation/drawer";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useFocusEffect } from "@react-navigation/native";
+import { BreathingExerciseScreen } from "../screens/BreathingExerciseScreen";
 import { useTheme } from "../context/ThemeContext";
 import { AIChatScreen } from "../screens/AIChatScreen";
 import { chatApi } from "../services/chatApi";
@@ -26,11 +30,29 @@ import { Button } from "../components/Button";
 import { CrisisButton } from "../components/CrisisButton";
 
 const Drawer = createDrawerNavigator();
+const ChatNativeStack = createNativeStackNavigator();
 const SESSION_NAMES_KEY = "chat_session_names_v1";
 const CHAT_ROUTE = "AIChatConversation";
 
 function formatDefaultTitle(sessionId) {
   return `Session ${sessionId.slice(0, 8)}`;
+}
+
+function RightDeleteAction({ drag, colors, onPress }) {
+  const animatedStyle = useAnimatedStyle(() => {
+    const dragVal = typeof drag.value === "number" ? drag.value : 0;
+    const scale = Math.min(1, Math.max(0.5, (-dragVal) / 80));
+    return { transform: [{ scale }] };
+  });
+
+  return (
+    <TouchableOpacity style={[styles.swipeDelete, { backgroundColor: colors.error }]} onPress={onPress}>
+      <Reanimated.View style={[{ alignItems: "center" }, animatedStyle]}>
+        <Ionicons name="trash" size={22} color="#fff" />
+        <Text style={styles.swipeDeleteText}>Delete</Text>
+      </Reanimated.View>
+    </TouchableOpacity>
+  );
 }
 
 function ChatDrawerContent({ navigation }) {
@@ -43,6 +65,7 @@ function ChatDrawerContent({ navigation }) {
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [renameSessionId, setRenameSessionId] = useState(null);
+  const openSwipeableRef = useRef(null);
 
   const loadSessionNames = useCallback(async () => {
     const raw = await AsyncStorage.getItem(SESSION_NAMES_KEY);
@@ -122,7 +145,7 @@ function ChatDrawerContent({ navigation }) {
 
   const confirmDeleteSession = useCallback((session) => {
     Alert.alert("Delete Chat", "Are you sure? This cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
+      { text: "Cancel", style: "cancel", onPress: () => { if (openSwipeableRef.current) { openSwipeableRef.current.close(); openSwipeableRef.current = null; } } },
       {
         text: "Delete",
         style: "destructive",
@@ -159,27 +182,44 @@ function ChatDrawerContent({ navigation }) {
   }, [persistSessionNames, renameSessionId, renameValue, sessionNames]);
 
   const renderRightActions = useCallback(
-    (item) => (_progress, dragX) => {
-      const scale = dragX.interpolate({ inputRange: [-80, 0], outputRange: [1, 0.5], extrapolate: "clamp" });
+    (item) => (_progress, drag) => {
       return (
-        <TouchableOpacity style={[styles.swipeDelete, { backgroundColor: colors.error }]} onPress={() => confirmDeleteSession(item)}>
-          <Animated.View style={{ transform: [{ scale }], alignItems: "center" }}>
-            <Ionicons name="trash" size={22} color="#fff" />
-            <Text style={styles.swipeDeleteText}>Delete</Text>
-          </Animated.View>
-        </TouchableOpacity>
+        <RightDeleteAction drag={drag} colors={colors} onPress={() => confirmDeleteSession(item)} />
       );
     },
     [confirmDeleteSession, colors]
   );
 
+  const closeOpenSwipeable = useCallback(() => {
+    if (openSwipeableRef.current) {
+      openSwipeableRef.current.close();
+      openSwipeableRef.current = null;
+    }
+  }, []);
+
+  const handleSwipeOpen = useCallback((ref) => {
+    if (openSwipeableRef.current && openSwipeableRef.current !== ref) {
+      openSwipeableRef.current.close();
+    }
+    openSwipeableRef.current = ref;
+  }, []);
+
   const renderSession = ({ item }) => {
+    let swipeRef = null;
     const title = getSessionTitle(item);
     return (
-      <Swipeable renderRightActions={renderRightActions(item)} overshootRight={false} friction={2}>
+      <ReanimatedSwipeable
+        ref={(ref) => { swipeRef = ref; }}
+        renderRightActions={renderRightActions(item)}
+        overshootRight={false}
+        friction={2}
+        rightThreshold={30}
+        dragOffsetFromRightEdge={1}
+        onSwipeableOpen={() => handleSwipeOpen(swipeRef)}
+      >
         <TouchableOpacity
           style={[styles.sessionRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => openSession(item)}
+          onPress={() => { closeOpenSwipeable(); openSession(item); }}
         >
           <View style={{ flex: 1 }}>
             <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]} numberOfLines={1}>{title}</Text>
@@ -200,17 +240,19 @@ function ChatDrawerContent({ navigation }) {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
-      </Swipeable>
+      </ReanimatedSwipeable>
     );
   };
 
   return (
     <>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={[styles.drawerRoot, { backgroundColor: colors.background }]}>
         <DrawerContentScrollView
           showsVerticalScrollIndicator
           contentContainerStyle={[styles.drawerContent, { backgroundColor: colors.background }]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           <View style={styles.drawerInner}>
             <View style={[styles.drawerHeader, { borderBottomColor: colors.border }]}>
@@ -260,6 +302,7 @@ function ChatDrawerContent({ navigation }) {
           </TouchableOpacity>
         </View>
       </View>
+      </TouchableWithoutFeedback>
 
       <Modal visible={renameModalVisible} transparent animationType="fade">
         <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
@@ -285,7 +328,7 @@ function ChatDrawerContent({ navigation }) {
   );
 }
 
-export function ChatStack() {
+function ChatDrawerNav() {
   const { colors, fonts } = useTheme();
 
   return (
@@ -297,15 +340,41 @@ export function ChatStack() {
         headerRight: () => <CrisisButton />,
         drawerType: "slide",
         swipeEdgeWidth: 40,
+        swipeMinDistance: 50,
       }}
       drawerContent={(props) => <ChatDrawerContent {...props} />}
     >
       <Drawer.Screen
         name={CHAT_ROUTE}
         component={AIChatScreen}
-        options={{ title: "AI Chat" }}
+        options={{ title: "Sakina" }}
       />
     </Drawer.Navigator>
+  );
+}
+
+export function ChatStack() {
+  const { colors, fonts } = useTheme();
+
+  return (
+    <ChatNativeStack.Navigator screenOptions={{ headerShown: false }}>
+      <ChatNativeStack.Screen name="ChatDrawer" component={ChatDrawerNav} />
+      <ChatNativeStack.Screen
+        name="BreathingExercise"
+        component={BreathingExerciseScreen}
+        options={{
+          headerShown: true,
+          title: "Breathe",
+          presentation: "modal",
+          animation: "slide_from_bottom",
+          animationDuration: 350,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text,
+          headerTitleStyle: { ...fonts.heading3, color: colors.text },
+          headerShadowVisible: false,
+        }}
+      />
+    </ChatNativeStack.Navigator>
   );
 }
 

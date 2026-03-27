@@ -22,17 +22,20 @@ import { Button } from "../components/Button";
 import { Banner } from "../components/Banner";
 import { SectionHeader } from "../components/SectionHeader";
 import { AnimatedCard } from "../components/AnimatedCard";
+import { VoiceInputButton } from "../components/VoiceInputButton";
+import { useVoiceInput } from "../hooks/useVoiceInput";
 
 const ENERGY_LEVELS = [
-  { id: 1, label: "Very Low" },
+  { id: 1, label: "Very\nLow" },
   { id: 2, label: "Low" },
-  { id: 3, label: "Moderate" },
+  { id: 3, label: "Mid" },
   { id: 4, label: "High" },
-  { id: 5, label: "Very High" },
+  { id: 5, label: "Very\nHigh" },
 ];
 
 export function JournalScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
+  const voice = useVoiceInput();
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [energyLevel, setEnergyLevel] = useState(3);
@@ -47,6 +50,17 @@ export function JournalScreen({ navigation, route }) {
   const selectedDate = route.params?.selectedDate || todayStr;
   const preselectedMood = route.params?.preselectedMood;
   const isViewingPast = selectedDate !== todayStr;
+
+  // Append voice transcript to journal text when recognition stops
+  useEffect(() => {
+    if (!voice.isListening && voice.transcript) {
+      setJournalText((prev) => {
+        const separator = prev.trim() ? " " : "";
+        return prev + separator + voice.transcript;
+      });
+      voice.resetTranscript();
+    }
+  }, [voice.isListening, voice.transcript, voice.resetTranscript]);
 
   useEffect(() => {
     if (preselectedMood && !selectedMood) {
@@ -183,6 +197,8 @@ export function JournalScreen({ navigation, route }) {
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
+      keyboardDismissMode="on-drag"
+      keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View style={styles.headerRow}>
@@ -299,8 +315,19 @@ export function JournalScreen({ navigation, route }) {
       {/* Journal Text */}
       <AnimatedCard index={3}>
       <Card style={{ marginBottom: 16 }}>
-        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Journal Entry</Text>
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>What's on your mind?</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <Text style={[fonts.heading3, { color: colors.text }]}>Journal Entry</Text>
+          {voice.isAvailable && (
+            <VoiceInputButton
+              isListening={voice.isListening}
+              onPress={voice.isListening ? voice.stopListening : voice.startListening}
+              disabled={saving}
+            />
+          )}
+        </View>
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>
+          {voice.isListening ? "Listening... tap mic to stop" : "What's on your mind?"}
+        </Text>
         <Input
           value={journalText}
           onChangeText={setJournalText}
@@ -376,10 +403,12 @@ const styles = StyleSheet.create({
   energyRow: { flexDirection: "row", gap: 8 },
   energyBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 4,
     borderRadius: 12,
     borderWidth: 1,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 46,
   },
 });

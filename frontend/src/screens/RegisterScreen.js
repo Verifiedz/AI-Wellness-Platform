@@ -106,6 +106,7 @@ export function RegisterScreen({ navigation }) {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <View style={styles.content}>
           <View style={styles.header}>

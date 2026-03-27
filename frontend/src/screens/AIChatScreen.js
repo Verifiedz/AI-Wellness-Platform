@@ -5,9 +5,11 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   TextInput,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Keyboard,
   Platform,
   LayoutAnimation,
   UIManager,
@@ -16,7 +18,6 @@ import {
   DeviceEventEmitter,
 } from "react-native";
 import ReAnimated, { SlideInRight, SlideInLeft } from "react-native-reanimated";
-import Markdown from "react-native-markdown-display";
 import { Ionicons } from "@expo/vector-icons";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useAuth } from "../context/AuthContext";
@@ -24,6 +25,9 @@ import { useTheme } from "../context/ThemeContext";
 import { chatApi } from "../services/chatApi";
 import { Logo } from "../components/Logo";
 import { SuggestionChip } from "../components/SuggestionChip";
+import { ChatMessageRenderer } from "../components/chat/ChatMessageRenderer";
+import { VoiceInputButton } from "../components/VoiceInputButton";
+import { useVoiceInput } from "../hooks/useVoiceInput";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -98,8 +102,21 @@ export function AIChatScreen({ route, navigation }) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
 
+  const [moodSelections, setMoodSelections] = useState({});
+  const voice = useVoiceInput();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const historyLoadedCount = useRef(0);
+
+  // Append voice transcript to input text when recognition stops
+  useEffect(() => {
+    if (!voice.isListening && voice.transcript) {
+      setInputText((prev) => {
+        const separator = prev.trim() ? " " : "";
+        return prev + separator + voice.transcript;
+      });
+      voice.resetTranscript();
+    }
+  }, [voice.isListening, voice.transcript, voice.resetTranscript]);
 
   useEffect(() => {
     if (!isLoadingHistory && messages.length === 0) {
@@ -150,6 +167,7 @@ export function AIChatScreen({ route, navigation }) {
     setActiveSessionId(null);
     setActiveSessionName(null);
     setMessages([]);
+    setMoodSelections({});
     setError("");
     setIsLoadingHistory(false);
   }, [initialSessionId, initialSessionName, forceNewAt, loadHistory]);
@@ -214,6 +232,15 @@ export function AIChatScreen({ route, navigation }) {
     setMessages((prev) => prev.filter((item) => item.id !== failedMessage.id));
   }, []);
 
+  const handleMoodSelect = useCallback((messageId, moodId) => {
+    setMoodSelections((prev) => ({ ...prev, [messageId]: moodId }));
+    sendMessage(`I'm feeling ${moodId}`);
+  }, [sendMessage]);
+
+  const handleStartBreathing = useCallback(() => {
+    navigation.navigate("BreathingExercise");
+  }, [navigation]);
+
   const markdownStyles = useMemo(() => ({
     body: { ...fonts.body, color: colors.text },
     heading1: { ...fonts.heading1, color: colors.text, marginVertical: 6 },
@@ -276,7 +303,14 @@ export function AIChatScreen({ route, navigation }) {
         {isUser ? (
           <Text style={[fonts.body, { color: "#fff" }]}>{item.message}</Text>
         ) : (
-          <Markdown style={markdownStyles}>{item.message}</Markdown>
+          <ChatMessageRenderer
+            message={item.message}
+            markdownStyles={markdownStyles}
+            onMoodSelect={(moodId) => handleMoodSelect(item.id, moodId)}
+            selectedMood={moodSelections[item.id] ?? null}
+            moodDisabled={moodSelections[item.id] != null}
+            onStartBreathing={handleStartBreathing}
+          />
         )}
         <View style={styles.metaRow}>
           <Text style={[fonts.caption, { color: isUser ? "rgba(255,255,255,0.7)" : colors.textSecondary }]}>
@@ -316,20 +350,22 @@ export function AIChatScreen({ route, navigation }) {
           <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 10 }]}>Loading conversation...</Text>
         </View>
       ) : messages.length === 0 ? (
-        <Animated.View style={[styles.centerContent, { opacity: fadeAnim }]}>
-          <Logo size="medium" showText={false} />
-          <Text style={[fonts.heading2, { color: colors.text, marginTop: 20, textAlign: "center" }]}>
-            {`Hi${user?.username ? ` ${user.username}` : ""}, I'm your Sakina companion`}
-          </Text>
-          <Text style={[fonts.body, { color: colors.textSecondary, textAlign: "center", marginTop: 10, paddingHorizontal: 10 }]}>
-            Ask me anything about your wellness journey
-          </Text>
-          <View style={styles.suggestionsWrap}>
-            {SUGGESTIONS.map((s) => (
-              <SuggestionChip key={s} label={s} onPress={() => sendMessage(s)} />
-            ))}
-          </View>
-        </Animated.View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <Animated.View style={[styles.centerContent, { opacity: fadeAnim }]}>
+            <Logo size="medium" showText={false} />
+            <Text style={[fonts.heading2, { color: colors.text, marginTop: 20, textAlign: "center" }]}>
+              {`Hi${user?.username ? ` ${user.username}` : ""}, I'm your Sakina companion`}
+            </Text>
+            <Text style={[fonts.body, { color: colors.textSecondary, textAlign: "center", marginTop: 10, paddingHorizontal: 10 }]}>
+              Ask me anything about your wellness journey
+            </Text>
+            <View style={styles.suggestionsWrap}>
+              {SUGGESTIONS.map((s) => (
+                <SuggestionChip key={s} label={s} onPress={() => sendMessage(s)} />
+              ))}
+            </View>
+          </Animated.View>
+        </TouchableWithoutFeedback>
       ) : (
         <FlatList
           ref={listRef}
@@ -340,6 +376,7 @@ export function AIChatScreen({ route, navigation }) {
           contentContainerStyle={styles.messagesContent}
           onContentSizeChange={scrollToBottom}
           scrollIndicatorInsets={{ right: 1 }}
+          keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
         />
       )}
@@ -353,10 +390,17 @@ export function AIChatScreen({ route, navigation }) {
       {error ? <Text style={[fonts.bodySmall, { color: colors.error, paddingHorizontal: 4, marginBottom: 4 }]}>{error}</Text> : null}
 
       <View style={styles.inputContainer}>
+        {voice.isAvailable && (
+          <VoiceInputButton
+            isListening={voice.isListening}
+            onPress={voice.isListening ? voice.stopListening : voice.startListening}
+            disabled={isSending}
+          />
+        )}
         <TextInput
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Type your message..."
+          placeholder={voice.isListening ? "Listening..." : "Type your message..."}
           placeholderTextColor={colors.textLight}
           style={[
             fonts.body,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import Animated, {
   useSharedValue,
@@ -6,64 +6,140 @@ import Animated, {
   withTiming,
   withSequence,
   Easing,
+  cancelAnimation,
 } from "react-native-reanimated";
 import { useTheme } from "../context/ThemeContext";
 
-const INHALE_MS = 4000;
-const HOLD_MS = 2000;
-const EXHALE_MS = 6000;
-const CYCLE_MS = INHALE_MS + HOLD_MS + EXHALE_MS;
+const DEFAULT_INHALE_MS = 4000;
+const DEFAULT_HOLD_MS = 2000;
+const DEFAULT_EXHALE_MS = 6000;
+const DEFAULT_HOLD2_MS = 0;
 
-const PHASES = ["Breathe in...", "Hold...", "Breathe out..."];
+function buildPhases(hold2Ms) {
+  if (hold2Ms > 0) {
+    return ["Breathe in...", "Hold...", "Breathe out...", "Hold..."];
+  }
+  return ["Breathe in...", "Hold...", "Breathe out..."];
+}
 
 export function BreathingCircle({
   size = 200,
   autoStart = true,
+  inhaleMs = DEFAULT_INHALE_MS,
+  holdMs = DEFAULT_HOLD_MS,
+  exhaleMs = DEFAULT_EXHALE_MS,
+  hold2Ms = DEFAULT_HOLD2_MS,
+  cycles = 1,
   onCycleComplete,
+  onSessionComplete,
+  isPaused = false,
 }) {
   const { colors, fonts } = useTheme();
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0.7);
-  const [phaseText, setPhaseText] = useState(autoStart ? PHASES[0] : "");
+  const phases = buildPhases(hold2Ms);
+  const [phaseText, setPhaseText] = useState(autoStart ? phases[0] : "");
   const [isRunning, setIsRunning] = useState(false);
+  const [currentCycle, setCurrentCycle] = useState(0);
+  const timersRef = useRef([]);
+  const isPausedRef = useRef(isPaused);
 
-  const setPhase = useCallback((idx) => {
-    setPhaseText(PHASES[idx] || "");
+  // Keep ref in sync with prop
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+    if (isPaused) {
+      clearTimers();
+      cancelAnimation(scale);
+      cancelAnimation(opacity);
+    }
+  }, [isPaused, scale, opacity]);
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
   }, []);
 
-  const onComplete = useCallback(() => {
-    setIsRunning(false);
-    onCycleComplete?.();
-  }, [onCycleComplete]);
+  const addTimer = useCallback((fn, delay) => {
+    const id = setTimeout(fn, delay);
+    timersRef.current.push(id);
+    return id;
+  }, []);
 
-  const startCycle = useCallback(() => {
-    setIsRunning(true);
-    setPhase(0);
+  const setPhase = useCallback((idx) => {
+    setPhaseText(phases[idx] || "");
+  }, [phases]);
 
-    scale.value = withSequence(
-      withTiming(1.0, { duration: INHALE_MS, easing: Easing.inOut(Easing.ease) }),
-      withTiming(1.0, { duration: HOLD_MS }),
-      withTiming(0.6, { duration: EXHALE_MS, easing: Easing.inOut(Easing.ease) })
-    );
+  const runCycle = useCallback(
+    (cycleIndex) => {
+      if (isPausedRef.current) return;
+      setIsRunning(true);
+      setPhase(0);
 
-    opacity.value = withSequence(
-      withTiming(1.0, { duration: INHALE_MS, easing: Easing.inOut(Easing.ease) }),
-      withTiming(0.85, { duration: HOLD_MS }),
-      withTiming(0.7, { duration: EXHALE_MS, easing: Easing.inOut(Easing.ease) })
-    );
+      const cycleMs = inhaleMs + holdMs + exhaleMs + hold2Ms;
 
-    // Phase text transitions via JS timeouts
-    setTimeout(() => setPhase(1), INHALE_MS);
-    setTimeout(() => setPhase(2), INHALE_MS + HOLD_MS);
-    setTimeout(() => onComplete(), CYCLE_MS);
-  }, [scale, opacity, setPhase, onComplete]);
+      // Build scale sequence
+      const scaleSteps = [
+        withTiming(1.0, { duration: inhaleMs, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0, { duration: holdMs }),
+        withTiming(0.6, { duration: exhaleMs, easing: Easing.inOut(Easing.ease) }),
+      ];
+      if (hold2Ms > 0) {
+        scaleSteps.push(withTiming(0.6, { duration: hold2Ms }));
+      }
+      scale.value = withSequence(...scaleSteps);
 
+      // Build opacity sequence
+      const opacitySteps = [
+        withTiming(1.0, { duration: inhaleMs, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.85, { duration: holdMs }),
+        withTiming(0.7, { duration: exhaleMs, easing: Easing.inOut(Easing.ease) }),
+      ];
+      if (hold2Ms > 0) {
+        opacitySteps.push(withTiming(0.7, { duration: hold2Ms }));
+      }
+      opacity.value = withSequence(...opacitySteps);
+
+      // Phase text transitions
+      addTimer(() => setPhase(1), inhaleMs);
+      addTimer(() => setPhase(2), inhaleMs + holdMs);
+      if (hold2Ms > 0) {
+        addTimer(() => setPhase(3), inhaleMs + holdMs + exhaleMs);
+      }
+
+      // Cycle complete
+      addTimer(() => {
+        if (isPausedRef.current) return;
+        const nextCycle = cycleIndex + 1;
+        setCurrentCycle(nextCycle);
+        onCycleComplete?.();
+
+        if (nextCycle >= cycles) {
+          setIsRunning(false);
+          setPhaseText("");
+          onSessionComplete?.();
+        } else {
+          runCycle(nextCycle);
+        }
+      }, cycleMs);
+    },
+    [scale, opacity, inhaleMs, holdMs, exhaleMs, hold2Ms, cycles, setPhase, addTimer, onCycleComplete, onSessionComplete]
+  );
+
+  // Public start method via autoStart
   useEffect(() => {
     if (autoStart) {
-      const timer = setTimeout(startCycle, 300);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(() => runCycle(0), 300);
+      return () => {
+        clearTimeout(timer);
+        clearTimers();
+      };
     }
-  }, [autoStart, startCycle]);
+  }, [autoStart, runCycle, clearTimers]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => clearTimers();
+  }, [clearTimers]);
 
   const animatedCircle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

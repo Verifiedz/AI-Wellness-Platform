@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, StyleSheet, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback, Platform } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -93,6 +93,7 @@ export function LoginScreen({ navigation, route }) {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -193,6 +194,7 @@ export function LoginScreen({ navigation, route }) {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 

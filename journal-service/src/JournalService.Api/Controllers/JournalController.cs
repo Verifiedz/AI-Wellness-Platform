@@ -12,15 +12,18 @@ public class JournalController : ControllerBase
 {
     private readonly IUserContext _userContext;
     private readonly JournalEntryService _journalService;
+    private readonly PatternAnalysisService _patternService;
     private readonly ILogger<JournalController> _logger;
 
     public JournalController(
         IUserContext userContext,
         JournalEntryService journalService,
+        PatternAnalysisService patternService,
         ILogger<JournalController> logger)
     {
         _userContext = userContext;
         _journalService = journalService;
+        _patternService = patternService;
         _logger = logger;
     }
 
@@ -277,6 +280,50 @@ public class JournalController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting random prompt");
+            throw;
+        }
+    }
+
+    /// <param name="days">Number of days to analyze (default 30, max 90)</param>
+    /// <response code="200">Pattern insights for the user's journal entries</response>
+    [HttpGet("insights")]
+    [ProducesResponseType(typeof(PatternInsightsResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPatternInsights([FromQuery] int days = 30)
+    {
+        try
+        {
+            var userId = _userContext.CurrentUser.UserId;
+            var clampedDays = Math.Clamp(days, 7, 90);
+            var endDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startDate = endDate.AddDays(-clampedDays);
+
+            _logger.LogInformation(
+                "Getting pattern insights for user {UserId} over {Days} days",
+                userId, clampedDays);
+
+            var entries = await _journalService.GetEntriesAsync(
+                userId, startDate, endDate, limit: 500, offset: 0);
+
+            // Map response DTOs back to entities for analysis
+            var entities = entries.Select(e => new Models.Entities.JournalEntry
+            {
+                Id = e.Id,
+                UserId = e.UserId,
+                Mood = e.Mood,
+                Emotions = e.Emotions,
+                EnergyLevel = e.EnergyLevel,
+                Content = e.Content,
+                EntryDate = DateOnly.Parse(e.EntryDate),
+                CreatedAt = e.CreatedAt,
+                UpdatedAt = e.UpdatedAt
+            }).ToList();
+
+            var insights = _patternService.Analyze(entities, startDate, endDate);
+            return Ok(insights);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting pattern insights");
             throw;
         }
     }

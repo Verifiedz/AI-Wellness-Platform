@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import Animated, { FadeInDown, Easing } from "react-native-reanimated";
+import { useFocusEffect } from "@react-navigation/native";
 
 export function AnimatedCard({
   index = 0,
@@ -8,8 +9,17 @@ export function AnimatedCard({
   children,
   style,
 }) {
+  const [focusKey, setFocusKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setFocusKey((prev) => prev + 1);
+    }, [])
+  );
+
   return (
     <Animated.View
+      key={focusKey}
       entering={FadeInDown.delay(index * delay)
         .duration(duration)
         .easing(Easing.out(Easing.cubic))}

@@ -13,6 +13,7 @@ builder.Services.AddSingleton<DatabaseInitializer>();
 
 builder.Services.AddScoped<DatabaseService>();
 builder.Services.AddScoped<JournalEntryService>();
+builder.Services.AddScoped<PatternAnalysisService>();
 
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 

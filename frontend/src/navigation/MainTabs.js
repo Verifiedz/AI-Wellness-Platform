@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "../screens/HomeScreen";
+import { BreathingExerciseScreen } from "../screens/BreathingExerciseScreen";
 import { JournalStack } from "./JournalStack";
 import { ChatStack } from "./ChatStack";
 import { SettingsStack } from "./SettingsStack";
@@ -17,7 +18,7 @@ const HomeStackNav = createNativeStackNavigator();
 const TAB_ICONS = {
   Home: { focused: "home", default: "home-outline" },
   Journal: { focused: "journal", default: "journal-outline" },
-  "AI Chat": { focused: "chatbubbles", default: "chatbubbles-outline" },
+  Sakina: { focused: "chatbubbles", default: "chatbubbles-outline" },
   Profile: { focused: "person-circle", default: "person-circle-outline" },
 };
 
@@ -38,6 +39,11 @@ function HomeStack() {
         name="HomeScreen"
         component={HomeScreen}
         options={{ title: "Home" }}
+      />
+      <HomeStackNav.Screen
+        name="BreathingExercise"
+        component={BreathingExerciseScreen}
+        options={{ title: "Breathe", animation: "slide_from_right", animationDuration: 350 }}
       />
     </HomeStackNav.Navigator>
   );
@@ -84,13 +90,16 @@ export function MainTabs() {
         <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="Journal" component={JournalStack} />
         <Tab.Screen
-          name="AI Chat"
+          name="Sakina"
           component={ChatStack}
           listeners={({ navigation }) => ({
             tabPress: () => {
-              navigation.navigate("AI Chat", {
-                screen: "AIChatConversation",
-                params: { sessionId: null, forceNewAt: Date.now() },
+              navigation.navigate("Sakina", {
+                screen: "ChatDrawer",
+                params: {
+                  screen: "AIChatConversation",
+                  params: { sessionId: null, forceNewAt: Date.now() },
+                },
               });
             },
           })}

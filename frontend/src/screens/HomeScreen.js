@@ -22,6 +22,7 @@ import { Card } from "../components/Card";
 import { MoodSelector } from "../components/MoodSelector";
 import { SectionHeader } from "../components/SectionHeader";
 import { AnimatedCard } from "../components/AnimatedCard";
+import { usePatternInsights } from "../hooks/usePatternInsights";
 
 function getDisplayName(user) {
   if (user?.username?.trim()) return user.username.trim();
@@ -53,6 +54,7 @@ export function HomeScreen({ navigation }) {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [todayEntry, setTodayEntry] = useState(null);
   const [quickPrompt, setQuickPrompt] = useState(null);
+  const { insights, load: loadInsights, refresh: refreshInsights } = usePatternInsights(30);
 
   const loadDashboard = useCallback(async (isSoftRefresh = false) => {
     if (isSoftRefresh) setIsRefreshing(true);
@@ -79,7 +81,8 @@ export function HomeScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadDashboard(false);
-    }, [loadDashboard])
+      loadInsights();
+    }, [loadDashboard, loadInsights])
   );
 
   const displayName = useMemo(() => getDisplayName(user), [user]);
@@ -97,10 +100,17 @@ export function HomeScreen({ navigation }) {
   );
 
   const goToAIChat = useCallback(() => {
-    navigation.navigate("AI Chat", {
-      screen: "AIChatConversation",
-      params: { sessionId: null, forceNewAt: Date.now() },
+    navigation.navigate("Sakina", {
+      screen: "ChatDrawer",
+      params: {
+        screen: "AIChatConversation",
+        params: { sessionId: null, forceNewAt: Date.now() },
+      },
     });
+  }, [navigation]);
+
+  const goToBreathe = useCallback(() => {
+    navigation.navigate("BreathingExercise");
   }, [navigation]);
 
   const cardShadow = Platform.select({
@@ -114,7 +124,7 @@ export function HomeScreen({ navigation }) {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.contentContainer}
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={() => loadDashboard(true)} />
+        <RefreshControl refreshing={isRefreshing} onRefresh={() => { loadDashboard(true); refreshInsights(); }} />
       }
     >
       {/* Greeting */}
@@ -219,8 +229,49 @@ export function HomeScreen({ navigation }) {
           </Card>
           </AnimatedCard>
 
+          {/* Your Patterns */}
+          {insights.length > 0 && (
+            <AnimatedCard index={2}>
+              <SectionHeader title="Your Patterns" />
+              <View style={{ gap: 10, marginBottom: 20 }}>
+                {insights.slice(0, 2).map((insight, idx) => (
+                  <Card key={`${insight.insightType}-${idx}`}>
+                    <View style={styles.insightRow}>
+                      <View style={[styles.insightIcon, { backgroundColor: `${colors.primary}12` }]}>
+                        <Ionicons
+                          name={
+                            insight.insightType === "day_of_week"
+                              ? "calendar-outline"
+                              : insight.insightType === "energy_trend"
+                                ? "trending-up-outline"
+                                : insight.insightType === "mood_streak"
+                                  ? "flame-outline"
+                                  : "heart-outline"
+                          }
+                          size={20}
+                          color={colors.primary}
+                        />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]}>
+                          {insight.title}
+                        </Text>
+                        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
+                          {insight.description}
+                        </Text>
+                        <Text style={[fonts.caption, { color: colors.textLight, marginTop: 4 }]}>
+                          Based on {insight.dataPoints} {insight.dataPoints === 1 ? "entry" : "entries"}
+                        </Text>
+                      </View>
+                    </View>
+                  </Card>
+                ))}
+              </View>
+            </AnimatedCard>
+          )}
+
           {/* Quick Actions */}
-          <AnimatedCard index={2}>
+          <AnimatedCard index={insights.length > 0 ? 3 : 2}>
           <SectionHeader title="Quick Actions" />
           <View style={styles.actionsRow}>
             <TouchableOpacity
@@ -251,6 +302,22 @@ export function HomeScreen({ navigation }) {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <View style={[styles.actionsRow, { marginTop: 14 }]}>
+            <TouchableOpacity
+              style={[styles.actionCard, { backgroundColor: colors.surface }, cardShadow]}
+              onPress={goToBreathe}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: `${colors.primary}15` }]}>
+                <Ionicons name="leaf-outline" size={26} color={colors.primary} />
+              </View>
+              <Text style={[fonts.heading3, { color: colors.text, marginTop: 12 }]}>Breathe</Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary, marginTop: 4 }]}>
+                Guided breathing
+              </Text>
+            </TouchableOpacity>
+          </View>
           </AnimatedCard>
         </>
       )}
@@ -277,6 +344,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 20,
     marginTop: 14,
+  },
+  insightRow: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  insightIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
   },
   actionsRow: { flexDirection: "row", gap: 14 },
   actionCard: {

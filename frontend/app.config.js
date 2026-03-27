@@ -53,6 +53,14 @@ export default {
           color: "#5B7F6E",
         },
       ],
+      [
+        "expo-speech-recognition",
+        {
+          microphonePermission: "Allow Sakina to use the microphone for voice input.",
+          speechRecognitionPermission: "Allow Sakina to use speech recognition for voice input.",
+          androidSpeechServicePackages: ["com.google.android.googlequicksearchbox"],
+        },
+      ],
     ],
     extra: {
       apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5051",
