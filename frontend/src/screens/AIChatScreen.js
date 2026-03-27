@@ -242,6 +242,20 @@ export function AIChatScreen({ route, navigation }) {
     navigation.navigate("BreathingExercise");
   }, [navigation]);
 
+  const handleEscalationAction = useCallback((actionType) => {
+    if (actionType === "crisis") {
+      DeviceEventEmitter.emit("crisis:open");
+    } else if (actionType === "professional") {
+      navigation.getParent()?.getParent()?.navigate("Profile", {
+        screen: "ProfessionalDirectory",
+      });
+    } else if (actionType === "peer") {
+      navigation.getParent()?.getParent()?.navigate("Community", {
+        screen: "CommunityHome",
+      });
+    }
+  }, [navigation]);
+
   const markdownStyles = useMemo(() => ({
     body: { ...fonts.body, color: colors.text },
     heading1: { ...fonts.heading1, color: colors.text, marginVertical: 6 },
@@ -311,6 +325,7 @@ export function AIChatScreen({ route, navigation }) {
             selectedMood={moodSelections[item.id] ?? null}
             moodDisabled={moodSelections[item.id] != null}
             onStartBreathing={handleStartBreathing}
+            onEscalationAction={handleEscalationAction}
           />
         )}
         <View style={styles.metaRow}>

@@ -13,10 +13,11 @@ import { Avatar } from "../components/Avatar";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { AnimatedCard } from "../components/AnimatedCard";
+import { AccentPicker } from "../components/AccentPicker";
 
 export function SettingsScreen({ navigation }) {
   const { user, logout } = useAuth();
-  const { colors, fonts, isDarkMode, setDarkMode } = useTheme();
+  const { colors, fonts, isDarkMode, setDarkMode, isDynamicTheme, setDynamicTheme, accentId, setAccentId } = useTheme();
   const { resetOnboarding } = useOnboarding();
 
   const [stats, setStats] = useState({ entries: 0, sessions: 0, streak: 0 });
@@ -90,6 +91,31 @@ export function SettingsScreen({ navigation }) {
             />
           ),
         },
+        {
+          icon: "time-outline",
+          label: "Dynamic Theme",
+          sublabel: "Colors shift by time of day",
+          color: colors.accent,
+          trailing: (
+            <Switch
+              value={isDynamicTheme}
+              onValueChange={setDynamicTheme}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={isDynamicTheme ? colors.primary : "#f4f3f4"}
+              ios_backgroundColor={colors.border}
+            />
+          ),
+        },
+        {
+          icon: "color-palette-outline",
+          label: "Accent Color",
+          sublabel: "Choose your theme color",
+          color: colors.primary,
+          trailing: null,
+          customContent: (
+            <AccentPicker selectedId={accentId} onSelect={setAccentId} />
+          ),
+        },
       ],
     },
     {
@@ -97,6 +123,8 @@ export function SettingsScreen({ navigation }) {
       items: [
         { icon: "person-outline", label: "Profile", color: colors.secondary, screen: "ProfileSettings" },
         { icon: "notifications-outline", label: "Notifications", color: colors.primary, screen: "NotificationSettings" },
+        { icon: "document-text-outline", label: "Export for Therapist", sublabel: "Download wellness report", color: colors.success, screen: "ExportData" },
+        { icon: "fitness-outline", label: "Health Data", sublabel: "Wearable device integration", color: colors.error, screen: "WearableSettings" },
         { icon: "refresh-outline", label: "Retake Setup Quiz", sublabel: "Redo the onboarding questions", color: colors.accent, onPress: handleResetOnboarding },
       ],
     },
@@ -151,28 +179,37 @@ export function SettingsScreen({ navigation }) {
           </Text>
           <Card style={{ padding: 0, overflow: "hidden" }}>
             {section.items.map((item, idx) => (
-              <TouchableOpacity
-                key={item.label}
-                style={[
-                  styles.menuRow,
-                  { borderBottomColor: colors.border },
-                  idx === section.items.length - 1 && { borderBottomWidth: 0 },
-                ]}
-                onPress={item.onPress || (item.screen ? () => navigation.navigate(item.screen) : undefined)}
-                activeOpacity={item.onPress || item.screen ? 0.7 : 1}
-                disabled={!item.onPress && !item.screen}
-              >
-                <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
-                  <Ionicons name={item.icon} size={20} color={item.color} />
-                </View>
-                <View style={styles.menuText}>
-                  <Text style={[fonts.body, { color: colors.text }]}>{item.label}</Text>
-                  {item.sublabel && (
-                    <Text style={[fonts.caption, { color: colors.textSecondary }]}>{item.sublabel}</Text>
-                  )}
-                </View>
-                {item.trailing || ((item.screen || item.onPress) && <Ionicons name="chevron-forward" size={18} color={colors.textLight} />)}
-              </TouchableOpacity>
+              <View key={item.label}>
+                <TouchableOpacity
+                  style={[
+                    styles.menuRow,
+                    { borderBottomColor: colors.border },
+                    idx === section.items.length - 1 && !item.customContent && { borderBottomWidth: 0 },
+                  ]}
+                  onPress={item.onPress || (item.screen ? () => navigation.navigate(item.screen) : undefined)}
+                  activeOpacity={item.onPress || item.screen ? 0.7 : 1}
+                  disabled={!item.onPress && !item.screen}
+                >
+                  <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
+                    <Ionicons name={item.icon} size={20} color={item.color} />
+                  </View>
+                  <View style={styles.menuText}>
+                    <Text style={[fonts.body, { color: colors.text }]}>{item.label}</Text>
+                    {item.sublabel && (
+                      <Text style={[fonts.caption, { color: colors.textSecondary }]}>{item.sublabel}</Text>
+                    )}
+                  </View>
+                  {item.trailing || ((item.screen || item.onPress) && <Ionicons name="chevron-forward" size={18} color={colors.textLight} />)}
+                </TouchableOpacity>
+                {item.customContent && (
+                  <View style={[
+                    { paddingHorizontal: 16, paddingBottom: 12, borderBottomColor: colors.border },
+                    idx === section.items.length - 1 ? {} : { borderBottomWidth: 1 },
+                  ]}>
+                    {item.customContent}
+                  </View>
+                )}
+              </View>
             ))}
           </Card>
         </View>

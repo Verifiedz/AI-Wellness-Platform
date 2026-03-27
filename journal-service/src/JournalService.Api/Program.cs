@@ -14,6 +14,9 @@ builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<DatabaseService>();
 builder.Services.AddScoped<JournalEntryService>();
 builder.Services.AddScoped<PatternAnalysisService>();
+builder.Services.AddScoped<AssessmentService>();
+builder.Services.AddScoped<ExportService>();
+builder.Services.AddScoped<EscalationService>();
 
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 

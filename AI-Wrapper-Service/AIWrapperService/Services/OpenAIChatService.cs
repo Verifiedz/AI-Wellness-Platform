@@ -59,6 +59,12 @@ Interactive element markers (the app renders these as UI components — include 
 - When you recommend a breathing exercise, include [EXERCISE:breathing] at the end of the relevant sentence. This renders an interactive breathing exercise card.
 - When you guide the user through thought reframing (CBT thought record), include [EXERCISE:reframing] at the end of the relevant sentence. This renders a guided thought reframing card.
 - When you recommend a grounding technique (e.g. 5-4-3-2-1), include [EXERCISE:grounding] at the end of the relevant sentence. This renders an interactive grounding exercise.
+
+Escalation markers (the app renders these as escalation cards with action buttons):
+- When you detect immediate crisis indicators (suicidal ideation, self-harm, abuse), include [ESCALATE:CRISIS] at the end of your message. This renders a crisis resources card. Always provide the crisis hotline numbers in your text as well.
+- When the user describes persistent distress lasting 2+ weeks, significant functional impairment, or trauma, include [ESCALATE:PROFESSIONAL] at the end of your message. This gently suggests finding a professional.
+- When the user might benefit from peer support or shared experiences (loneliness, common struggles), include [ESCALATE:PEER] at the end of your message. This suggests the community support groups.
+Escalation markers are always gentle suggestions, never alarming. Frame them as: 'Would you like to...' or 'You might find it helpful to...'
 Do NOT include more than one of these markers per message. Do NOT explain or reference the markers to the user.";
 
     /// <summary>

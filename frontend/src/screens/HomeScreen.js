@@ -23,6 +23,11 @@ import { SectionHeader } from "../components/SectionHeader";
 import { AnimatedCard } from "../components/AnimatedCard";
 import { usePatternInsights } from "../hooks/usePatternInsights";
 import { HomeSkeleton } from "../components/skeletons/HomeSkeleton";
+import { getTimePeriodIcon } from "../theme/timeOfDay";
+import { useAssessmentReminder } from "../hooks/useAssessmentReminder";
+import { ASSESSMENTS } from "../constants/assessments";
+import { useWearableData } from "../hooks/useWearableData";
+import { WearableMetricsCard } from "../components/WearableMetricsCard";
 
 function getDisplayName(user) {
   if (user?.username?.trim()) return user.username.trim();
@@ -49,12 +54,14 @@ function buildDateRange(days) {
 export function HomeScreen({ navigation }) {
   const { user } = useAuth();
   const { currentTip, clearTip } = useTip();
-  const { colors, fonts } = useTheme();
+  const { colors, fonts, isDynamicTheme, timePeriod } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [todayEntry, setTodayEntry] = useState(null);
   const [quickPrompt, setQuickPrompt] = useState(null);
   const { insights, load: loadInsights, refresh: refreshInsights } = usePatternInsights(30);
+  const assessmentReminder = useAssessmentReminder();
+  const wearable = useWearableData();
 
   const loadDashboard = useCallback(async (isSoftRefresh = false) => {
     if (isSoftRefresh) setIsRefreshing(true);
@@ -132,9 +139,14 @@ export function HomeScreen({ navigation }) {
         <View style={styles.greetingRow}>
           <Logo size="small" showText={false} />
           <View style={styles.greetingText}>
-            <Text style={[fonts.heading1, { color: colors.text }]}>
-              {greeting}, {displayName}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {isDynamicTheme && (
+                <Ionicons name={getTimePeriodIcon(timePeriod)} size={22} color={colors.secondary} />
+              )}
+              <Text style={[fonts.heading1, { color: colors.text, flex: 1 }]}>
+                {greeting}, {displayName}
+              </Text>
+            </View>
             <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
               {todayDate}
             </Text>
@@ -267,8 +279,52 @@ export function HomeScreen({ navigation }) {
             </AnimatedCard>
           )}
 
+          {/* Wearable Metrics */}
+          {wearable.isEnabled && (
+            <AnimatedCard index={insights.length > 0 ? 3 : 2}>
+              <SectionHeader title="Today's Health" />
+              <WearableMetricsCard
+                steps={wearable.data.steps}
+                heartRate={wearable.data.heartRate}
+                sleepHours={wearable.data.sleepHours}
+              />
+            </AnimatedCard>
+          )}
+
+          {/* Assessment Reminder */}
+          {assessmentReminder.show && (
+            <AnimatedCard index={insights.length > 0 ? 3 : 2}>
+              <Card
+                style={{
+                  marginBottom: 20,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.accent,
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.checkedInRow}
+                  onPress={() => navigation.navigate("Assessment", { assessmentType: assessmentReminder.type })}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="clipboard-outline" size={22} color={colors.accent} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]}>
+                      Time for a wellness check-in
+                    </Text>
+                    <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
+                      {assessmentReminder.daysSince === -1
+                        ? `Take your first ${ASSESSMENTS[assessmentReminder.type]?.name} assessment`
+                        : `It's been ${assessmentReminder.daysSince} days since your last ${ASSESSMENTS[assessmentReminder.type]?.name}`}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textLight} />
+                </TouchableOpacity>
+              </Card>
+            </AnimatedCard>
+          )}
+
           {/* Quick Actions */}
-          <AnimatedCard index={insights.length > 0 ? 3 : 2}>
+          <AnimatedCard index={(insights.length > 0 ? 3 : 2) + (assessmentReminder.show ? 1 : 0)}>
           <SectionHeader title="Quick Actions" />
           <View style={styles.actionsRow}>
             <TouchableOpacity
@@ -312,6 +368,20 @@ export function HomeScreen({ navigation }) {
               <Text style={[fonts.heading3, { color: colors.text, marginTop: 12 }]}>Breathe</Text>
               <Text style={[fonts.caption, { color: colors.textSecondary, marginTop: 4 }]}>
                 Guided breathing
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionCard, { backgroundColor: colors.surface }, cardShadow]}
+              onPress={() => navigation.navigate("AssessmentHistory", { assessmentType: "PHQ9" })}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.actionIcon, { backgroundColor: `${colors.warning}15` }]}>
+                <Ionicons name="clipboard-outline" size={26} color={colors.warning} />
+              </View>
+              <Text style={[fonts.heading3, { color: colors.text, marginTop: 12 }]}>Check-in</Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary, marginTop: 4 }]}>
+                Wellbeing score
               </Text>
             </TouchableOpacity>
           </View>

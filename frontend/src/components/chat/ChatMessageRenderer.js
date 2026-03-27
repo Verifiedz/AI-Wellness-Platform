@@ -6,8 +6,10 @@ import {
   MARKER_REGEX,
   getExerciseType,
 } from "../../constants/exerciseMarkers";
+import { getEscalationType } from "../../constants/escalationMarkers";
 import { MoodQuickReply } from "./MoodQuickReply";
 import { ExerciseCard } from "./ExerciseCard";
+import { EscalationCard } from "./EscalationCard";
 
 /**
  * Parses an assistant message into segments of plain text and interactive
@@ -16,6 +18,7 @@ import { ExerciseCard } from "./ExerciseCard";
  * Plain text segments are rendered with react-native-markdown-display.
  * [MOOD_CHECK] segments render MoodQuickReply.
  * [EXERCISE:*] segments render ExerciseCard.
+ * [ESCALATE:*] segments render EscalationCard.
  */
 export function ChatMessageRenderer({
   message,
@@ -24,6 +27,7 @@ export function ChatMessageRenderer({
   selectedMood,
   moodDisabled,
   onStartBreathing,
+  onEscalationAction,
 }) {
   // Split message by markers, keeping the markers in the result array
   const segments = message.split(MARKER_REGEX).filter(Boolean);
@@ -56,6 +60,18 @@ export function ChatMessageRenderer({
               key={`exercise-${index}`}
               exerciseType={exerciseType}
               onStartBreathing={onStartBreathing}
+            />
+          );
+        }
+
+        // Escalation markers
+        const escalationType = getEscalationType(segment);
+        if (escalationType) {
+          return (
+            <EscalationCard
+              key={`escalate-${index}`}
+              escalationType={escalationType}
+              onAction={onEscalationAction}
             />
           );
         }

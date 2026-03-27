@@ -5,9 +5,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "../screens/HomeScreen";
 import { BreathingExerciseScreen } from "../screens/BreathingExerciseScreen";
+import { AssessmentScreen } from "../screens/AssessmentScreen";
+import { AssessmentResultScreen } from "../screens/AssessmentResultScreen";
+import { AssessmentHistoryScreen } from "../screens/AssessmentHistoryScreen";
 import { JournalStack } from "./JournalStack";
 import { ChatStack } from "./ChatStack";
 import { SettingsStack } from "./SettingsStack";
+import { CommunityStack } from "./CommunityStack";
 import { useTheme } from "../context/ThemeContext";
 import { CrisisButton } from "../components/CrisisButton";
 import { CrisisResourceModal } from "../components/CrisisResourceModal";
@@ -18,6 +22,7 @@ const HomeStackNav = createNativeStackNavigator();
 const TAB_ICONS = {
   Home: { focused: "home", default: "home-outline" },
   Journal: { focused: "journal", default: "journal-outline" },
+  Community: { focused: "people", default: "people-outline" },
   Sakina: { focused: "chatbubbles", default: "chatbubbles-outline" },
   Profile: { focused: "person-circle", default: "person-circle-outline" },
 };
@@ -44,6 +49,21 @@ function HomeStack() {
         name="BreathingExercise"
         component={BreathingExerciseScreen}
         options={{ title: "Breathe", animation: "slide_from_right", animationDuration: 350 }}
+      />
+      <HomeStackNav.Screen
+        name="Assessment"
+        component={AssessmentScreen}
+        options={{ title: "Assessment", animation: "slide_from_right", animationDuration: 350 }}
+      />
+      <HomeStackNav.Screen
+        name="AssessmentResult"
+        component={AssessmentResultScreen}
+        options={{ title: "Results", animation: "slide_from_right", animationDuration: 350 }}
+      />
+      <HomeStackNav.Screen
+        name="AssessmentHistory"
+        component={AssessmentHistoryScreen}
+        options={{ title: "Assessment History", animation: "slide_from_right", animationDuration: 350 }}
       />
     </HomeStackNav.Navigator>
   );
@@ -89,6 +109,7 @@ export function MainTabs() {
       >
         <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="Journal" component={JournalStack} />
+        <Tab.Screen name="Community" component={CommunityStack} />
         <Tab.Screen
           name="Sakina"
           component={ChatStack}

@@ -92,18 +92,18 @@
 | **16** | **Chat message slide-in animations**       | Plan 7c                | **DONE** | SlideInRight for user messages, SlideInLeft for assistant messages in AIChatScreen.js. Only applies to new messages (not history). Verified optimal. |
 
 
-### Priority 4 — Future Roadmap (Competitive Edge) — ALL NOT YET IMPLEMENTED
+### Priority 4 — Future Roadmap (Competitive Edge) — ALL COMPLETE
 
 
-| #      | Feature                                           | Source                          | Status | Why It Matters                                                                                                                                                    |
+| #      | Feature                                           | Source                          | Status | Details                                                                                                                                                    |
 | ------ | ------------------------------------------------- | ------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **17** | **Before/after wellbeing metrics (PHQ-9, GAD-7)** | Sections 3.2, 6.1               | **NOT DONE** | No validated assessment instruments implemented.                                                                                                                  |
-| **18** | **Therapist-ready export**                        | Sections 3.2, 6.1               | **NOT DONE** | No session summary export (PDF/CSV).                                                                                                                               |
-| **19** | **Wearable integration**                          | Sections 6.1, 6.3               | **NOT DONE** | No HealthKit/Google Fit integration.                                                                                                                               |
-| **20** | **Dynamic time-of-day UI**                        | Section 6.1                     | **NOT DONE** | Greeting text changes by time of day (HomeScreen), but no background/accent color shifts.                                                                          |
-| **21** | **Theme/accent customization**                    | Section 5.4, Reflectly analysis | **NOT DONE** | Single theme (Warm Sanctuary) with dark mode toggle. No user-selectable accent colors.                                                                             |
-| **22** | **Community/peer support**                        | Section 6.1                     | **NOT DONE** | No peer support or community features.                                                                                                                             |
-| **23** | **AI + human hybrid escalation**                  | Sections 1.4, 6.1, 6.2          | **NOT DONE** | No human coach/therapist escalation pathway.                                                                                                                       |
+| **17** | **Before/after wellbeing metrics (PHQ-9, GAD-7)** | Sections 3.2, 6.1               | **DONE** | `AssessmentService` with exact published scoring algorithms. `AssessmentController` with 4 endpoints (submit, history, latest, comparison). Frontend: step-through questionnaire (`AssessmentScreen`), result display with `ScoreGauge`, history timeline with comparison card. Clinical disclaimers on every screen. `useAssessmentReminder` hook nudges users every 14 days. |
+| **18** | **Therapist-ready export**                        | Sections 3.2, 6.1               | **DONE** | `ExportService` aggregates journal entries, mood summaries, and assessment scores. CSV export with branded header and clinical disclaimer. `ExportScreen` in Settings with date range selection, section toggles, preview, and download. PDF generation deferred (requires QuestPDF NuGet). |
+| **19** | **Wearable integration**                          | Sections 6.1, 6.3               | **DONE** | `wearableService.js` abstraction over HealthKit (iOS) and Health Connect (Android) with graceful fallback when native modules unavailable. `useWearableData` hook. `WearableMetricsCard` on HomeScreen showing steps, heart rate, sleep. `WearableSettingsScreen` with permission management. Phase 1: on-device only, no server sync. |
+| **20** | **Dynamic time-of-day UI**                        | Section 6.1                     | **DONE** | `timeOfDay.js` with 3 periods (Morning 6am-12pm gold/amber, Afternoon 12pm-6pm default sage, Evening 6pm-6am indigo). `useTimeOfDay` hook checks every 60s. `ThemeContext` merges time-of-day overrides. Opt-out toggle in Settings. Period icon in HomeScreen greeting. |
+| **21** | **Theme/accent customization**                    | Section 5.4, Reflectly analysis | **DONE** | 6 accent presets (Sage, Ocean, Sunset, Lavender, Rose, Forest) in `accents.js`. `AccentPicker` component with circular swatches. `ThemeContext` layers: base → time-of-day → accent. Persisted to AsyncStorage. |
+| **22** | **Community/peer support**                        | Section 6.1                     | **DONE** | New `community-service` microservice with PostgreSQL. 6 default support groups (Anxiety, Depression, Stress, Sleep, Relationships, Academic). Anonymous posting with per-group identities. Reactions (hug/heart/strength/relate). Report mechanism. YARP gateway route added. Frontend: `CommunityScreen`, `GroupFeedScreen` with new Community tab. Community guidelines. |
+| **23** | **AI + human hybrid escalation**                  | Sections 1.4, 6.1, 6.2          | **DONE** | AI system prompt updated with `[ESCALATE:CRISIS]`, `[ESCALATE:PROFESSIONAL]`, `[ESCALATE:PEER]` markers. `EscalationCard` renders in-chat suggestions. `EscalationService` checks assessment scores (PHQ-9 ≥ 20 or GAD-7 ≥ 15 → professional; ≥ 10 → peer). Escalation audit log (no PII). `ProfessionalDirectoryScreen` with 7 Canadian resources. |
 
 
 ---
@@ -120,19 +120,20 @@
 | Phase 5: Chat                 | 2             | 2          | 100%       |
 | Phase 6: Settings             | 2             | 2          | 100%       |
 | Phase 7: Polish               | 5             | 5          | **100%**   |
-| **Competitive Analysis recs** | **23**        | **16**     | **70%**    |
+| **Competitive Analysis recs** | **23**        | **23**     | **100%**   |
 
 **Changes since last audit:**
-- **Priority 3 is now 100% complete** (was 2/7). All 5 remaining features implemented:
-  - #10: expo-haptics installed, useHaptic hook, haptic feedback on MoodSelector, ChipGroup, energy level buttons
-  - #11: Skeleton base component + 4 screen-specific skeletons replacing ActivityIndicator spinners on Home/Journal/Chat/Calendar
-  - #12: useAutoSave hook with useDebounce (2s delay), ref-based concurrency lock, pending queue, saveDraft in journalApi, auto-saved indicator in JournalScreen
-  - #13: expo-image-picker installed with permissions, PhotoAttachment component (camera/library, thumbnails, max 3, remove), integrated into JournalScreen
-  - #14: WordCount component ("X words | Y characters") replacing character-only display in JournalScreen
-  - #15 and #16 verified as correctly and optimally implemented
-- Competitive Analysis total moves from 11/23 (48%) to **16/23 (70%)**.
+- **Priority 4 is now 100% complete** (was 0/7). All 7 features implemented:
+  - #17: PHQ-9 and GAD-7 validated assessments with exact published scoring, comparison charts, 14-day reminders
+  - #18: Therapist-ready CSV export with mood summaries, assessment scores, journal summaries, date range selection
+  - #19: Wearable integration (HealthKit/Health Connect) with on-device data, WearableMetricsCard on HomeScreen
+  - #20: Dynamic time-of-day UI with morning/afternoon/evening color shifts, opt-out toggle
+  - #21: 6 accent color presets (Sage, Ocean, Sunset, Lavender, Rose, Forest) with AccentPicker
+  - #22: Community/peer support with new microservice, 6 topic groups, anonymous posting, reactions, reports
+  - #23: AI escalation with [ESCALATE:*] markers, EscalationService, ProfessionalDirectoryScreen, audit log
+- Competitive Analysis total moves from 16/23 (70%) to **23/23 (100%)**.
 - Item #4 (logo asset) remains partial — code is ready but the PNG file is still missing.
-- Priority 4 items #17–23 remain as future roadmap.
+- All Priority 1–4 competitive analysis features are now implemented.
 
 ---
 
@@ -183,7 +184,7 @@
 - `journal-service/src/JournalService.Api/Models/Responses/PatternInsightResponse.cs` — insight DTOs
 - `journal-service/src/JournalService.Api/Services/PatternAnalysisService.cs` — 4 pattern detectors
 
-**Priority 3 features (12):**
+**Priority 3 features (10):**
 - `frontend/src/hooks/useHaptic.js` — platform-safe expo-haptics wrapper hook
 - `frontend/src/hooks/useDebounce.js` — generic debounce hook
 - `frontend/src/hooks/useAutoSave.js` — auto-save orchestration hook with concurrency lock
@@ -194,6 +195,49 @@
 - `frontend/src/components/skeletons/CalendarSkeleton.js` — MoodCalendarScreen skeleton layout
 - `frontend/src/components/WordCount.js` — word + character count display
 - `frontend/src/components/PhotoAttachment.js` — photo picker with camera/library, thumbnails, remove
+
+**Priority 4 features (28):**
+- `frontend/src/theme/timeOfDay.js` — time period definitions + color overrides for morning/afternoon/evening
+- `frontend/src/theme/accents.js` — 6 accent color presets (Sage, Ocean, Sunset, Lavender, Rose, Forest)
+- `frontend/src/hooks/useTimeOfDay.js` — time period detection hook (checks every 60s)
+- `frontend/src/hooks/useAssessmentReminder.js` — 14-day assessment reminder hook
+- `frontend/src/hooks/useWearableData.js` — wearable data fetching hook with opt-in
+- `frontend/src/components/AccentPicker.js` — horizontal color swatch picker
+- `frontend/src/components/ScoreGauge.js` — assessment score bar gauge
+- `frontend/src/components/WearableMetricsCard.js` — steps/heart rate/sleep card
+- `frontend/src/components/chat/EscalationCard.js` — in-chat escalation suggestion card
+- `frontend/src/screens/AssessmentScreen.js` — step-through PHQ-9/GAD-7 questionnaire
+- `frontend/src/screens/AssessmentResultScreen.js` — score display with gauge + interpretation
+- `frontend/src/screens/AssessmentHistoryScreen.js` — timeline with comparison card
+- `frontend/src/screens/ExportScreen.js` — export configuration with date range + section toggles
+- `frontend/src/screens/WearableSettingsScreen.js` — health data permission management
+- `frontend/src/screens/CommunityScreen.js` — support group directory
+- `frontend/src/screens/GroupFeedScreen.js` — anonymous post feed with reactions
+- `frontend/src/screens/ProfessionalDirectoryScreen.js` — therapist/resource directory
+- `frontend/src/navigation/CommunityStack.js` — community tab navigator
+- `frontend/src/constants/assessments.js` — PHQ-9 + GAD-7 questions, scoring bands
+- `frontend/src/constants/escalationMarkers.js` — escalation marker protocol
+- `frontend/src/constants/communityGuidelines.js` — community rules + reaction types
+- `frontend/src/constants/professionals.js` — static professional directory data
+- `frontend/src/services/assessmentApi.js` — assessment API client
+- `frontend/src/services/exportApi.js` — export API client
+- `frontend/src/services/communityApi.js` — community API client
+- `frontend/src/services/wearableService.js` — HealthKit/Health Connect abstraction
+- `journal-service/database/05_assessments.sql` — assessment tables + stored procedures
+- `journal-service/database/06_escalation_log.sql` — escalation audit log table
+- `journal-service/src/JournalService.Api/Models/Entities/Assessment.cs` — assessment entity
+- `journal-service/src/JournalService.Api/Models/Requests/SubmitAssessmentRequest.cs` — assessment submission DTO
+- `journal-service/src/JournalService.Api/Models/Requests/ExportRequest.cs` — export request DTO
+- `journal-service/src/JournalService.Api/Models/Responses/AssessmentResponse.cs` — assessment response DTOs
+- `journal-service/src/JournalService.Api/Models/Responses/ExportDataResponse.cs` — export data DTOs
+- `journal-service/src/JournalService.Api/Services/AssessmentService.cs` — scoring + CRUD
+- `journal-service/src/JournalService.Api/Services/ExportService.cs` — data aggregation + CSV generation
+- `journal-service/src/JournalService.Api/Services/EscalationService.cs` — escalation status + audit log
+- `journal-service/src/JournalService.Api/Controllers/AssessmentController.cs` — 4 assessment endpoints
+- `journal-service/src/JournalService.Api/Controllers/ExportController.cs` — export + preview endpoints
+- `journal-service/src/JournalService.Api/Controllers/EscalationController.cs` — escalation status + log
+- `community-service/database/01_schema.sql` — community DB schema + seed groups
+- `community-service/CommunityService/Models/` — entities, requests, responses
 
 ### Modified files (27):
 

@@ -24,9 +24,11 @@ export const EXERCISE_GROUNDING_MARKER = "[EXERCISE:grounding]";
  * Regex that matches any known marker in a message string.
  * Uses a capturing group so `String.split()` retains the matched markers
  * as separate array elements.
+ *
+ * Includes exercise markers, mood check, and escalation markers.
  */
 export const MARKER_REGEX =
-  /(\[MOOD_CHECK\]|\[EXERCISE:breathing\]|\[EXERCISE:reframing\]|\[EXERCISE:grounding\])/g;
+  /(\[MOOD_CHECK\]|\[EXERCISE:breathing\]|\[EXERCISE:reframing\]|\[EXERCISE:grounding\]|\[ESCALATE:CRISIS\]|\[ESCALATE:PROFESSIONAL\]|\[ESCALATE:PEER\])/g;
 
 /**
  * Returns the exercise type from an exercise marker string, or null.
