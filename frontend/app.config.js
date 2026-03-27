@@ -1,5 +1,5 @@
 /**
- * Expo app configuration.
+ * Sakina — Expo app configuration.
  *
  * Environment variables:
  *   EXPO_PUBLIC_API_URL  – Base URL for the YARP gateway (default: http://localhost:5051)
@@ -10,32 +10,32 @@
  */
 export default {
   expo: {
-    name: "Wellness App",
-    slug: "wellness-app",
+    name: "Sakina",
+    slug: "sakina",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icon.png",
-    userInterfaceStyle: "light",
+    userInterfaceStyle: "automatic",
     newArchEnabled: true,
     splash: {
       image: "./assets/splash-icon.png",
       resizeMode: "contain",
-      backgroundColor: "#4A90D9",
+      backgroundColor: "#FAF8F5",
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.wellness.app",
+      bundleIdentifier: "com.sakina.app",
       // Uncomment when you have the Firebase plist:
       // googleServicesFile: "./GoogleService-Info.plist",
     },
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#4A90D9",
+        backgroundColor: "#FAF8F5",
       },
       softwareKeyboardLayoutMode: "resize",
       edgeToEdgeEnabled: true,
-      package: "com.wellness.app",
+      package: "com.sakina.app",
       // Uncomment when you have the Firebase JSON:
       // googleServicesFile: "./google-services.json",
     },
@@ -45,11 +45,12 @@ export default {
     plugins: [
       "expo-secure-store",
       "expo-localization",
+      "expo-font",
       [
         "expo-notifications",
         {
           icon: "./assets/icon.png",
-          color: "#4A90D9",
+          color: "#5B7F6E",
         },
       ],
     ],

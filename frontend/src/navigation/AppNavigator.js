@@ -3,8 +3,10 @@ import { View, ActivityIndicator } from "react-native";
 import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useOnboarding } from "../context/OnboardingContext";
 import { AuthStack } from "./AuthStack";
 import { MainTabs } from "./MainTabs";
+import { OnboardingStack } from "./OnboardingStack";
 
 /**
  * Navigation ref – allows navigating from outside React components
@@ -19,6 +21,7 @@ export function navigate(name, params) {
 export function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
   const { colors, isDarkMode } = useTheme();
+  const { hasSeenOnboarding, isOnboardingReady, initialAuthRoute } = useOnboarding();
 
   const navigationTheme = isDarkMode
     ? {
@@ -46,7 +49,7 @@ export function AppNavigator() {
         },
       };
 
-  if (isLoading) {
+  if (isLoading || !isOnboardingReady) {
     return (
       <View
         style={{
@@ -61,9 +64,15 @@ export function AppNavigator() {
     );
   }
 
+  const getNavigator = () => {
+    if (!hasSeenOnboarding) return <OnboardingStack />;
+    if (isLoggedIn) return <MainTabs />;
+    return <AuthStack initialRoute={initialAuthRoute} />;
+  };
+
   return (
     <NavigationContainer ref={navigationRef} theme={navigationTheme}>
-      {isLoggedIn ? <MainTabs /> : <AuthStack />}
+      {getNavigator()}
     </NavigationContainer>
   );
 }

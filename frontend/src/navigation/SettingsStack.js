@@ -10,37 +10,23 @@ import { useTheme } from "../context/ThemeContext";
 const Stack = createNativeStackNavigator();
 
 export function SettingsStack() {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
 
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "600" },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.primary,
+        headerTitleStyle: { ...fonts.heading3, color: colors.text },
+        headerShadowVisible: false,
+        animationDuration: 350,
       }}
     >
-      <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen
-        name="NotificationSettings"
-        component={NotificationSettingsScreen}
-        options={{ title: "Notification Settings" }}
-      />
-      <Stack.Screen
-        name="ProfileSettings"
-        component={ProfileSettingsScreen}
-        options={{ title: "Profile" }}
-      />
-      <Stack.Screen
-        name="PrivacySettings"
-        component={PrivacySettingsScreen}
-        options={{ title: "Privacy" }}
-      />
-      <Stack.Screen
-        name="HelpSupport"
-        component={HelpSupportScreen}
-        options={{ title: "Help & Support" }}
-      />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: "Profile" }} />
+      <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ title: "Notifications" }} />
+      <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} options={{ title: "Profile" }} />
+      <Stack.Screen name="PrivacySettings" component={PrivacySettingsScreen} options={{ title: "Privacy" }} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ title: "Help & Support" }} />
     </Stack.Navigator>
   );
 }

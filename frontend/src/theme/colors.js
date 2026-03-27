@@ -1,58 +1,59 @@
 /**
- * Centralized color palettes for light/dark themes.
+ * Sakina — "Warm Sanctuary" color palette.
+ *
+ * Light theme uses warm cream backgrounds with sage green accents.
+ * Dark theme uses deep charcoal with brighter sage for contrast.
  */
 export const LightColors = {
-  primary: "#4A90D9",
-  primaryDark: "#357ABD",
-  primaryLight: "#7BB3E0",
+  primary: "#5B7F6E",
+  primaryDark: "#4A6B5C",
+  primaryLight: "#8FB5A3",
 
-  secondary: "#6C5CE7",
-  accent: "#00CEC9",
+  secondary: "#C4956A",
+  accent: "#7C9EB2",
 
-  background: "#F8F9FA",
+  background: "#FAF8F5",
   surface: "#FFFFFF",
+  surfaceElevated: "#FFFDFB",
 
-  text: "#2D3436",
-  textSecondary: "#636E72",
-  textLight: "#B2BEC3",
+  text: "#2C2C2C",
+  textSecondary: "#7A7A7A",
+  textLight: "#ABABAB",
 
-  border: "#DFE6E9",
+  border: "#EDEBE8",
 
-  error: "#E74C3C",
-  success: "#00B894",
-  warning: "#FDCB6E",
+  error: "#D4726A",
+  success: "#6BAF7D",
+  warning: "#E8C16A",
 
-  disabled: "#B2BEC3",
-  overlay: "rgba(0,0,0,0.5)",
+  disabled: "#C5C5C5",
+  overlay: "rgba(0,0,0,0.4)",
 };
 
 export const DarkColors = {
-  primary: "#5A9FE6",
-  primaryDark: "#3A7FC6",
-  primaryLight: "#8CBDED",
+  primary: "#7BA893",
+  primaryDark: "#5B8A73",
+  primaryLight: "#A3CCBA",
 
-  secondary: "#8C7BFF",
-  accent: "#27D8D2",
+  secondary: "#D4A87A",
+  accent: "#8DB4C8",
 
-  background: "#0F141A",
-  surface: "#1A232D",
+  background: "#1A1D21",
+  surface: "#242830",
+  surfaceElevated: "#2C3038",
 
-  text: "#E6EDF3",
-  textSecondary: "#B3C1CF",
-  textLight: "#7E8C99",
+  text: "#F0EDE8",
+  textSecondary: "#A0A0A0",
+  textLight: "#6B6B6B",
 
-  border: "#2C3A47",
+  border: "#363A42",
 
-  error: "#FF7B72",
-  success: "#3FB950",
-  warning: "#E3B341",
+  error: "#E88B83",
+  success: "#7EC48E",
+  warning: "#F0D47A",
 
-  disabled: "#586069",
-  overlay: "rgba(0,0,0,0.65)",
+  disabled: "#585858",
+  overlay: "rgba(0,0,0,0.6)",
 };
 
-/**
- * Backwards compatibility for screens that still import Colors directly.
- * New code should prefer useTheme() and `colors`.
- */
 export const Colors = LightColors;

@@ -1,9 +1,9 @@
 export const MOODS = [
-  { id: "great", label: "Great", icon: "happy-outline", color: "#00B894" },
-  { id: "good", label: "Good", icon: "sunny-outline", color: "#4A90D9" },
-  { id: "okay", label: "Okay", icon: "remove-outline", color: "#FDCB6E" },
-  { id: "low", label: "Low", icon: "cloudy-outline", color: "#B2BEC3" },
-  { id: "tough", label: "Tough", icon: "sad-outline", color: "#E17055" },
+  { id: "great", label: "Great", icon: "happy-outline", color: "#6BAF7D" },
+  { id: "good", label: "Good", icon: "sunny-outline", color: "#7C9EB2" },
+  { id: "okay", label: "Okay", icon: "remove-outline", color: "#E8C16A" },
+  { id: "low", label: "Low", icon: "cloudy-outline", color: "#B5B5B5" },
+  { id: "tough", label: "Tough", icon: "sad-outline", color: "#D4726A" },
 ];
 
 export const MOOD_COLORS = Object.fromEntries(

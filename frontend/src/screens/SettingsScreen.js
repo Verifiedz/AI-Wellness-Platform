@@ -1,24 +1,55 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Switch,
-} from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import { format, subDays } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { API_BASE_URL, DEV_MODE } from "../config";
+import { DEV_MODE } from "../config";
+import { journalApi } from "../services/journalApi";
+import { chatApi } from "../services/chatApi";
+import { Avatar } from "../components/Avatar";
+import { Card } from "../components/Card";
+import { Button } from "../components/Button";
+import { AnimatedCard } from "../components/AnimatedCard";
 
-/**
- * Settings screen – links to sub-settings and account actions.
- */
 export function SettingsScreen({ navigation }) {
   const { user, logout } = useAuth();
-  const { colors, isDarkMode, setDarkMode } = useTheme();
-  const styles = createStyles(colors);
+  const { colors, fonts, isDarkMode, setDarkMode } = useTheme();
+
+  const [stats, setStats] = useState({ entries: 0, sessions: 0, streak: 0 });
+
+  const loadStats = useCallback(async () => {
+    try {
+      const endDate = format(new Date(), "yyyy-MM-dd");
+      const startDate = format(subDays(new Date(), 365), "yyyy-MM-dd");
+
+      const [entriesResult, sessionsResult] = await Promise.all([
+        journalApi.getEntries({ startDate, endDate, limit: 365 }),
+        chatApi.getSessions(),
+      ]);
+
+      let streak = 0;
+      if (!entriesResult.error && entriesResult.data?.length) {
+        const dates = new Set(entriesResult.data.map((e) => e.entryDate));
+        let cur = new Date();
+        while (dates.has(format(cur, "yyyy-MM-dd"))) {
+          streak++;
+          cur = subDays(cur, 1);
+        }
+      }
+
+      setStats({
+        entries: entriesResult.data?.length || 0,
+        sessions: sessionsResult.data?.length || 0,
+        streak,
+      });
+    } catch {
+      // Stats load failed silently
+    }
+  }, []);
+
+  useFocusEffect(useCallback(() => { loadStats(); }, [loadStats]));
 
   const handleLogout = () => {
     Alert.alert("Log Out", "Are you sure you want to log out?", [
@@ -27,206 +58,147 @@ export function SettingsScreen({ navigation }) {
     ]);
   };
 
-  const items = [
+  const menuSections = [
     {
-      icon: "notifications-outline",
-      label: "Notification Settings",
-      onPress: () => navigation.navigate("NotificationSettings"),
-      color: colors.primary,
+      title: "Appearance",
+      items: [
+        {
+          icon: isDarkMode ? "moon" : "sunny",
+          label: "Dark Mode",
+          sublabel: "Use a darker color theme",
+          color: colors.warning,
+          trailing: (
+            <Switch
+              value={isDarkMode}
+              onValueChange={setDarkMode}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={isDarkMode ? colors.primary : "#f4f3f4"}
+              ios_backgroundColor={colors.border}
+            />
+          ),
+        },
+      ],
     },
     {
-      icon: "person-outline",
-      label: "Profile",
-      onPress: () => navigation.navigate("ProfileSettings"),
-      color: colors.secondary,
+      title: "Account",
+      items: [
+        { icon: "person-outline", label: "Profile", color: colors.secondary, screen: "ProfileSettings" },
+        { icon: "notifications-outline", label: "Notifications", color: colors.primary, screen: "NotificationSettings" },
+      ],
     },
     {
-      icon: "shield-outline",
-      label: "Privacy",
-      onPress: () => navigation.navigate("PrivacySettings"),
-      color: colors.accent,
-    },
-    {
-      icon: "help-circle-outline",
-      label: "Help & Support",
-      onPress: () => navigation.navigate("HelpSupport"),
-      color: colors.textSecondary,
+      title: "Support",
+      items: [
+        { icon: "shield-outline", label: "Privacy", color: colors.accent, screen: "PrivacySettings" },
+        { icon: "help-circle-outline", label: "Help & Support", color: colors.textSecondary, screen: "HelpSupport" },
+      ],
     },
   ];
 
   return (
-    <View style={styles.container}>
-      {/* User card */}
-      <View style={styles.userCard}>
-        <View style={styles.avatar}>
-          <Ionicons name="person" size={32} color={colors.primary} />
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{user?.username || user?.email || "User"}</Text>
-          <Text style={styles.userId}>ID: {user?.id}</Text>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <View style={[styles.settingItem, { borderBottomWidth: 0 }]}>
-          <View
-            style={[
-              styles.iconContainer,
-              { backgroundColor: `${colors.warning}20` },
-            ]}
-          >
-            <Ionicons
-              name={isDarkMode ? "moon" : "moon-outline"}
-              size={22}
-              color={colors.warning}
-            />
-          </View>
-          <View style={styles.themeTextWrap}>
-            <Text style={styles.settingLabel}>Dark Mode</Text>
-            <Text style={styles.settingSubLabel}>
-              Use a darker color theme across the app
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+      {/* Profile card */}
+      <AnimatedCard index={0}>
+        <Card style={styles.profileCard}>
+          <Avatar name={user?.username || user?.email} size={64} />
+          <View style={styles.profileInfo}>
+            <Text style={[fonts.heading2, { color: colors.text }]}>
+              {user?.username || user?.email || "User"}
+            </Text>
+            <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
+              {user?.email}
             </Text>
           </View>
-          <Switch
-            value={isDarkMode}
-            onValueChange={setDarkMode}
-            trackColor={{ false: colors.border, true: colors.primaryLight }}
-            thumbColor={isDarkMode ? colors.primary : "#f4f3f4"}
-            ios_backgroundColor={colors.border}
-          />
+        </Card>
+      </AnimatedCard>
+
+      {/* Stats tiles */}
+      <AnimatedCard index={1}>
+        <View style={styles.statsRow}>
+          {[
+            { value: stats.streak, label: "Day Streak" },
+            { value: stats.entries, label: "Entries" },
+            { value: stats.sessions, label: "Chats" },
+          ].map((stat) => (
+            <Card key={stat.label} style={styles.statTile}>
+              <Text style={[fonts.heading2, { color: colors.primary }]}>{stat.value}</Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary }]}>{stat.label}</Text>
+            </Card>
+          ))}
         </View>
-      </View>
+      </AnimatedCard>
 
-      {/* Menu items */}
-      <View style={styles.section}>
-        {items.map((item, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[
-              styles.settingItem,
-              i === items.length - 1 && { borderBottomWidth: 0 },
-            ]}
-            onPress={item.onPress}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: `${item.color}15` },
-              ]}
-            >
-              <Ionicons name={item.icon} size={22} color={item.color} />
-            </View>
-            <Text style={styles.settingLabel}>{item.label}</Text>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.textLight}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Menu sections */}
+      {menuSections.map((section, sIdx) => (
+        <AnimatedCard key={section.title} index={sIdx + 2}>
+        <View style={{ marginBottom: 16 }}>
+          <Text style={[fonts.caption, { color: colors.textSecondary, marginBottom: 8, marginLeft: 4, textTransform: "uppercase", letterSpacing: 0.8 }]}>
+            {section.title}
+          </Text>
+          <Card style={{ padding: 0, overflow: "hidden" }}>
+            {section.items.map((item, idx) => (
+              <TouchableOpacity
+                key={item.label}
+                style={[
+                  styles.menuRow,
+                  { borderBottomColor: colors.border },
+                  idx === section.items.length - 1 && { borderBottomWidth: 0 },
+                ]}
+                onPress={item.screen ? () => navigation.navigate(item.screen) : undefined}
+                activeOpacity={item.screen ? 0.7 : 1}
+                disabled={!item.screen}
+              >
+                <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
+                  <Ionicons name={item.icon} size={20} color={item.color} />
+                </View>
+                <View style={styles.menuText}>
+                  <Text style={[fonts.body, { color: colors.text }]}>{item.label}</Text>
+                  {item.sublabel && (
+                    <Text style={[fonts.caption, { color: colors.textSecondary }]}>{item.sublabel}</Text>
+                  )}
+                </View>
+                {item.trailing || (item.screen && <Ionicons name="chevron-forward" size={18} color={colors.textLight} />)}
+              </TouchableOpacity>
+            ))}
+          </Card>
+        </View>
+        </AnimatedCard>
+      ))}
 
-      {/* Dev info */}
       {DEV_MODE && (
-        <View style={styles.devInfo}>
-          <Text style={styles.devInfoText}>Dev Mode Active</Text>
-          <Text style={styles.devInfoText}>API: {API_BASE_URL}</Text>
-        </View>
+        <Text style={[fonts.caption, { color: colors.textLight, textAlign: "center", marginBottom: 16 }]}>
+          Dev Mode Active
+        </Text>
       )}
 
-      {/* Logout */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={20} color={colors.error} />
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
-    </View>
+      <Button variant="danger" title="Log Out" onPress={handleLogout} icon={<Ionicons name="log-out-outline" size={18} color={colors.error} />} />
+
+      <View style={{ height: 32 }} />
+    </ScrollView>
   );
 }
 
-/* ---------- styles ---------- */
-
-const cardShadow = {
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.05,
-  shadowRadius: 8,
-  elevation: 2,
-};
-
-const createStyles = (colors) =>
-  StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: 16 },
-
-  userCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    ...cardShadow,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: `${colors.primaryLight}30`,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  userInfo: { marginLeft: 16, flex: 1 },
-  userName: { fontSize: 18, fontWeight: "600", color: colors.text },
-  userId: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
-
-  section: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginBottom: 24,
-    ...cardShadow,
-  },
-  settingItem: {
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 20, paddingBottom: 40 },
+  profileCard: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 16 },
+  profileInfo: { flex: 1 },
+  statsRow: { flexDirection: "row", gap: 10, marginBottom: 20 },
+  statTile: { flex: 1, alignItems: "center", paddingVertical: 14, paddingHorizontal: 8 },
+  menuRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    gap: 12,
   },
-  iconContainer: {
+  menuIcon: {
     width: 36,
     height: 36,
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
   },
-  themeTextWrap: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  settingLabel: {
-    fontSize: 16,
-    color: colors.text,
-  },
-  settingSubLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-
-  devInfo: { alignItems: "center", marginBottom: 16 },
-  devInfoText: { fontSize: 11, color: colors.textLight },
-
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    paddingVertical: 14,
-    gap: 8,
-    ...cardShadow,
-  },
-  logoutText: { fontSize: 16, fontWeight: "600", color: colors.error },
+  menuText: { flex: 1 },
 });

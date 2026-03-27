@@ -20,6 +20,9 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
 import { AIChatScreen } from "../screens/AIChatScreen";
 import { chatApi } from "../services/chatApi";
+import { Card } from "../components/Card";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
 
 const Drawer = createDrawerNavigator();
 const SESSION_NAMES_KEY = "chat_session_names_v1";
@@ -30,9 +33,7 @@ function formatDefaultTitle(sessionId) {
 }
 
 function ChatDrawerContent({ navigation }) {
-  const { colors } = useTheme();
-  const Colors = colors;
-  const styles = createStyles(Colors);
+  const { colors, fonts } = useTheme();
   const [sessions, setSessions] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [error, setError] = useState("");
@@ -44,21 +45,11 @@ function ChatDrawerContent({ navigation }) {
 
   const loadSessionNames = useCallback(async () => {
     const raw = await AsyncStorage.getItem(SESSION_NAMES_KEY);
-    if (!raw) {
-      setSessionNames({});
-      return {};
-    }
-
+    if (!raw) { setSessionNames({}); return {}; }
     try {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        setSessionNames(parsed);
-        return parsed;
-      }
-    } catch {
-      // Corrupted session names — reset
-    }
-
+      if (parsed && typeof parsed === "object") { setSessionNames(parsed); return parsed; }
+    } catch { /* corrupted */ }
     setSessionNames({});
     return {};
   }, []);
@@ -76,58 +67,32 @@ function ChatDrawerContent({ navigation }) {
       setSessions([]);
       return;
     }
-
     const sorted = [...(sessionsResult.data || [])].sort((a, b) => {
-      const aTime = new Date(a.createdDate || 0).getTime();
-      const bTime = new Date(b.createdDate || 0).getTime();
-      return bTime - aTime;
+      return new Date(b.createdDate || 0).getTime() - new Date(a.createdDate || 0).getTime();
     });
     setSessions(sorted);
   }, [loadSessionNames]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadSessions();
-    }, [loadSessions])
-  );
+  useFocusEffect(useCallback(() => { loadSessions(); }, [loadSessions]));
+  useEffect(() => { loadSessions(); }, [loadSessions]);
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
-
-  useEffect(() => {
-    const unsubscribeDrawer = navigation.addListener("drawerOpen", () => {
-      // Refresh every time the drawer opens.
-      loadSessions();
-    });
-
-    const sessionCreatedSub = DeviceEventEmitter.addListener(
-      "chat:session-created",
-      () => {
-        // Refresh immediately when AIChatScreen creates a brand-new session.
-        loadSessions();
-      }
-    );
-
-    return () => {
-      unsubscribeDrawer();
-      sessionCreatedSub.remove();
-    };
+    const unsubscribeDrawer = navigation.addListener("drawerOpen", () => { loadSessions(); });
+    const sessionCreatedSub = DeviceEventEmitter.addListener("chat:session-created", () => { loadSessions(); });
+    return () => { unsubscribeDrawer(); sessionCreatedSub.remove(); };
   }, [loadSessions, navigation]);
 
   const getSessionTitle = useCallback(
-    (session) =>
-      sessionNames[session.sessionId] || session.sessionName || formatDefaultTitle(session.sessionId),
+    (session) => sessionNames[session.sessionId] || session.sessionName || formatDefaultTitle(session.sessionId),
     [sessionNames]
   );
 
   const displayedSessions = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const q = searchQuery.trim().toLowerCase();
     return sessions.filter((session) => {
       if (showBookmarkedOnly && !session.isBookmarked) return false;
-      const title = getSessionTitle(session);
-      if (!normalizedQuery) return true;
-      return title.toLowerCase().includes(normalizedQuery);
+      if (!q) return true;
+      return getSessionTitle(session).toLowerCase().includes(q);
     });
   }, [getSessionTitle, searchQuery, sessions, showBookmarkedOnly]);
 
@@ -138,10 +103,7 @@ function ChatDrawerContent({ navigation }) {
 
   const openSession = useCallback(
     (session) => {
-      navigation.navigate(CHAT_ROUTE, {
-        sessionId: session.sessionId,
-        sessionName: getSessionTitle(session),
-      });
+      navigation.navigate(CHAT_ROUTE, { sessionId: session.sessionId, sessionName: getSessionTitle(session) });
       navigation.closeDrawer();
     },
     [getSessionTitle, navigation]
@@ -149,72 +111,46 @@ function ChatDrawerContent({ navigation }) {
 
   const toggleSessionBookmark = useCallback(async (session) => {
     const nextValue = !session.isBookmarked;
-    setSessions((prev) =>
-      prev.map((item) =>
-        item.sessionId === session.sessionId
-          ? { ...item, isBookmarked: nextValue }
-          : item
-      )
-    );
-
+    setSessions((prev) => prev.map((item) => item.sessionId === session.sessionId ? { ...item, isBookmarked: nextValue } : item));
     const result = await chatApi.setSessionBookmark(session.sessionId, nextValue);
     if (result.error) {
-      setSessions((prev) =>
-        prev.map((item) =>
-          item.sessionId === session.sessionId
-            ? { ...item, isBookmarked: session.isBookmarked }
-            : item
-        )
-      );
+      setSessions((prev) => prev.map((item) => item.sessionId === session.sessionId ? { ...item, isBookmarked: session.isBookmarked } : item));
       setError(result.error || "Failed to update bookmark.");
     }
   }, []);
 
-  const confirmDeleteSession = useCallback(
-    (session) => {
-      Alert.alert("Delete Chat", "Are you sure? This cannot be undone.", [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setSessions((prev) => prev.filter((s) => s.sessionId !== session.sessionId));
-            const result = await chatApi.deleteSession(session.sessionId);
-            if (result.error) {
-              setError(result.error || "Failed to delete session.");
-              loadSessions();
-            } else {
-              const nextNames = { ...sessionNames };
-              delete nextNames[session.sessionId];
-              persistSessionNames(nextNames);
-            }
-          },
+  const confirmDeleteSession = useCallback((session) => {
+    Alert.alert("Delete Chat", "Are you sure? This cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          setSessions((prev) => prev.filter((s) => s.sessionId !== session.sessionId));
+          const result = await chatApi.deleteSession(session.sessionId);
+          if (result.error) { setError(result.error); loadSessions(); }
+          else {
+            const nextNames = { ...sessionNames };
+            delete nextNames[session.sessionId];
+            persistSessionNames(nextNames);
+          }
         },
-      ]);
-    },
-    [loadSessions, persistSessionNames, sessionNames]
-  );
+      },
+    ]);
+  }, [loadSessions, persistSessionNames, sessionNames]);
 
-  const openRenameModal = useCallback(
-    (session) => {
-      setRenameSessionId(session.sessionId);
-      setRenameValue(getSessionTitle(session));
-      setRenameModalVisible(true);
-    },
-    [getSessionTitle]
-  );
+  const openRenameModal = useCallback((session) => {
+    setRenameSessionId(session.sessionId);
+    setRenameValue(getSessionTitle(session));
+    setRenameModalVisible(true);
+  }, [getSessionTitle]);
 
   const saveSessionName = useCallback(async () => {
     if (!renameSessionId) return;
-
     const trimmed = renameValue.trim();
     const nextNames = { ...sessionNames };
-    if (!trimmed) {
-      delete nextNames[renameSessionId];
-    } else {
-      nextNames[renameSessionId] = trimmed;
-    }
-
+    if (!trimmed) delete nextNames[renameSessionId];
+    else nextNames[renameSessionId] = trimmed;
     await persistSessionNames(nextNames);
     setRenameModalVisible(false);
     setRenameSessionId(null);
@@ -223,16 +159,9 @@ function ChatDrawerContent({ navigation }) {
 
   const renderRightActions = useCallback(
     (item) => (_progress, dragX) => {
-      const scale = dragX.interpolate({
-        inputRange: [-80, 0],
-        outputRange: [1, 0.5],
-        extrapolate: "clamp",
-      });
+      const scale = dragX.interpolate({ inputRange: [-80, 0], outputRange: [1, 0.5], extrapolate: "clamp" });
       return (
-        <TouchableOpacity
-          style={styles.swipeDeleteAction}
-          onPress={() => confirmDeleteSession(item)}
-        >
+        <TouchableOpacity style={[styles.swipeDelete, { backgroundColor: colors.error }]} onPress={() => confirmDeleteSession(item)}>
           <Animated.View style={{ transform: [{ scale }], alignItems: "center" }}>
             <Ionicons name="trash" size={22} color="#fff" />
             <Text style={styles.swipeDeleteText}>Delete</Text>
@@ -240,35 +169,32 @@ function ChatDrawerContent({ navigation }) {
         </TouchableOpacity>
       );
     },
-    [confirmDeleteSession, styles]
+    [confirmDeleteSession, colors]
   );
 
   const renderSession = ({ item }) => {
     const title = getSessionTitle(item);
     return (
-      <Swipeable
-        renderRightActions={renderRightActions(item)}
-        overshootRight={false}
-        friction={2}
-      >
-        <TouchableOpacity style={styles.sessionRow} onPress={() => openSession(item)}>
-          <View style={styles.sessionMain}>
-            <Text style={styles.sessionTitle} numberOfLines={1}>
-              {title}
-            </Text>
-            <Text style={styles.sessionMeta} numberOfLines={1}>
+      <Swipeable renderRightActions={renderRightActions(item)} overshootRight={false} friction={2}>
+        <TouchableOpacity
+          style={[styles.sessionRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          onPress={() => openSession(item)}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]} numberOfLines={1}>{title}</Text>
+            <Text style={[fonts.caption, { color: colors.textSecondary, marginTop: 4 }]} numberOfLines={1}>
               {new Date(item.createdDate).toLocaleString()}
             </Text>
           </View>
-          <View style={styles.sessionActions}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <TouchableOpacity onPress={() => openRenameModal(item)} hitSlop={8}>
-              <Ionicons name="pencil-outline" size={18} color={Colors.textSecondary} />
+              <Ionicons name="pencil-outline" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => toggleSessionBookmark(item)} hitSlop={8}>
               <Ionicons
                 name={item.isBookmarked ? "bookmark" : "bookmark-outline"}
                 size={18}
-                color={item.isBookmarked ? Colors.warning : Colors.textSecondary}
+                color={item.isBookmarked ? colors.warning : colors.textSecondary}
               />
             </TouchableOpacity>
           </View>
@@ -279,30 +205,31 @@ function ChatDrawerContent({ navigation }) {
 
   return (
     <>
-      <View style={styles.drawerRoot}>
+      <View style={[styles.drawerRoot, { backgroundColor: colors.background }]}>
         <DrawerContentScrollView
           showsVerticalScrollIndicator
-          scrollIndicatorInsets={{ right: 0 }}
-          contentContainerStyle={styles.drawerContent}
+          contentContainerStyle={[styles.drawerContent, { backgroundColor: colors.background }]}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.drawerInner}>
-            <View style={styles.drawerHeader}>
-              <Text style={styles.drawerTitle}>Chats</Text>
+            <View style={[styles.drawerHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[fonts.heading1, { color: colors.text }]}>Chats</Text>
               <TouchableOpacity
                 onPress={() => setShowBookmarkedOnly((prev) => !prev)}
-                style={styles.bookmarkFilterButton}
+                style={[styles.filterBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
                 <Ionicons
                   name={showBookmarkedOnly ? "bookmarks" : "bookmarks-outline"}
                   size={18}
-                  color={showBookmarkedOnly ? Colors.warning : Colors.textSecondary}
+                  color={showBookmarkedOnly ? colors.warning : colors.textSecondary}
                 />
               </TouchableOpacity>
             </View>
 
             {displayedSessions.length === 0 ? (
-              <Text style={styles.emptyText}>No chat sessions found.</Text>
+              <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 12, textAlign: "center", fontStyle: "italic" }]}>
+                No chat sessions found.
+              </Text>
             ) : (
               <FlatList
                 data={displayedSessions}
@@ -312,54 +239,45 @@ function ChatDrawerContent({ navigation }) {
               />
             )}
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {error ? <Text style={[fonts.caption, { color: colors.error, marginTop: 8 }]}>{error}</Text> : null}
           </View>
         </DrawerContentScrollView>
 
-        <View style={styles.searchBarDock}>
-          <View style={styles.searchInputWrap}>
-            <Ionicons name="search" size={16} color={Colors.textSecondary} />
+        <View style={[styles.searchDock, { borderTopColor: colors.border, backgroundColor: colors.background }]}>
+          <View style={[styles.searchWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Ionicons name="search" size={16} color={colors.textSecondary} />
             <TextInput
-              style={styles.searchInput}
+              style={[fonts.body, styles.searchInput, { color: colors.text }]}
               placeholder="Search chats"
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholderTextColor={Colors.textLight}
+              placeholderTextColor={colors.textLight}
             />
           </View>
-          <TouchableOpacity style={styles.newChatFab} onPress={startNewChat}>
+          <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary }]} onPress={startNewChat}>
             <Ionicons name="add" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
       <Modal visible={renameModalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Rename session</Text>
-            <TextInput
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <Card style={{ width: "100%", maxWidth: 340 }}>
+            <Text style={[fonts.heading3, { color: colors.text, marginBottom: 14 }]}>Rename session</Text>
+            <Input
               value={renameValue}
               onChangeText={setRenameValue}
-              style={styles.renameInput}
               placeholder="Enter session name"
-              placeholderTextColor={Colors.textLight}
-              autoFocus
             />
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={() => {
-                  setRenameModalVisible(false);
-                  setRenameSessionId(null);
-                  setRenameValue("");
-                }}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={saveSessionName}>
-                <Text style={styles.saveText}>Save</Text>
-              </TouchableOpacity>
+              <Button
+                variant="ghost"
+                title="Cancel"
+                onPress={() => { setRenameModalVisible(false); setRenameSessionId(null); setRenameValue(""); }}
+              />
+              <Button title="Save" onPress={saveSessionName} />
             </View>
-          </View>
+          </Card>
         </View>
       </Modal>
     </>
@@ -367,15 +285,14 @@ function ChatDrawerContent({ navigation }) {
 }
 
 export function ChatStack() {
-  const { colors } = useTheme();
-  const Colors = colors;
+  const { colors, fonts } = useTheme();
 
   return (
     <Drawer.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: Colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "600" },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { ...fonts.heading3, color: colors.text },
         drawerType: "slide",
         swipeEdgeWidth: 40,
       }}
@@ -390,20 +307,10 @@ export function ChatStack() {
   );
 }
 
-const createStyles = (Colors) => StyleSheet.create({
-  drawerRoot: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  drawerContent: {
-    flexGrow: 1,
-    paddingVertical: 16,
-    backgroundColor: Colors.background,
-  },
-  drawerInner: {
-    paddingHorizontal: 16,
-    paddingRight: 30,
-  },
+const styles = StyleSheet.create({
+  drawerRoot: { flex: 1 },
+  drawerContent: { flexGrow: 1, paddingVertical: 16 },
+  drawerInner: { paddingHorizontal: 16, paddingRight: 30 },
   drawerHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -411,25 +318,16 @@ const createStyles = (Colors) => StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
-  drawerTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: Colors.text,
-    letterSpacing: -0.3,
-  },
-  bookmarkFilterButton: {
-    width: 36,
-    height: 36,
+  filterBtn: {
+    width: 38,
+    height: 38,
     borderRadius: 12,
-    backgroundColor: Colors.surface,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: Colors.border,
   },
-  searchBarDock: {
+  searchDock: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -437,164 +335,46 @@ const createStyles = (Colors) => StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 14,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    backgroundColor: Colors.background,
   },
-  searchInputWrap: {
+  searchWrap: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: 20,
     paddingHorizontal: 14,
     gap: 8,
   },
-  searchInput: {
-    flex: 1,
-    height: 42,
-    color: Colors.text,
-    fontSize: 14,
-  },
-  newChatFab: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: Colors.primary,
+  searchInput: { flex: 1, height: 42 },
+  fab: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
     ...Platform.select({
-      ios: {
-        shadowColor: Colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-      },
+      ios: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4 },
       android: { elevation: 3 },
     }),
   },
   sessionRow: {
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     padding: 14,
     marginBottom: 8,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 3,
-      },
-      android: { elevation: 1 },
-    }),
   },
-  sessionMain: {
-    flex: 1,
-  },
-  sessionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.text,
-    lineHeight: 20,
-  },
-  sessionMeta: {
-    marginTop: 4,
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  sessionActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 12,
-    textAlign: "center",
-    fontStyle: "italic",
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 12,
-    marginTop: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: Colors.overlay,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  modalCard: {
-    width: "100%",
-    maxWidth: 340,
-    backgroundColor: Colors.surface,
-    borderRadius: 18,
-    padding: 20,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-      },
-      android: { elevation: 8 },
-    }),
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.text,
-    marginBottom: 14,
-  },
-  renameInput: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: Colors.text,
-    backgroundColor: Colors.background,
-    fontSize: 15,
-  },
-  modalActions: {
-    marginTop: 18,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 20,
-  },
-  cancelText: {
-    color: Colors.textSecondary,
-    fontWeight: "600",
-    fontSize: 15,
-    paddingVertical: 4,
-  },
-  saveText: {
-    color: Colors.primary,
-    fontWeight: "700",
-    fontSize: 15,
-    paddingVertical: 4,
-  },
-  swipeDeleteAction: {
-    backgroundColor: Colors.error,
+  swipeDelete: {
     justifyContent: "center",
     alignItems: "center",
     width: 80,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 8,
     marginLeft: 4,
   },
-  swipeDeleteText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 2,
-  },
+  swipeDeleteText: { color: "#fff", fontSize: 11, fontWeight: "600", marginTop: 2 },
+  modalOverlay: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  modalActions: { flexDirection: "row", justifyContent: "flex-end", gap: 12, marginTop: 8 },
 });

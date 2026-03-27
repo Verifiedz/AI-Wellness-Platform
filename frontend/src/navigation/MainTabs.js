@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { HomeScreen } from "../screens/HomeScreen";
@@ -6,6 +7,8 @@ import { JournalStack } from "./JournalStack";
 import { ChatStack } from "./ChatStack";
 import { SettingsStack } from "./SettingsStack";
 import { useTheme } from "../context/ThemeContext";
+import { CrisisButton } from "../components/CrisisButton";
+import { CrisisResourceModal } from "../components/CrisisResourceModal";
 
 const Tab = createBottomTabNavigator();
 
@@ -13,13 +16,15 @@ const TAB_ICONS = {
   Home: { focused: "home", default: "home-outline" },
   Journal: { focused: "journal", default: "journal-outline" },
   "AI Chat": { focused: "chatbubbles", default: "chatbubbles-outline" },
-  SettingsTab: { focused: "settings", default: "settings-outline" },
+  Profile: { focused: "person-circle", default: "person-circle-outline" },
 };
 
 export function MainTabs() {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
+  const [showCrisis, setShowCrisis] = useState(false);
 
   return (
+    <View style={{ flex: 1 }}>
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
@@ -31,14 +36,21 @@ export function MainTabs() {
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
           backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          borderTopColor: "transparent",
+          paddingBottom: 6,
+          paddingTop: 6,
+          height: 64,
+          ...shadowTop,
         },
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "600" },
+        tabBarLabelStyle: {
+          fontFamily: fonts.caption.fontFamily,
+          fontSize: 11,
+          fontWeight: "500",
+        },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerTitleStyle: { ...fonts.heading3, color: colors.text },
+        headerShadowVisible: false,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -61,10 +73,21 @@ export function MainTabs() {
         })}
       />
       <Tab.Screen
-        name="SettingsTab"
+        name="Profile"
         component={SettingsStack}
-        options={{ title: "Settings", headerShown: false }}
+        options={{ headerShown: false }}
       />
     </Tab.Navigator>
+    <CrisisButton onPress={() => setShowCrisis(true)} />
+    <CrisisResourceModal visible={showCrisis} onClose={() => setShowCrisis(false)} />
+    </View>
   );
 }
+
+const shadowTop = {
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 6,
+  elevation: 8,
+};

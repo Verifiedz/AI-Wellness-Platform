@@ -1,9 +1,19 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
+import {
+  useFonts,
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+  DMSans_700Bold,
+} from "@expo-google-fonts/dm-sans";
 
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
 import { TipProvider, useTip } from "./src/context/TipContext";
 import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
+import { OnboardingProvider } from "./src/context/OnboardingContext";
 import { AppNavigator, navigate } from "./src/navigation/AppNavigator";
 import { apiClient } from "./src/services/api";
 import { notificationApi } from "./src/services/notificationApi";
@@ -14,25 +24,15 @@ import {
   getLastNotificationResponse,
 } from "./src/services/pushNotifications";
 
-/**
- * Inner component that can access Auth and Tip contexts.
- *
- * Responsibilities:
- *  1. Keep the API client in sync with the current auth token.
- *  2. After login: request notification permissions, get device token,
- *     and register the token with the backend.
- *  3. Listen for incoming push notifications and pass daily-tip data
- *     to the TipContext so HomeScreen can display it.
- *  4. On notification tap: navigate to Home.
- */
+SplashScreen.preventAutoHideAsync();
+
 function AppContent() {
   const { isLoggedIn, token, user } = useAuth();
   const { setTip } = useTip();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, isThemeReady } = useTheme();
   const notificationListener = useRef();
   const responseListener = useRef();
 
-  /* ---- sync API client auth ---- */
   useEffect(() => {
     if (token && user) {
       apiClient.setAuth(token, user.id);
@@ -41,7 +41,6 @@ function AppContent() {
     }
   }, [token, user]);
 
-  /* ---- register device for push notifications ---- */
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -63,11 +62,9 @@ function AppContent() {
     };
   }, [isLoggedIn]);
 
-  /* ---- notification listeners ---- */
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    // Helper: extract tip data from a notification object
     const extractTip = (notification) => {
       const { title, body, data } = notification.request.content;
       return {
@@ -78,14 +75,12 @@ function AppContent() {
       };
     };
 
-    // Foreground: show the tip immediately on Home
     notificationListener.current = addNotificationReceivedListener(
       (notification) => {
         setTip(extractTip(notification));
       }
     );
 
-    // Tap: set tip and navigate to Home
     responseListener.current = addNotificationResponseReceivedListener(
       (response) => {
         setTip(extractTip(response.notification));
@@ -93,7 +88,6 @@ function AppContent() {
       }
     );
 
-    // Cold start: check if app was opened from a notification
     getLastNotificationResponse().then((response) => {
       if (response) {
         setTip(extractTip(response.notification));
@@ -114,17 +108,39 @@ function AppContent() {
   );
 }
 
-/**
- * Root component – wraps the app in Auth and Tip providers.
- */
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
+    DMSans_700Bold,
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <TipProvider>
-          <AppContent />
-        </TipProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <View style={styles.root} onLayout={onLayoutRootView}>
+      <ThemeProvider>
+        <OnboardingProvider>
+          <AuthProvider>
+            <TipProvider>
+              <AppContent />
+            </TipProvider>
+          </AuthProvider>
+        </OnboardingProvider>
+      </ThemeProvider>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});

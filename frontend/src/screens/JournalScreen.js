@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -14,15 +13,29 @@ import { Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useTheme } from "../context/ThemeContext";
 import { journalApi } from "../services/journalApi";
-import { MOODS, EMOTIONS } from "../constants/journal";
+import { EMOTIONS } from "../constants/journal";
+import { Card } from "../components/Card";
+import { MoodSelector } from "../components/MoodSelector";
+import { ChipGroup } from "../components/ChipGroup";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
+import { Banner } from "../components/Banner";
+import { SectionHeader } from "../components/SectionHeader";
+import { AnimatedCard } from "../components/AnimatedCard";
+
+const ENERGY_LEVELS = [
+  { id: 1, label: "Very Low" },
+  { id: 2, label: "Low" },
+  { id: 3, label: "Moderate" },
+  { id: 4, label: "High" },
+  { id: 5, label: "Very High" },
+];
 
 export function JournalScreen({ navigation, route }) {
-  const { colors } = useTheme();
-  const Colors = colors;
-  const styles = createStyles(Colors);
+  const { colors, fonts } = useTheme();
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
-  const [energyLevel, setEnergyLevel] = useState(5);
+  const [energyLevel, setEnergyLevel] = useState(3);
   const [journalText, setJournalText] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -32,7 +45,14 @@ export function JournalScreen({ navigation, route }) {
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const selectedDate = route.params?.selectedDate || todayStr;
+  const preselectedMood = route.params?.preselectedMood;
   const isViewingPast = selectedDate !== todayStr;
+
+  useEffect(() => {
+    if (preselectedMood && !selectedMood) {
+      setSelectedMood(preselectedMood);
+    }
+  }, [preselectedMood]);
 
   const loadEntry = useCallback(async () => {
     try {
@@ -41,7 +61,8 @@ export function JournalScreen({ navigation, route }) {
         setExistingEntry(result.data);
         setSelectedMood(result.data.mood);
         setSelectedEmotions(result.data.emotions || []);
-        setEnergyLevel(result.data.energyLevel || 5);
+        const rawEnergy = result.data.energyLevel || 5;
+        setEnergyLevel(Math.ceil(rawEnergy / 2));
         setJournalText(result.data.content || "");
       } else if (result.status === 404 || !result.data) {
         setExistingEntry(null);
@@ -58,9 +79,7 @@ export function JournalScreen({ navigation, route }) {
   const loadPrompt = useCallback(async () => {
     try {
       const result = await journalApi.getRandomPrompt();
-      if (!result.error && result.data) {
-        setPrompt(result.data);
-      }
+      if (!result.error && result.data) setPrompt(result.data);
     } catch {
       // Prompts are optional
     }
@@ -81,28 +100,17 @@ export function JournalScreen({ navigation, route }) {
     setRefreshing(false);
   };
 
-  const toggleEmotion = (emotion) => {
-    setSelectedEmotions((prev) =>
-      prev.includes(emotion)
-        ? prev.filter((e) => e !== emotion)
-        : [...prev, emotion]
-    );
-  };
-
   const resetForm = () => {
     setSelectedMood(null);
     setSelectedEmotions([]);
-    setEnergyLevel(5);
+    setEnergyLevel(3);
     setJournalText("");
     setExistingEntry(null);
   };
 
   const handleSave = async () => {
     if (!selectedMood || !journalText.trim()) {
-      Alert.alert(
-        "Incomplete Entry",
-        "Please select a mood and write a journal entry to save."
-      );
+      Alert.alert("Incomplete Entry", "Please select a mood and write a journal entry to save.");
       return;
     }
 
@@ -111,7 +119,7 @@ export function JournalScreen({ navigation, route }) {
       const payload = {
         mood: selectedMood,
         emotions: selectedEmotions,
-        energyLevel,
+        energyLevel: energyLevel * 2,
         content: journalText.trim(),
         entryDate: selectedDate,
       };
@@ -127,12 +135,7 @@ export function JournalScreen({ navigation, route }) {
         Alert.alert("Error", result.error);
       } else {
         setExistingEntry(result.data);
-        Alert.alert(
-          "Saved",
-          existingEntry
-            ? "Journal entry updated successfully!"
-            : "Journal entry saved successfully!"
-        );
+        Alert.alert("Saved", existingEntry ? "Journal entry updated!" : "Journal entry saved!");
       }
     } catch {
       Alert.alert("Error", "Failed to save journal entry. Please try again.");
@@ -143,280 +146,195 @@ export function JournalScreen({ navigation, route }) {
 
   const handleDelete = () => {
     if (!existingEntry) return;
-
-    Alert.alert(
-      "Delete Entry",
-      "Are you sure you want to delete today's journal entry?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const result = await journalApi.deleteEntry(existingEntry.id);
-              if (!result.error) {
-                resetForm();
-                Alert.alert("Deleted", "Journal entry deleted.");
-              } else {
-                Alert.alert("Error", result.error);
-              }
-            } catch {
-              Alert.alert("Error", "Failed to delete entry.");
+    Alert.alert("Delete Entry", "Are you sure you want to delete this journal entry?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const result = await journalApi.deleteEntry(existingEntry.id);
+            if (!result.error) {
+              resetForm();
+              Alert.alert("Deleted", "Journal entry deleted.");
+            } else {
+              Alert.alert("Error", result.error);
             }
-          },
+          } catch {
+            Alert.alert("Error", "Failed to delete entry.");
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const isComplete = selectedMood && journalText.trim().length > 0;
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Loading journal...</Text>
+      <View style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 12 }]}>Loading journal...</Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Ionicons name="heart" size={24} color={Colors.primary} />
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Mood Journal</Text>
-            <Text style={styles.headerSubtitle}>Reflect on your day</Text>
-          </View>
+      <View style={styles.headerRow}>
+        <View>
+          <Text style={[fonts.heading1, { color: colors.text }]}>Mood Journal</Text>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
+            {format(new Date(selectedDate + "T00:00:00"), "EEEE, MMMM d, yyyy")}
+          </Text>
         </View>
         <TouchableOpacity
-          style={styles.calendarButton}
+          style={[styles.calBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={() => navigation.navigate("MoodCalendar")}
         >
-          <Ionicons name="calendar-outline" size={22} color={Colors.primary} />
+          <Ionicons name="calendar-outline" size={22} color={colors.primary} />
         </TouchableOpacity>
-      </View>
-
-      <View style={styles.dateRow}>
-        <Ionicons
-          name="calendar"
-          size={16}
-          color={Colors.textSecondary}
-        />
-        <Text style={styles.dateText}>
-          {format(new Date(selectedDate + "T00:00:00"), "EEEE, MMMM d, yyyy")}
-        </Text>
       </View>
 
       {isViewingPast && (
         <TouchableOpacity
-          style={styles.backToTodayBtn}
+          style={[styles.backBtn, { backgroundColor: `${colors.primary}12` }]}
           onPress={() => navigation.setParams({ selectedDate: undefined })}
         >
-          <Ionicons name="arrow-back" size={16} color={Colors.primary} />
-          <Text style={styles.backToTodayText}>Back to Today</Text>
+          <Ionicons name="arrow-back" size={16} color={colors.primary} />
+          <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "600" }]}>Back to Today</Text>
         </TouchableOpacity>
       )}
 
       {existingEntry && (
-        <View style={styles.existingBanner}>
-          <Ionicons name="checkmark-circle" size={18} color={Colors.success} />
-          <Text style={styles.existingText}>
-            Editing today's entry
-          </Text>
-        </View>
+        <Banner
+          variant="success"
+          message={isViewingPast ? `Editing entry for ${format(new Date(selectedDate + "T00:00:00"), "MMMM d")}` : "Editing today's entry"}
+        />
       )}
 
-      {/* Prompt Card */}
       {prompt && !existingEntry && (
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="bulb-outline" size={20} color={Colors.primary} />
-            <Text style={styles.cardTitle}>Today's Prompt</Text>
+        <Card style={{ marginBottom: 16 }}>
+          <View style={styles.promptRow}>
+            <Ionicons name="bulb-outline" size={20} color={colors.primary} />
+            <Text style={[fonts.heading3, { color: colors.text }]}>Today's Prompt</Text>
           </View>
-          <Text style={styles.promptText}>{prompt.content}</Text>
-          <TouchableOpacity onPress={loadPrompt} style={styles.newPromptBtn}>
-            <Ionicons
-              name="refresh-outline"
-              size={16}
-              color={Colors.primary}
-            />
-            <Text style={styles.newPromptText}>New prompt</Text>
+          <Text style={[fonts.body, { color: colors.text, fontStyle: "italic", lineHeight: 22, marginTop: 8 }]}>
+            {prompt.content}
+          </Text>
+          <TouchableOpacity onPress={loadPrompt} style={styles.refreshPrompt}>
+            <Ionicons name="refresh-outline" size={16} color={colors.primary} />
+            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "500" }]}>New prompt</Text>
           </TouchableOpacity>
-        </View>
+        </Card>
       )}
 
-      {/* Mood Selection */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>How are you feeling?</Text>
-        </View>
-        <Text style={styles.cardDescription}>
-          Select your overall mood today
-        </Text>
-        <View style={styles.moodRow}>
-          {MOODS.map((mood) => {
-            const isSelected = selectedMood === mood.id;
-            return (
-              <TouchableOpacity
-                key={mood.id}
-                style={[
-                  styles.moodButton,
-                  isSelected && { backgroundColor: mood.color },
-                  !isSelected && { borderColor: mood.color, borderWidth: 1.5 },
-                ]}
-                onPress={() => setSelectedMood(mood.id)}
-              >
-                <Ionicons
-                  name={mood.icon}
-                  size={22}
-                  color={isSelected ? "#fff" : mood.color}
-                />
-                <Text
-                  style={[
-                    styles.moodLabel,
-                    isSelected && styles.moodLabelSelected,
-                    !isSelected && { color: mood.color },
-                  ]}
-                >
-                  {mood.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
+      {/* Mood */}
+      <AnimatedCard index={0}>
+        <Card style={{ marginBottom: 16 }}>
+          <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>How are you feeling?</Text>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 16 }]}>Select your overall mood</Text>
+          <MoodSelector selected={selectedMood} onSelect={setSelectedMood} />
+        </Card>
+      </AnimatedCard>
 
-      {/* Energy Level */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Ionicons name="flash" size={20} color={Colors.primary} />
-          <Text style={styles.cardTitle}>Energy Level</Text>
+      {/* Energy */}
+      <AnimatedCard index={1}>
+      <Card style={{ marginBottom: 16 }}>
+        <View style={styles.promptRow}>
+          <Ionicons name="flash" size={20} color={colors.primary} />
+          <Text style={[fonts.heading3, { color: colors.text }]}>Energy Level</Text>
         </View>
-        <Text style={styles.cardDescription}>
-          How energized do you feel? (1-10)
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 4, marginBottom: 14 }]}>
+          How energized do you feel?
         </Text>
         <View style={styles.energyRow}>
-          {Array.from({ length: 10 }, (_, i) => i + 1).map((level) => {
-            const isSelected = energyLevel === level;
+          {ENERGY_LEVELS.map((level) => {
+            const active = energyLevel === level.id;
             return (
               <TouchableOpacity
-                key={level}
+                key={level.id}
                 style={[
-                  styles.energyDot,
-                  isSelected && styles.energyDotSelected,
+                  styles.energyBtn,
+                  {
+                    backgroundColor: active ? colors.primary : colors.background,
+                    borderColor: active ? colors.primary : colors.border,
+                  },
                 ]}
-                onPress={() => setEnergyLevel(level)}
+                onPress={() => setEnergyLevel(level.id)}
               >
                 <Text
                   style={[
-                    styles.energyDotText,
-                    isSelected && styles.energyDotTextSelected,
+                    fonts.caption,
+                    { color: active ? "#fff" : colors.textSecondary, fontWeight: active ? "600" : "400", textAlign: "center" },
                   ]}
                 >
-                  {level}
+                  {level.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-        <View style={styles.energyLabels}>
-          <Text style={styles.energyLabelText}>Low</Text>
-          <Text style={styles.energyValue}>{energyLevel}/10</Text>
-          <Text style={styles.energyLabelText}>High</Text>
-        </View>
-      </View>
+      </Card>
+      </AnimatedCard>
 
       {/* Emotions */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>What emotions are you experiencing?</Text>
-        </View>
-        <Text style={styles.cardDescription}>Select all that apply</Text>
-        <View style={styles.emotionWrap}>
-          {EMOTIONS.map((emotion) => {
-            const isSelected = selectedEmotions.includes(emotion);
-            return (
-              <TouchableOpacity
-                key={emotion}
-                style={[
-                  styles.emotionChip,
-                  isSelected && styles.emotionChipSelected,
-                ]}
-                onPress={() => toggleEmotion(emotion)}
-              >
-                <Text
-                  style={[
-                    styles.emotionChipText,
-                    isSelected && styles.emotionChipTextSelected,
-                  ]}
-                >
-                  {emotion}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
+      <AnimatedCard index={2}>
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Emotions</Text>
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>Select all that apply</Text>
+        <ChipGroup
+          items={EMOTIONS}
+          selected={selectedEmotions}
+          onSelect={setSelectedEmotions}
+          multiSelect
+        />
+      </Card>
+      </AnimatedCard>
 
-      {/* Journal Entry */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Journal Entry</Text>
-        </View>
-        <Text style={styles.cardDescription}>
-          What's on your mind today?
-        </Text>
-        <TextInput
-          style={styles.textArea}
-          placeholder="Write about your day, thoughts, feelings, or anything that's important to you..."
-          placeholderTextColor={Colors.textLight}
+      {/* Journal Text */}
+      <AnimatedCard index={3}>
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Journal Entry</Text>
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>What's on your mind?</Text>
+        <Input
           value={journalText}
           onChangeText={setJournalText}
+          placeholder="Write about your day, thoughts, feelings..."
           multiline
-          textAlignVertical="top"
+          style={{ marginBottom: 0 }}
         />
-        <Text style={styles.charCount}>{journalText.length} characters</Text>
-      </View>
+        <Text style={[fonts.caption, { color: colors.textLight, textAlign: "right", marginTop: 6 }]}>
+          {journalText.length} characters
+        </Text>
+      </Card>
+      </AnimatedCard>
 
-      {/* Save Button */}
-      <TouchableOpacity
-        style={[styles.saveButton, !isComplete && styles.saveButtonDisabled]}
+      <Button
+        title={existingEntry ? "Update Journal Entry" : "Save Journal Entry"}
         onPress={handleSave}
-        disabled={!isComplete || saving}
-      >
-        {saving ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <>
-            <Ionicons name="save-outline" size={20} color="#fff" />
-            <Text style={styles.saveButtonText}>
-              {existingEntry ? "Update Journal Entry" : "Save Journal Entry"}
-            </Text>
-          </>
-        )}
-      </TouchableOpacity>
+        loading={saving}
+        disabled={!isComplete}
+        icon={<Ionicons name="save-outline" size={20} color="#fff" />}
+      />
 
-      {/* Delete Button */}
       {existingEntry && (
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Ionicons name="trash-outline" size={18} color={Colors.error} />
-          <Text style={styles.deleteButtonText}>Delete Entry</Text>
-        </TouchableOpacity>
+        <Button
+          variant="danger"
+          title="Delete Entry"
+          onPress={handleDelete}
+          icon={<Ionicons name="trash-outline" size={18} color={colors.error} />}
+          style={{ marginTop: 10 }}
+        />
       )}
 
       {!isComplete && (
-        <Text style={styles.hint}>
-          Please select a mood and write a journal entry to save
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, textAlign: "center", marginTop: 12 }]}>
+          Select a mood and write an entry to save
         </Text>
       )}
 
@@ -425,295 +343,43 @@ export function JournalScreen({ navigation, route }) {
   );
 }
 
-const createStyles = (Colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.background,
-  },
-  loadingText: {
-    marginTop: 12,
-    color: Colors.textSecondary,
-    fontSize: 15,
-  },
-
-  header: {
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { padding: 20, paddingBottom: 40 },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  headerTextContainer: {
-    gap: 2,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: Colors.text,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  calendarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  dateRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+    alignItems: "flex-start",
     marginBottom: 16,
-    marginTop: 4,
   },
-  dateText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-
-  existingBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#E8F8F5",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 14,
-  },
-  existingText: {
-    color: Colors.success,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  card: {
-    backgroundColor: Colors.surface,
+  calBtn: {
+    width: 44,
+    height: 44,
     borderRadius: 14,
-    padding: 16,
-    marginBottom: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: Colors.text,
-  },
-  cardDescription: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginBottom: 14,
-  },
-
-  promptText: {
-    fontSize: 15,
-    color: Colors.text,
-    fontStyle: "italic",
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-  newPromptBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  newPromptText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: "500",
-  },
-
-  moodRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 6,
-  },
-  moodButton: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: Colors.surface,
-    gap: 4,
-  },
-  moodLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: Colors.textSecondary,
-  },
-  moodLabelSelected: {
-    color: "#fff",
-  },
-
-  energyRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 4,
-    marginBottom: 10,
-  },
-  energyDot: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: Colors.background,
-    borderWidth: 1,
-    borderColor: Colors.border,
     justifyContent: "center",
     alignItems: "center",
   },
-  energyDotSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  energyDotText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.textSecondary,
-  },
-  energyDotTextSelected: {
-    color: "#fff",
-  },
-  energyLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  energyLabelText: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  energyValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.text,
-  },
-
-  emotionWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  emotionChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
-  },
-  emotionChipSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  emotionChipText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: "500",
-  },
-  emotionChipTextSelected: {
-    color: "#fff",
-  },
-
-  textArea: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 15,
-    color: Colors.text,
-    minHeight: 130,
-    backgroundColor: Colors.background,
-    lineHeight: 22,
-  },
-  charCount: {
-    textAlign: "right",
-    fontSize: 12,
-    color: Colors.textLight,
-    marginTop: 6,
-  },
-
-  saveButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.primary,
-    paddingVertical: 16,
-    borderRadius: 14,
-    gap: 8,
-    marginBottom: 10,
-  },
-  saveButtonDisabled: {
-    backgroundColor: Colors.disabled,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  deleteButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    gap: 6,
-    marginBottom: 4,
-  },
-  deleteButtonText: {
-    color: Colors.error,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-
-  hint: {
-    textAlign: "center",
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 4,
-  },
-
-  backToTodayBtn: {
+  backBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: `${Colors.primary}15`,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 14,
     alignSelf: "flex-start",
   },
-  backToTodayText: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: "600",
+  promptRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  refreshPrompt: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 10 },
+  energyRow: { flexDirection: "row", gap: 8 },
+  energyBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
   },
 });

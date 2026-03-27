@@ -1,24 +1,17 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { API_BASE_URL, DEV_MODE } from "../config";
+import { Logo } from "../components/Logo";
+import { Input } from "../components/Input";
+import { Button } from "../components/Button";
+import { Banner } from "../components/Banner";
 
 export function LoginScreen({ navigation, route }) {
   const { login } = useAuth();
-  const { colors } = useTheme();
-  const Colors = colors;
-  const styles = createStyles(Colors);
+  const { colors, fonts } = useTheme();
 
   const prefillEmail = route.params?.email ?? "";
   const verified = route.params?.verified ?? false;
@@ -26,7 +19,6 @@ export function LoginScreen({ navigation, route }) {
 
   const [email, setEmail] = useState(prefillEmail);
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successBanner, setSuccessBanner] = useState("");
@@ -102,60 +94,42 @@ export function LoginScreen({ navigation, route }) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="leaf" size={48} color="#fff" />
-          </View>
-          <Text style={styles.title}>Wellness App</Text>
-          <Text style={styles.subtitle}>
+        <View style={styles.logoSection}>
+          <Logo size="medium" />
+          <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 8 }]}>
             Your daily companion for well-being
           </Text>
         </View>
 
         <View style={styles.form}>
           {DEV_MODE && (
-            <View style={styles.devBanner}>
-              <Ionicons name="code-slash" size={16} color="#856404" />
-              <Text style={styles.devBannerText}>
-                Dev Mode — Using real Auth API
-              </Text>
-            </View>
+            <Banner variant="warning" message="Dev Mode — Using real Auth API" icon="code-slash" />
           )}
 
           {successBanner ? (
-            <View style={styles.successBanner}>
-              <Ionicons name="checkmark-circle" size={18} color={Colors.success} />
-              <Text style={styles.successBannerText}>{successBanner}</Text>
-            </View>
+            <Banner variant="success" message={successBanner} />
           ) : null}
 
           {error ? (
-            <View style={styles.errorBanner}>
-              <Ionicons
-                name={/locked/i.test(error) ? "lock-closed" : "alert-circle"}
-                size={18}
-                color={Colors.error}
-              />
-              <Text style={styles.errorBannerText}>{error}</Text>
-              {unverifiedEmail ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("VerifyEmail", { email: unverifiedEmail })
-                  }
-                >
-                  <Text style={styles.errorActionLink}>Verify now</Text>
-                </TouchableOpacity>
-              ) : null}
-            </View>
+            <Banner
+              variant="error"
+              message={error}
+              icon={/locked/i.test(error) ? "lock-closed" : "alert-circle"}
+              action={unverifiedEmail ? "Verify now" : undefined}
+              onAction={
+                unverifiedEmail
+                  ? () => navigation.navigate("VerifyEmail", { email: unverifiedEmail })
+                  : undefined
+              }
+            />
           ) : null}
 
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={[styles.input, error && !password && styles.inputError]}
+          <Input
+            label="Email"
             value={email}
             onChangeText={(t) => {
               setEmail(t);
@@ -163,248 +137,70 @@ export function LoginScreen({ navigation, route }) {
               setUnverifiedEmail("");
             }}
             placeholder="Enter your email"
-            placeholderTextColor={Colors.textLight}
             keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
             returnKeyType="next"
             onSubmitEditing={() => passwordRef.current?.focus()}
             textContentType="emailAddress"
           />
 
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              ref={passwordRef}
-              style={styles.passwordInput}
-              value={password}
-              onChangeText={(t) => {
-                setPassword(t);
-                setError("");
-              }}
-              placeholder="Enter your password"
-              placeholderTextColor={Colors.textLight}
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="done"
-              onSubmitEditing={handleLogin}
-              textContentType="password"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={22}
-                color={Colors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          <Input
+            label="Password"
+            value={password}
+            onChangeText={(t) => {
+              setPassword(t);
+              setError("");
+            }}
+            placeholder="Enter your password"
+            secureTextEntry
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+            textContentType="password"
+            inputRef={passwordRef}
+          />
 
           <TouchableOpacity
-            style={styles.forgotPasswordLink}
+            style={styles.forgotLink}
             onPress={() => navigation.navigate("ForgotPassword")}
           >
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "500" }]}>
+              Forgot password?
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
+          <Button
+            title="Log In"
             onPress={handleLogin}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <Text style={styles.buttonText}>Log In</Text>
-            )}
-          </TouchableOpacity>
+            loading={isLoading}
+            style={{ marginTop: 8 }}
+          />
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
+            <Text style={[fonts.body, { color: colors.textSecondary }]}>
+              Don't have an account?{" "}
+            </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={styles.footerLink}>Create account</Text>
+              <Text style={[fonts.body, { color: colors.secondary, fontWeight: "600" }]}>
+                Create account
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {DEV_MODE && <Text style={styles.apiInfo}>API: {API_BASE_URL}</Text>}
+          {DEV_MODE && (
+            <Text style={[fonts.caption, { color: colors.textLight, textAlign: "center", marginTop: 16 }]}>
+              API: {API_BASE_URL}
+            </Text>
+          )}
         </View>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const createStyles = (Colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 32,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 48,
-  },
-  iconCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: Colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    color: Colors.text,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-    marginTop: 8,
-  },
-  form: {
-    width: "100%",
-  },
-  devBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF3CD",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginBottom: 20,
-    gap: 8,
-  },
-  devBannerText: {
-    fontSize: 13,
-    color: "#856404",
-    fontWeight: "500",
-  },
-  successBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E8F8F0",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
-  },
-  successBannerText: {
-    fontSize: 13,
-    color: Colors.success,
-    fontWeight: "500",
-    flex: 1,
-  },
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FDECEA",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginBottom: 16,
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  errorBannerText: {
-    fontSize: 13,
-    color: Colors.error,
-    fontWeight: "500",
-    flex: 1,
-  },
-  errorActionLink: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: "700",
-    textDecorationLine: "underline",
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.text,
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: Colors.text,
-  },
-  inputError: {
-    borderColor: Colors.error,
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 4,
-  },
-  passwordInput: {
-    flex: 1,
-    fontSize: 16,
-    color: Colors.text,
-    paddingVertical: Platform.OS === "ios" ? 0 : 10,
-  },
-  forgotPasswordLink: {
-    alignSelf: "flex-end",
-    marginTop: 8,
-  },
-  forgotPasswordText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: "500",
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 24,
-  },
-  footerText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  footerLink: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: "600",
-  },
-  apiInfo: {
-    textAlign: "center",
-    fontSize: 11,
-    color: Colors.textLight,
-    marginTop: 16,
-  },
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  content: { flex: 1, justifyContent: "center", paddingHorizontal: 32 },
+  logoSection: { alignItems: "center", marginBottom: 48 },
+  form: { width: "100%" },
+  forgotLink: { alignSelf: "flex-end", marginBottom: 8, marginTop: -8 },
+  footer: { flexDirection: "row", justifyContent: "center", marginTop: 24 },
 });

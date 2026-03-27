@@ -7,14 +7,16 @@ import { useTheme } from "../context/ThemeContext";
 const Stack = createNativeStackNavigator();
 
 export function JournalStack() {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
 
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "600" },
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.primary,
+        headerTitleStyle: { ...fonts.heading3, color: colors.text },
+        headerShadowVisible: false,
+        animationDuration: 350,
       }}
     >
       <Stack.Screen

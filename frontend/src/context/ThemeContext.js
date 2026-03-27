@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DarkColors, LightColors } from "../theme/colors";
+import { Typography } from "../theme/typography";
 
 const ThemeContext = createContext(null);
 const THEME_MODE_KEY = "theme_mode_v1";
@@ -40,15 +41,18 @@ export function ThemeProvider({ children }) {
     [isDarkMode]
   );
 
+  const fonts = useMemo(() => Typography, []);
+
   const value = useMemo(
     () => ({
       isDarkMode,
       isThemeReady,
       colors,
+      fonts,
       setDarkMode,
       toggleDarkMode,
     }),
-    [colors, isDarkMode, isThemeReady, setDarkMode, toggleDarkMode]
+    [colors, fonts, isDarkMode, isThemeReady, setDarkMode, toggleDarkMode]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
