@@ -1,44 +1,18 @@
-import React, { useEffect } from "react";
-import { StyleSheet, Platform, Pressable } from "react-native";
+import React from "react";
+import { StyleSheet, Pressable, View, DeviceEventEmitter } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withSequence,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
 import { useTheme } from "../context/ThemeContext";
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-export function CrisisButton({ onPress }) {
+export function CrisisButton() {
   const { colors } = useTheme();
-  const scale = useSharedValue(1);
-
-  useEffect(() => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.06, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1.0, { duration: 1500, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      false
-    );
-  }, [scale]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
 
   return (
-    <AnimatedPressable
-      style={[styles.fab, shadow, animatedStyle]}
-      onPress={onPress}
+    <Pressable
+      style={styles.btn}
+      onPress={() => DeviceEventEmitter.emit("crisis:open")}
       hitSlop={8}
     >
-      <Animated.View
+      <View
         style={[
           styles.inner,
           {
@@ -47,34 +21,20 @@ export function CrisisButton({ onPress }) {
           },
         ]}
       >
-        <Ionicons name="heart-circle" size={26} color={colors.error} />
-      </Animated.View>
-    </AnimatedPressable>
+        <Ionicons name="heart-circle" size={24} color={colors.error} />
+      </View>
+    </Pressable>
   );
 }
 
-const shadow = Platform.select({
-  ios: {
-    shadowColor: "#D4726A",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-  },
-  android: { elevation: 4 },
-  default: {},
-});
-
 const styles = StyleSheet.create({
-  fab: {
-    position: "absolute",
-    bottom: 80,
-    right: 16,
-    zIndex: 100,
+  btn: {
+    marginRight: 4,
   },
   inner: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",

@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../services/authApi';
+import { useOnboarding } from './OnboardingContext';
 
 const AuthContext = createContext(null);
 
@@ -15,6 +16,7 @@ const USER_ID_KEY = 'user_id';
 const USER_EMAIL_KEY = 'user_email';
 
 export function AuthProvider({ children }) {
+  const { resetOnboarding } = useOnboarding();
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,6 @@ export function AuthProvider({ children }) {
     setUser(sessionUser);
   }, []);
 
-  // Restore persisted session on app start and validate token against backend.
   useEffect(() => {
     (async () => {
       try {
@@ -44,6 +45,9 @@ export function AuthProvider({ children }) {
           const profileResult = await authApi.getCurrentUser(storedToken);
           if (profileResult.error || !profileResult.data) {
             await clearSession();
+            if (profileResult.status >= 400 && profileResult.status < 500) {
+              await resetOnboarding();
+            }
           } else {
             const profile = profileResult.data;
             const normalizedUser = {
@@ -65,7 +69,7 @@ export function AuthProvider({ children }) {
         setIsLoading(false);
       }
     })();
-  }, [clearSession, persistSession]);
+  }, [clearSession, persistSession, resetOnboarding]);
 
   const login = useCallback(
     async (email, password) => {

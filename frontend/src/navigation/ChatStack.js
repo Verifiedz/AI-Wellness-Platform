@@ -23,6 +23,7 @@ import { chatApi } from "../services/chatApi";
 import { Card } from "../components/Card";
 import { Input } from "../components/Input";
 import { Button } from "../components/Button";
+import { CrisisButton } from "../components/CrisisButton";
 
 const Drawer = createDrawerNavigator();
 const SESSION_NAMES_KEY = "chat_session_names_v1";
@@ -293,6 +294,7 @@ export function ChatStack() {
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
         headerTitleStyle: { ...fonts.heading3, color: colors.text },
+        headerRight: () => <CrisisButton />,
         drawerType: "slide",
         swipeEdgeWidth: 40,
       }}

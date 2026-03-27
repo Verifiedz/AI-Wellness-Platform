@@ -6,6 +6,7 @@ import { ProfileSettingsScreen } from "../screens/ProfileSettingsScreen";
 import { PrivacySettingsScreen } from "../screens/PrivacySettingsScreen";
 import { HelpSupportScreen } from "../screens/HelpSupportScreen";
 import { useTheme } from "../context/ThemeContext";
+import { CrisisButton } from "../components/CrisisButton";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ export function SettingsStack() {
         headerTintColor: colors.primary,
         headerTitleStyle: { ...fonts.heading3, color: colors.text },
         headerShadowVisible: false,
+        headerRight: () => <CrisisButton />,
         animationDuration: 350,
       }}
     >

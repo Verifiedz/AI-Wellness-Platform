@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { format, subDays } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useOnboarding } from "../context/OnboardingContext";
 import { DEV_MODE } from "../config";
 import { journalApi } from "../services/journalApi";
 import { chatApi } from "../services/chatApi";
@@ -16,6 +17,7 @@ import { AnimatedCard } from "../components/AnimatedCard";
 export function SettingsScreen({ navigation }) {
   const { user, logout } = useAuth();
   const { colors, fonts, isDarkMode, setDarkMode } = useTheme();
+  const { resetOnboarding } = useOnboarding();
 
   const [stats, setStats] = useState({ entries: 0, sessions: 0, streak: 0 });
 
@@ -58,6 +60,17 @@ export function SettingsScreen({ navigation }) {
     ]);
   };
 
+  const handleResetOnboarding = () => {
+    Alert.alert(
+      "Retake Setup Quiz",
+      "This will reset your preferences and restart the onboarding quiz. Continue?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Reset", onPress: resetOnboarding },
+      ]
+    );
+  };
+
   const menuSections = [
     {
       title: "Appearance",
@@ -84,6 +97,7 @@ export function SettingsScreen({ navigation }) {
       items: [
         { icon: "person-outline", label: "Profile", color: colors.secondary, screen: "ProfileSettings" },
         { icon: "notifications-outline", label: "Notifications", color: colors.primary, screen: "NotificationSettings" },
+        { icon: "refresh-outline", label: "Retake Setup Quiz", sublabel: "Redo the onboarding questions", color: colors.accent, onPress: handleResetOnboarding },
       ],
     },
     {
@@ -144,9 +158,9 @@ export function SettingsScreen({ navigation }) {
                   { borderBottomColor: colors.border },
                   idx === section.items.length - 1 && { borderBottomWidth: 0 },
                 ]}
-                onPress={item.screen ? () => navigation.navigate(item.screen) : undefined}
-                activeOpacity={item.screen ? 0.7 : 1}
-                disabled={!item.screen}
+                onPress={item.onPress || (item.screen ? () => navigation.navigate(item.screen) : undefined)}
+                activeOpacity={item.onPress || item.screen ? 0.7 : 1}
+                disabled={!item.onPress && !item.screen}
               >
                 <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
                   <Ionicons name={item.icon} size={20} color={item.color} />
@@ -157,7 +171,7 @@ export function SettingsScreen({ navigation }) {
                     <Text style={[fonts.caption, { color: colors.textSecondary }]}>{item.sublabel}</Text>
                   )}
                 </View>
-                {item.trailing || (item.screen && <Ionicons name="chevron-forward" size={18} color={colors.textLight} />)}
+                {item.trailing || ((item.screen || item.onPress) && <Ionicons name="chevron-forward" size={18} color={colors.textLight} />)}
               </TouchableOpacity>
             ))}
           </Card>
