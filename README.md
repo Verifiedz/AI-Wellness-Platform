@@ -14,9 +14,10 @@ A full-stack wellness application for students, featuring authentication, journa
 6. [Step 4: Start the Backend Services](#step-4-start-the-backend-services)
 7. [Step 5: Set Up the Mobile App](#step-5-set-up-the-mobile-app)
 8. [Step 6: Run the App](#step-6-run-the-app)
-9. [Verifying Everything Works](#verifying-everything-works)
-10. [Troubleshooting](#troubleshooting)
-11. [Project Structure](#project-structure)
+9. [Using ngrok (Remote / Cross-Network Testing)](#using-ngrok-remote--cross-network-testing)
+10. [Verifying Everything Works](#verifying-everything-works)
+11. [Troubleshooting](#troubleshooting)
+12. [Project Structure](#project-structure)
 
 ---
 
@@ -229,7 +230,16 @@ EXPO_PUBLIC_API_URL=http://localhost:5051
 EXPO_PUBLIC_DEV_MODE=true
 ```
 
-> **Important:** Your phone and computer must be on the **same Wi-Fi network** for Option A to work.
+**Option C: Using ngrok (different networks or behind a firewall)**
+
+If your phone and computer are on different networks, or you can't connect using a local IP, use ngrok to create a public tunnel. See [Using ngrok](#using-ngrok-remote--cross-network-testing) below for full setup instructions.
+
+```env
+EXPO_PUBLIC_API_URL=https://your-static-domain.ngrok-free.app
+EXPO_PUBLIC_DEV_MODE=true
+```
+
+> **Important:** For Options A and B, your phone and computer must be on the **same Wi-Fi network**. If that isn't possible, use Option C (ngrok).
 
 ---
 
@@ -252,6 +262,96 @@ EXPO_PUBLIC_DEV_MODE=true
 6. **On an emulator:** Press `a` for Android emulator or `i` for iOS simulator (if you have them installed).
 
 **To log in:** On the login screen, enter any User ID (e.g. `user-1`) and optionally an email. This is a placeholder—real authentication will be added later.
+
+---
+
+## Using ngrok (Remote / Cross-Network Testing)
+
+If your phone and computer are on **different networks**, or you're behind a firewall that blocks local connections, you can use [ngrok](https://ngrok.com) to create a secure public tunnel to your backend.
+
+### Why ngrok?
+
+- Your phone doesn't need to be on the same Wi-Fi as your computer
+- Works from anywhere with an internet connection
+- Bypasses firewall and NAT issues
+- Gives you an HTTPS URL (some features like push notifications require HTTPS)
+
+### 9.1 Install ngrok
+
+1. Go to [https://ngrok.com](https://ngrok.com) and create a free account
+2. Download ngrok for your OS from [https://ngrok.com/download](https://ngrok.com/download)
+3. **Windows:** Unzip and place `ngrok.exe` somewhere in your PATH (or run it from the unzipped folder)
+4. **Mac:** `brew install ngrok` (if you have Homebrew) or unzip the download
+5. Connect your account by running (replace `YOUR_AUTH_TOKEN` with the token from the ngrok dashboard):
+
+```bash
+ngrok config add-authtoken YOUR_AUTH_TOKEN
+```
+
+### 9.2 (Optional) Claim a Free Static Domain
+
+By default, ngrok gives you a random URL that changes every time you restart. To get a **static domain** (free on the ngrok free plan):
+
+1. Go to [https://dashboard.ngrok.com/domains](https://dashboard.ngrok.com/domains)
+2. Click **"Create Domain"** — you'll get a domain like `your-name-random.ngrok-free.app`
+3. Save this domain — you'll use it in the steps below
+
+### 9.3 Start the ngrok Tunnel
+
+Open a **new terminal** (keep the backend and frontend running in their own terminals) and run:
+
+**With a static domain (recommended):**
+
+```bash
+ngrok http 5051 --domain your-static-domain.ngrok-free.app
+```
+
+**Without a static domain (random URL each time):**
+
+```bash
+ngrok http 5051
+```
+
+ngrok will display output like this:
+
+```
+Forwarding  https://your-static-domain.ngrok-free.app -> http://localhost:5051
+```
+
+Copy the `https://...` URL — this is your public backend address.
+
+### 9.4 Update the Backend `.env`
+
+The auth-service needs to allow requests from the ngrok domain. Open the **root** `.env` file and add or update the `CORS_ORIGIN_0` variable:
+
+```env
+CORS_ORIGIN_0=https://your-static-domain.ngrok-free.app
+```
+
+Then **restart the backend** to pick up the change:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+### 9.5 Update the Frontend `.env`
+
+Open `frontend/.env` and set the API URL to your ngrok address:
+
+```env
+EXPO_PUBLIC_API_URL=https://your-static-domain.ngrok-free.app
+EXPO_PUBLIC_DEV_MODE=true
+```
+
+Then restart the Expo dev server (`Ctrl+C` and run `npx expo start` again).
+
+### 9.6 ngrok Tips
+
+- **Keep ngrok running** — if you close the ngrok terminal, the tunnel stops and the app can't reach the backend.
+- **Static domains persist** — if you claimed a static domain, the URL stays the same across restarts, so you don't need to update `.env` files each time.
+- **Free plan limits** — the free plan allows one tunnel at a time and has rate limits, which is fine for development.
+- **ngrok inspector** — visit `http://localhost:4040` in your browser while ngrok is running to see all requests flowing through the tunnel (useful for debugging).
 
 ---
 
@@ -312,6 +412,17 @@ EXPO_PUBLIC_DEV_MODE=true
 
 - Another program is using port 5051, 5050, or another port. Stop other services using those ports, or change the port mapping in `docker-compose.yml` (advanced).
 
+### ngrok tunnel not working / "ERR_NGROK" page in browser
+
+- Make sure the backend is running (`docker compose ps`) before starting ngrok.
+- If you see an "ngrok" interstitial page asking you to visit the site, this is normal for free-tier ngrok. The mobile app handles this automatically, but if testing in a browser, click "Visit Site."
+- If the tunnel URL changed (you're not using a static domain), update both `CORS_ORIGIN_0` in the root `.env` and `EXPO_PUBLIC_API_URL` in `frontend/.env`, then restart the backend (`docker compose down && docker compose up -d`) and the Expo dev server.
+
+### ngrok "CORS error" or "blocked by CORS policy"
+
+- Make sure `CORS_ORIGIN_0` in the root `.env` matches your ngrok URL **exactly** (including `https://`, no trailing slash).
+- Restart the backend after changing `CORS_ORIGIN_0`: `docker compose down && docker compose up -d`.
+
 ### Need to stop everything
 
 - To stop the backend: `docker compose down` (run from the `AI-Wellness-Platform` folder)
@@ -341,13 +452,15 @@ For more details on the frontend (navigation, notification feature, API contract
 ## Quick Reference Commands
 
 
-| Task                 | Command                                    |
-| -------------------- | ------------------------------------------ |
-| Start backend        | `docker compose up -d` (from project root) |
-| Stop backend         | `docker compose down`                      |
-| Check backend status | `docker compose ps`                        |
-| Start mobile app     | `cd frontend` then `npx expo start`        |
-| View backend logs    | `docker compose logs -f`                   |
+| Task                 | Command                                                      |
+| -------------------- | ------------------------------------------------------------ |
+| Start backend        | `docker compose up -d` (from project root)                   |
+| Stop backend         | `docker compose down`                                        |
+| Check backend status | `docker compose ps`                                          |
+| Start mobile app     | `cd frontend` then `npx expo start`                          |
+| View backend logs    | `docker compose logs -f`                                     |
+| Start ngrok tunnel   | `ngrok http 5051 --domain your-static-domain.ngrok-free.app` |
+| ngrok request viewer | Open `http://localhost:4040` in your browser                 |
 
 
 ---

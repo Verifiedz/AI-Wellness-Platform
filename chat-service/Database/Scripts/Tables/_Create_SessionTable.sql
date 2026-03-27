@@ -5,5 +5,6 @@ CREATE TABLE session (
     sessionId UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     externalUserId UUID NOT NULL, 
     isBookmarked BOOLEAN DEFAULT false,
-    createdDate TIMESTAMPTZ DEFAULT now()
+    createdDate TIMESTAMPTZ DEFAULT now(),
+    sessionName VARCHAR(100) NULL
 );

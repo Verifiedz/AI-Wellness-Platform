@@ -29,7 +29,7 @@ public class NotificationCodeController : ControllerBase
 
     /// <summary>
     /// Receive a verification / 2FA / password-reset code from the Auth Service
-    /// and deliver it to the user (log-only placeholder for now).
+    /// and deliver it to the user via email (SMTP) and/or SMS (Twilio).
     /// </summary>
     [HttpPost("send-code")]
     [ProducesResponseType(typeof(SendCodeResponse), StatusCodes.Status200OK)]

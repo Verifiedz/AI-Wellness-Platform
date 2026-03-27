@@ -16,7 +16,7 @@ import { useTheme } from "../context/ThemeContext";
 import { journalApi } from "../services/journalApi";
 import { MOODS, EMOTIONS } from "../constants/journal";
 
-export function JournalScreen({ navigation }) {
+export function JournalScreen({ navigation, route }) {
   const { colors } = useTheme();
   const Colors = colors;
   const styles = createStyles(Colors);
@@ -31,23 +31,29 @@ export function JournalScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
+  const selectedDate = route.params?.selectedDate || todayStr;
+  const isViewingPast = selectedDate !== todayStr;
 
-  const loadTodayEntry = useCallback(async () => {
+  const loadEntry = useCallback(async () => {
     try {
-      const result = await journalApi.getEntryByDate(todayStr);
+      const result = await journalApi.getEntryByDate(selectedDate);
       if (!result.error && result.data) {
         setExistingEntry(result.data);
         setSelectedMood(result.data.mood);
         setSelectedEmotions(result.data.emotions || []);
         setEnergyLevel(result.data.energyLevel || 5);
         setJournalText(result.data.content || "");
+      } else if (result.status === 404 || !result.data) {
+        setExistingEntry(null);
       } else {
+        Alert.alert("Error", result.error || "Failed to load journal entry.");
         setExistingEntry(null);
       }
     } catch {
-      // No entry for today - that's fine
+      Alert.alert("Error", "Could not connect to server. Please try again.");
+      setExistingEntry(null);
     }
-  }, [todayStr]);
+  }, [selectedDate]);
 
   const loadPrompt = useCallback(async () => {
     try {
@@ -63,15 +69,15 @@ export function JournalScreen({ navigation }) {
   useEffect(() => {
     const init = async () => {
       setLoading(true);
-      await Promise.all([loadTodayEntry(), loadPrompt()]);
+      await Promise.all([loadEntry(), loadPrompt()]);
       setLoading(false);
     };
     init();
-  }, [loadTodayEntry, loadPrompt]);
+  }, [loadEntry, loadPrompt]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([loadTodayEntry(), loadPrompt()]);
+    await Promise.all([loadEntry(), loadPrompt()]);
     setRefreshing(false);
   };
 
@@ -107,7 +113,7 @@ export function JournalScreen({ navigation }) {
         emotions: selectedEmotions,
         energyLevel,
         content: journalText.trim(),
-        entryDate: todayStr,
+        entryDate: selectedDate,
       };
 
       let result;
@@ -207,9 +213,19 @@ export function JournalScreen({ navigation }) {
           color={Colors.textSecondary}
         />
         <Text style={styles.dateText}>
-          {format(new Date(), "EEEE, MMMM d, yyyy")}
+          {format(new Date(selectedDate + "T00:00:00"), "EEEE, MMMM d, yyyy")}
         </Text>
       </View>
+
+      {isViewingPast && (
+        <TouchableOpacity
+          style={styles.backToTodayBtn}
+          onPress={() => navigation.setParams({ selectedDate: undefined })}
+        >
+          <Ionicons name="arrow-back" size={16} color={Colors.primary} />
+          <Text style={styles.backToTodayText}>Back to Today</Text>
+        </TouchableOpacity>
+      )}
 
       {existingEntry && (
         <View style={styles.existingBanner}>
@@ -682,5 +698,22 @@ const createStyles = (Colors) => StyleSheet.create({
     fontSize: 13,
     color: Colors.textSecondary,
     marginTop: 4,
+  },
+
+  backToTodayBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: `${Colors.primary}15`,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 14,
+    alignSelf: "flex-start",
+  },
+  backToTodayText: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: "600",
   },
 });

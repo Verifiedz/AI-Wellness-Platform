@@ -35,6 +35,9 @@ RUN dotnet publish AIWrapperService/AiWrapperService.csproj \
 # Use minimal ASP.NET runtime image (no SDK, no compilers)
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 # Create non-root user for security
 RUN adduser --disabled-password --gecos "" --home /app appuser
 

@@ -74,9 +74,15 @@ public class SessionService : ISessionService
     return newSession;
   }
 
-  public Task EndSessionAsync(Guid sessionId)
+  public async Task EndSessionAsync(Guid sessionId)
   {
-    throw new NotImplementedException();
+    if (sessionId == Guid.Empty)
+    {
+      throw new ArgumentException("sessionId was not provided");
+    }
+
+    await _cache.RemoveAsync($"session:{sessionId}");
+    _logger.LogInformation("Session {SessionId} ended and removed from cache", sessionId);
   }
 
   public async Task<IReadOnlyList<ChatSession>> GetSessionsByUserAsync(Guid userId)
@@ -110,6 +116,46 @@ public class SessionService : ISessionService
     await _sessionDatabaseProvider.setBookmarkAsync(sessionId, isBookmarked);
     session.isBookmarked = isBookmarked;
     await _cache.SetAsync($"session:{sessionId}", session);
+  }
+
+  public async Task DeleteSessionAsync(Guid sessionId, Guid userId)
+  {
+    if (sessionId == Guid.Empty)
+    {
+      throw new ArgumentException("sessionId was not provided");
+    }
+
+    var session = await _sessionDatabaseProvider.getSessionAsync(sessionId);
+    if (session == null)
+    {
+      throw new KeyNotFoundException($"Session {sessionId} was not found.");
+    }
+
+    if (session.UserId != userId)
+    {
+      throw new KeyNotFoundException($"Session {sessionId} does not exist or access is denied.");
+    }
+
+    await _sessionDatabaseProvider.deleteSessionAsync(sessionId);
+    await _cache.RemoveAsync($"session:{sessionId}");
+  }
+
+  public async Task UpdateSessionNameAsync(Guid sessionId, string sessionName)
+  {
+    if (sessionId == Guid.Empty)
+    {
+      throw new ArgumentException("sessionId was not provided");
+    }
+
+    await _sessionDatabaseProvider.updateSessionNameAsync(sessionId, sessionName);
+
+    string cacheKey = $"session:{sessionId}";
+    var cachedSession = await _cache.GetAsync<ChatSession>(cacheKey);
+    if (cachedSession != null)
+    {
+      cachedSession.SessionName = sessionName;
+      await _cache.SetAsync(cacheKey, cachedSession);
+    }
   }
 }
 

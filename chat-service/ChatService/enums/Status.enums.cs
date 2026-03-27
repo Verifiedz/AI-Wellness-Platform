@@ -1,8 +1,8 @@
-﻿namespace ChatService.enums;
+namespace ChatService.enums;
 
 public enum Status
 {
-    dummy1 = 0,
-    dummy2 = 1,
-    dummy3 = 2,
+    Active = 0,
+    Sent = 1,
+    Failed = 2,
 }

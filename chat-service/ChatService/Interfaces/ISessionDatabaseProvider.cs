@@ -10,4 +10,8 @@ public interface ISessionDatabaseProvider {
 
  Task<IReadOnlyList<ChatSession>> getSessionsbyUserAsync(Guid UserID);
 
+ Task deleteSessionAsync(Guid sessionId);
+
+ Task updateSessionNameAsync(Guid sessionId, string sessionName);
+
 }

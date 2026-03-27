@@ -27,7 +27,6 @@ Notifications.setNotificationHandler({
 export async function registerForPushNotificationsAsync() {
   // Push notifications require a physical device
   if (!Device.isDevice) {
-    console.warn("Push notifications require a physical device.");
     return null;
   }
 
@@ -42,7 +41,6 @@ export async function registerForPushNotificationsAsync() {
   }
 
   if (finalStatus !== "granted") {
-    console.warn("Notification permissions not granted.");
     return null;
   }
 
@@ -63,9 +61,6 @@ export async function registerForPushNotificationsAsync() {
       Constants.easConfig?.projectId;
 
     if (!projectId) {
-      console.error(
-        "Expo project ID not found. Run 'npx eas init' to configure your project."
-      );
       return null;
     }
 
@@ -74,8 +69,7 @@ export async function registerForPushNotificationsAsync() {
       projectId,
     });
     return tokenResponse.data; // e.g. "ExponentPushToken[xxxx]"
-  } catch (error) {
-    console.error("Failed to get Expo push token:", error);
+  } catch {
     return null;
   }
 }

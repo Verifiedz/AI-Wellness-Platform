@@ -39,9 +39,11 @@ export function MoodCalendarScreen({ navigation }) {
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       let startDate, endDate;
 
@@ -72,7 +74,7 @@ export function MoodCalendarScreen({ navigation }) {
         setSummary(summaryResult.data);
       }
     } catch {
-      // Silently handle errors
+      setError("Failed to load mood data. Pull down to retry.");
     } finally {
       setLoading(false);
     }
@@ -118,7 +120,9 @@ export function MoodCalendarScreen({ navigation }) {
   const handleDateTap = (date) => {
     const entry = getEntryForDate(date);
     if (entry) {
-      navigation.navigate("Journal");
+      navigation.navigate("JournalHome", {
+        selectedDate: format(date, "yyyy-MM-dd"),
+      });
     }
   };
 
@@ -238,7 +242,15 @@ export function MoodCalendarScreen({ navigation }) {
           )[0];
 
           return (
-            <View key={month} style={styles.yearCard}>
+            <TouchableOpacity
+              key={month}
+              style={styles.yearCard}
+              onPress={() => {
+                setCurrentDate(new Date(year, month, 1));
+                setViewMode("monthly");
+              }}
+              activeOpacity={0.7}
+            >
               <Text style={styles.yearMonthName}>
                 {format(new Date(year, month), "MMM")}
               </Text>
@@ -256,7 +268,7 @@ export function MoodCalendarScreen({ navigation }) {
                   ]}
                 />
               )}
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
@@ -361,6 +373,14 @@ export function MoodCalendarScreen({ navigation }) {
             </View>
           </View>
         </View>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <TouchableOpacity style={styles.errorBanner} onPress={loadData}>
+          <Ionicons name="alert-circle" size={18} color="#D32F2F" />
+          <Text style={styles.errorBannerText}>{error}</Text>
+        </TouchableOpacity>
       )}
 
       {/* Calendar */}
@@ -655,5 +675,22 @@ const createStyles = (Colors) => StyleSheet.create({
   legendText: {
     fontSize: 13,
     color: Colors.text,
+  },
+
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FDECEA",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 14,
+    gap: 8,
+  },
+  errorBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: "#D32F2F",
+    fontWeight: "500",
   },
 });

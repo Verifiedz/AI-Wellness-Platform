@@ -146,15 +146,20 @@ export function TwoFactorScreen({ navigation, route }) {
           />
 
           <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
+            style={[
+              styles.button,
+              (isLoading || expirySeconds === 0) && styles.buttonDisabled,
+            ]}
             onPress={handleVerify}
-            disabled={isLoading}
+            disabled={isLoading || expirySeconds === 0}
             activeOpacity={0.8}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
-              <Text style={styles.buttonText}>Verify</Text>
+              <Text style={styles.buttonText}>
+                {expirySeconds === 0 ? "Code Expired" : "Verify"}
+              </Text>
             )}
           </TouchableOpacity>
 

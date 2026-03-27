@@ -51,16 +51,10 @@ function AppContent() {
       try {
         const deviceToken = await registerForPushNotificationsAsync();
         if (deviceToken && mounted) {
-          console.log("Device push token:", deviceToken);
-          const res = await notificationApi.registerDevice(deviceToken);
-          if (res.error) {
-            console.warn("register-device failed:", res.error);
-          } else {
-            console.log("Device registered with backend");
-          }
+          await notificationApi.registerDevice(deviceToken);
         }
-      } catch (err) {
-        console.warn("Push notification setup error:", err);
+      } catch {
+        // Push notification setup failed — non-critical
       }
     })();
 
@@ -87,7 +81,6 @@ function AppContent() {
     // Foreground: show the tip immediately on Home
     notificationListener.current = addNotificationReceivedListener(
       (notification) => {
-        console.log("Notification received (foreground)");
         setTip(extractTip(notification));
       }
     );
@@ -95,7 +88,6 @@ function AppContent() {
     // Tap: set tip and navigate to Home
     responseListener.current = addNotificationResponseReceivedListener(
       (response) => {
-        console.log("Notification tapped");
         setTip(extractTip(response.notification));
         navigate("Home");
       }

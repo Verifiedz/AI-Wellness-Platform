@@ -14,7 +14,9 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
     {"create","CALL public.session_create_storeprocedure($1,$2,$3,$4)"},
     {"set_bookmark","CALL public.session_set_bookmark_storeprocedure($1,$2)"},
     {"select","SELECT * FROM public.session_select_fuction($1)"},
-    {"select_by_user", "SELECT * FROM public.session_select_function_by_user($1)"}
+    {"select_by_user", "SELECT * FROM public.session_select_function_by_user($1)"},
+    {"delete", "CALL public.session_delete_storeprocedure($1)"},
+    {"update_name", "CALL public.session_update_name_storeprocedure($1,$2)"}
   };
   
   public SessionDatabaseProvider(IConfigurationService configuration, ILogger<SessionDatabaseProvider> logger)
@@ -83,6 +85,21 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
    
    return sessions; 
   }
+  public async Task deleteSessionAsync(Guid sessionId){
+    using var conn = await _datasource.OpenConnectionAsync();
+    using var command = new NpgsqlCommand(selectStoreProcedure("delete"), conn);
+    command.Parameters.AddWithValue(sessionId);
+    await command.ExecuteNonQueryAsync();
+  }
+
+  public async Task updateSessionNameAsync(Guid sessionId, string sessionName){
+    using var conn = await _datasource.OpenConnectionAsync();
+    using var command = new NpgsqlCommand(selectStoreProcedure("update_name"), conn);
+    command.Parameters.AddWithValue(sessionId);
+    command.Parameters.AddWithValue(sessionName);
+    await command.ExecuteNonQueryAsync();
+  }
+
   private string selectStoreProcedure(string key)
   {
     return storeProceduresCall.TryGetValue(key, out var sql)
@@ -95,7 +112,8 @@ public class SessionDatabaseProvider: ISessionDatabaseProvider{
       sessionID = reader.GetGuid(0),
       UserId = reader.GetGuid(1),
       createdDate = reader.GetDateTime(2),
-      isBookmarked = reader.GetBoolean(3)
+      isBookmarked = reader.GetBoolean(3),
+      SessionName = reader.IsDBNull(4) ? null : reader.GetString(4)
     };
   }
 
