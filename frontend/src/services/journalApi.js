@@ -120,6 +120,21 @@ export const journalApi = {
   },
 
   /**
+   * Save a journal draft — creates a new entry or updates an existing one.
+   * Designed for auto-save: handles both new and existing entries transparently.
+   *
+   * @param {string|null} entryId - Existing entry ID, or null for a new entry.
+   * @param {{ mood: string, emotions: string[], energyLevel: number, content: string, entryDate: string }} payload
+   * @returns {Promise<{ error?: string, data?: object }>}
+   */
+  saveDraft(entryId, payload) {
+    if (entryId) {
+      return this.updateEntry(entryId, payload);
+    }
+    return this.createEntry(payload);
+  },
+
+  /**
    * Get mood summary statistics.
    * @param {{ startDate?: string, endDate?: string }} params
    */

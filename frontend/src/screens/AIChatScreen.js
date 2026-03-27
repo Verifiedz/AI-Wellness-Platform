@@ -28,6 +28,7 @@ import { SuggestionChip } from "../components/SuggestionChip";
 import { ChatMessageRenderer } from "../components/chat/ChatMessageRenderer";
 import { VoiceInputButton } from "../components/VoiceInputButton";
 import { useVoiceInput } from "../hooks/useVoiceInput";
+import { ChatSkeleton } from "../components/skeletons/ChatSkeleton";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -345,10 +346,7 @@ export function AIChatScreen({ route, navigation }) {
       keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
     >
       {isLoadingHistory ? (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 10 }]}>Loading conversation...</Text>
-        </View>
+        <ChatSkeleton />
       ) : messages.length === 0 ? (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
           <Animated.View style={[styles.centerContent, { opacity: fadeAnim }]}>

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +22,7 @@ import { MoodSelector } from "../components/MoodSelector";
 import { SectionHeader } from "../components/SectionHeader";
 import { AnimatedCard } from "../components/AnimatedCard";
 import { usePatternInsights } from "../hooks/usePatternInsights";
+import { HomeSkeleton } from "../components/skeletons/HomeSkeleton";
 
 function getDisplayName(user) {
   if (user?.username?.trim()) return user.username.trim();
@@ -143,10 +143,7 @@ export function HomeScreen({ navigation }) {
       </View>
 
       {isInitialLoading ? (
-        <Card style={{ alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 10 }}>
-          <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={[fonts.body, { color: colors.textSecondary }]}>Loading...</Text>
-        </Card>
+        <HomeSkeleton />
       ) : (
         <>
           {/* Daily Check-in */}

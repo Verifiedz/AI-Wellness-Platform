@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,11 @@ import { SectionHeader } from "../components/SectionHeader";
 import { AnimatedCard } from "../components/AnimatedCard";
 import { VoiceInputButton } from "../components/VoiceInputButton";
 import { useVoiceInput } from "../hooks/useVoiceInput";
+import { useHaptic } from "../hooks/useHaptic";
+import { JournalSkeleton } from "../components/skeletons/JournalSkeleton";
+import { WordCount } from "../components/WordCount";
+import { useAutoSave } from "../hooks/useAutoSave";
+import { PhotoAttachment } from "../components/PhotoAttachment";
 
 const ENERGY_LEVELS = [
   { id: 1, label: "Very\nLow" },
@@ -36,6 +41,7 @@ const ENERGY_LEVELS = [
 export function JournalScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
   const voice = useVoiceInput();
+  const haptic = useHaptic();
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [energyLevel, setEnergyLevel] = useState(3);
@@ -45,6 +51,7 @@ export function JournalScreen({ navigation, route }) {
   const [existingEntry, setExistingEntry] = useState(null);
   const [prompt, setPrompt] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [photos, setPhotos] = useState([]);
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const selectedDate = route.params?.selectedDate || todayStr;
@@ -120,6 +127,7 @@ export function JournalScreen({ navigation, route }) {
     setEnergyLevel(3);
     setJournalText("");
     setExistingEntry(null);
+    setPhotos([]);
   };
 
   const handleSave = async () => {
@@ -184,12 +192,45 @@ export function JournalScreen({ navigation, route }) {
 
   const isComplete = selectedMood && journalText.trim().length > 0;
 
+  // Auto-save: only activates when entry is complete (mood + text) and not viewing past entries
+  const autoSaveValue = useMemo(
+    () => ({
+      mood: selectedMood,
+      emotions: selectedEmotions,
+      energyLevel: energyLevel * 2,
+      content: journalText.trim(),
+      entryDate: selectedDate,
+    }),
+    [selectedMood, selectedEmotions, energyLevel, journalText, selectedDate],
+  );
+
+  const handleAutoSave = useCallback(
+    async (payload) => {
+      if (!payload.mood || !payload.content) return;
+      const result = await journalApi.saveDraft(existingEntry?.id || null, payload);
+      if (!result.error && result.data) {
+        setExistingEntry(result.data);
+      }
+      return result;
+    },
+    [existingEntry?.id],
+  );
+
+  const autoSave = useAutoSave({
+    value: autoSaveValue,
+    delay: 2000,
+    onSave: handleAutoSave,
+    enabled: isComplete && !isViewingPast && !loading && !saving,
+  });
+
   if (loading) {
     return (
-      <View style={[styles.centered, { backgroundColor: colors.background }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 12 }]}>Loading journal...</Text>
-      </View>
+      <ScrollView
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={styles.content}
+      >
+        <JournalSkeleton />
+      </ScrollView>
     );
   }
 
@@ -281,7 +322,7 @@ export function JournalScreen({ navigation, route }) {
                     borderColor: active ? colors.primary : colors.border,
                   },
                 ]}
-                onPress={() => setEnergyLevel(level.id)}
+                onPress={() => { haptic.triggerSelection(); setEnergyLevel(level.id); }}
               >
                 <Text
                   style={[
@@ -335,9 +376,40 @@ export function JournalScreen({ navigation, route }) {
           multiline
           style={{ marginBottom: 0 }}
         />
-        <Text style={[fonts.caption, { color: colors.textLight, textAlign: "right", marginTop: 6 }]}>
-          {journalText.length} characters
+        <View style={styles.metaRow}>
+          <WordCount text={journalText} style={{ marginTop: 0, textAlign: "left", flex: 1 }} />
+          {autoSave.isSaving && (
+            <View style={styles.autoSaveRow}>
+              <ActivityIndicator size="small" color={colors.textLight} />
+              <Text style={[fonts.caption, { color: colors.textLight }]}>Saving...</Text>
+            </View>
+          )}
+          {!autoSave.isSaving && autoSave.lastSavedAt && (
+            <View style={styles.autoSaveRow}>
+              <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+              <Text style={[fonts.caption, { color: colors.textLight }]}>Auto-saved</Text>
+            </View>
+          )}
+          {autoSave.error && (
+            <Text style={[fonts.caption, { color: colors.error }]}>Save failed</Text>
+          )}
+        </View>
+      </Card>
+      </AnimatedCard>
+
+      {/* Photos */}
+      <AnimatedCard index={4}>
+      <Card style={{ marginBottom: 16 }}>
+        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Photos</Text>
+        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 4 }]}>
+          Attach up to 3 photos to your entry
         </Text>
+        <PhotoAttachment
+          photos={photos}
+          onPhotosChange={setPhotos}
+          maxPhotos={3}
+          disabled={saving}
+        />
       </Card>
       </AnimatedCard>
 
@@ -373,7 +445,6 @@ export function JournalScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -400,6 +471,17 @@ const styles = StyleSheet.create({
   },
   promptRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   refreshPrompt: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 10 },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 6,
+  },
+  autoSaveRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
   energyRow: { flexDirection: "row", gap: 8 },
   energyBtn: {
     flex: 1,

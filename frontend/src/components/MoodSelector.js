@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import { MOODS } from "../constants/journal";
+import { useHaptic } from "../hooks/useHaptic";
 
 export function MoodSelector({ selected, onSelect, style }) {
   const { colors, fonts } = useTheme();
@@ -25,8 +26,10 @@ export function MoodSelector({ selected, onSelect, style }) {
 
 function MoodButton({ mood, isSelected, onPress, colors, fonts }) {
   const scale = useRef(new Animated.Value(1)).current;
+  const haptic = useHaptic();
 
   const handlePress = () => {
+    haptic.triggerSelection();
     Animated.sequence([
       Animated.spring(scale, { toValue: 1.15, useNativeDriver: true, speed: 40 }),
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }),

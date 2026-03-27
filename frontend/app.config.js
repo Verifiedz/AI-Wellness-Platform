@@ -54,6 +54,13 @@ export default {
         },
       ],
       [
+        "expo-image-picker",
+        {
+          photosPermission: "Allow Sakina to access your photos for journal entries.",
+          cameraPermission: "Allow Sakina to take photos for journal entries.",
+        },
+      ],
+      [
         "expo-speech-recognition",
         {
           microphonePermission: "Allow Sakina to use the microphone for voice input.",

@@ -83,13 +83,13 @@
 
 | #      | Feature                                    | Source                 | Status | Notes                                                                                                                                      |
 | ------ | ------------------------------------------ | ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **10** | **Haptic feedback on mood/chip selection** | Sections 2.4, 5.2, 7.4 | **NOT DONE** | expo-haptics not installed. No haptic feedback on any interaction.                                                                          |
-| **11** | **Skeleton loading screens**               | Section 7.4            | **NOT DONE** | Still using ActivityIndicator spinners on Home, Journal, Chat, Calendar. No skeleton/shimmer components.                                    |
-| **12** | **Auto-save for journal entries**          | Section 5.3            | **NOT DONE** | Journal requires explicit "Save" tap. No debounce/auto-save pattern. Entries lost if user navigates away.                                   |
-| **13** | **Photo attachment in journal**            | Section 5.3            | **NOT DONE** | expo-image-picker not installed. Journal entries are text-only.                                                                              |
-| **14** | **Word count in journal**                  | Section 5.3            | **NOT DONE** | No word count display in journal UI. Word splitting only exists in AIChatScreen for session naming (unrelated).                              |
-| **15** | **Button press micro-animation**           | Plan 7c, Section 7.4   | **DONE** | Button.js uses Pressable with scale(0.97) on pressIn, spring back to 1.0 on pressOut via react-native-reanimated.                          |
-| **16** | **Chat message slide-in animations**       | Plan 7c                | **DONE** | SlideInRight for user messages, SlideInLeft for assistant messages in AIChatScreen.js. Only applies to new messages (not history).           |
+| **10** | **Haptic feedback on mood/chip selection** | Sections 2.4, 5.2, 7.4 | **DONE** | `expo-haptics` installed. `useHaptic` hook with platform-safe fallback. Integrated into MoodSelector, ChipGroup, and JournalScreen energy level buttons. |
+| **11** | **Skeleton loading screens**               | Section 7.4            | **DONE** | `Skeleton` base component with reanimated pulse. Screen-specific skeletons: `HomeSkeleton`, `JournalSkeleton`, `ChatSkeleton`, `CalendarSkeleton`. All 4 screens replaced. |
+| **12** | **Auto-save for journal entries**          | Section 5.3            | **DONE** | `useAutoSave` hook with `useDebounce` (2s), ref-based concurrency lock, pending queue. `saveDraft` in journalApi. Auto-saved indicator in JournalScreen. Only activates when entry is complete. |
+| **13** | **Photo attachment in journal**            | Section 5.3            | **DONE** | `expo-image-picker` installed with permissions config. `PhotoAttachment` component: camera/library picker, permission handling with Settings redirect, thumbnail previews, max 3 photos, remove buttons. Integrated into JournalScreen. Photos stored locally (backend upload endpoint needed for server persistence). |
+| **14** | **Word count in journal**                  | Section 5.3            | **DONE** | `WordCount` component displays "X words \| Y characters". Replaced character-only display in JournalScreen.                                 |
+| **15** | **Button press micro-animation**           | Plan 7c, Section 7.4   | **DONE** | Button.js uses Pressable with scale(0.97) on pressIn, spring back to 1.0 on pressOut via react-native-reanimated. Verified optimal.        |
+| **16** | **Chat message slide-in animations**       | Plan 7c                | **DONE** | SlideInRight for user messages, SlideInLeft for assistant messages in AIChatScreen.js. Only applies to new messages (not history). Verified optimal. |
 
 
 ### Priority 4 — Future Roadmap (Competitive Edge) — ALL NOT YET IMPLEMENTED
@@ -120,18 +120,19 @@
 | Phase 5: Chat                 | 2             | 2          | 100%       |
 | Phase 6: Settings             | 2             | 2          | 100%       |
 | Phase 7: Polish               | 5             | 5          | **100%**   |
-| **Competitive Analysis recs** | **23**        | **11**     | **48%**    |
+| **Competitive Analysis recs** | **23**        | **16**     | **70%**    |
 
 **Changes since last audit:**
-- **Priority 2 is now 100% complete** (was 0%). All 5 features implemented:
-  - #5: Standalone BreathingExerciseScreen with 3 patterns, configurable BreathingCircle, accessible from Home + Chat
-  - #6: Backend PatternAnalysisService (4 detectors) + GET /api/journal/insights endpoint + "Your Patterns" section on HomeScreen
-  - #7: expo-speech-recognition installed, useVoiceInput hook, VoiceInputButton in AIChatScreen + JournalScreen
-  - #8: ChatMessageRenderer with ExerciseCard (breathing/grounding/reframing) inline in AI chat messages
-  - #9: MoodQuickReply buttons in AI chat via [MOOD_CHECK] marker protocol in system prompt
-- Competitive Analysis total moves from 6/23 (26%) to **11/23 (48%)**.
+- **Priority 3 is now 100% complete** (was 2/7). All 5 remaining features implemented:
+  - #10: expo-haptics installed, useHaptic hook, haptic feedback on MoodSelector, ChipGroup, energy level buttons
+  - #11: Skeleton base component + 4 screen-specific skeletons replacing ActivityIndicator spinners on Home/Journal/Chat/Calendar
+  - #12: useAutoSave hook with useDebounce (2s delay), ref-based concurrency lock, pending queue, saveDraft in journalApi, auto-saved indicator in JournalScreen
+  - #13: expo-image-picker installed with permissions, PhotoAttachment component (camera/library, thumbnails, max 3, remove), integrated into JournalScreen
+  - #14: WordCount component ("X words | Y characters") replacing character-only display in JournalScreen
+  - #15 and #16 verified as correctly and optimally implemented
+- Competitive Analysis total moves from 11/23 (48%) to **16/23 (70%)**.
 - Item #4 (logo asset) remains partial — code is ready but the PNG file is still missing.
-- Priority 3 items #10–14 and Priority 4 items #17–23 remain as future roadmap.
+- Priority 4 items #17–23 remain as future roadmap.
 
 ---
 
@@ -181,6 +182,18 @@
 - `frontend/src/services/insightApi.js` — API client for GET /api/journal/insights
 - `journal-service/src/JournalService.Api/Models/Responses/PatternInsightResponse.cs` — insight DTOs
 - `journal-service/src/JournalService.Api/Services/PatternAnalysisService.cs` — 4 pattern detectors
+
+**Priority 3 features (12):**
+- `frontend/src/hooks/useHaptic.js` — platform-safe expo-haptics wrapper hook
+- `frontend/src/hooks/useDebounce.js` — generic debounce hook
+- `frontend/src/hooks/useAutoSave.js` — auto-save orchestration hook with concurrency lock
+- `frontend/src/components/Skeleton.js` — reanimated pulse skeleton primitive
+- `frontend/src/components/skeletons/HomeSkeleton.js` — HomeScreen skeleton layout
+- `frontend/src/components/skeletons/JournalSkeleton.js` — JournalScreen skeleton layout
+- `frontend/src/components/skeletons/ChatSkeleton.js` — AIChatScreen skeleton layout
+- `frontend/src/components/skeletons/CalendarSkeleton.js` — MoodCalendarScreen skeleton layout
+- `frontend/src/components/WordCount.js` — word + character count display
+- `frontend/src/components/PhotoAttachment.js` — photo picker with camera/library, thumbnails, remove
 
 ### Modified files (27):
 

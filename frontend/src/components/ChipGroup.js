@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme } from "../context/ThemeContext";
+import { useHaptic } from "../hooks/useHaptic";
 
 export function ChipGroup({
   items,
@@ -10,6 +11,7 @@ export function ChipGroup({
   style,
 }) {
   const { colors, fonts } = useTheme();
+  const haptic = useHaptic();
 
   const isSelected = (item) => {
     if (multiSelect) return Array.isArray(selected) && selected.includes(item);
@@ -17,6 +19,7 @@ export function ChipGroup({
   };
 
   const handlePress = (item) => {
+    haptic.triggerSelection();
     if (multiSelect) {
       const arr = Array.isArray(selected) ? selected : [];
       const next = arr.includes(item)

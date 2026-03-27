@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -29,6 +28,7 @@ import { MOOD_COLORS } from "../constants/journal";
 import { Card } from "../components/Card";
 import { ChipGroup } from "../components/ChipGroup";
 import { Banner } from "../components/Banner";
+import { CalendarSkeleton } from "../components/skeletons/CalendarSkeleton";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const VIEW_MODES = [
@@ -279,9 +279,7 @@ export function MoodCalendarScreen({ navigation }) {
 
       <Card style={{ marginBottom: 16 }}>
         {loading ? (
-          <View style={{ paddingVertical: 40, alignItems: "center" }}>
-            <ActivityIndicator size="small" color={colors.primary} />
-          </View>
+          <CalendarSkeleton />
         ) : (
           <>
             {viewMode === "monthly" && renderMonthlyView()}
