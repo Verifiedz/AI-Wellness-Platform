@@ -6,7 +6,7 @@ WORKDIR /src
 
 COPY . .
 
-WORKDIR /src/src/JournalService.Api
+WORKDIR /src/CommunityService
 
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
@@ -25,4 +25,4 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-ENTRYPOINT ["dotnet", "JournalService.Api.dll"]
+ENTRYPOINT ["dotnet", "CommunityService.dll"]

@@ -28,8 +28,13 @@ public class DatabaseInitializer
             await TestConnectionAsync();
 
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            var databasePath = Path.Combine(baseDirectory, "..", "..", "..", "..", "..", "database");
-            databasePath = Path.GetFullPath(databasePath);
+
+            // Try Docker-friendly path first (database/ copied into app root),
+            // then fall back to development path (relative to source tree).
+            var dockerPath = Path.Combine(baseDirectory, "database");
+            var devPath = Path.GetFullPath(Path.Combine(baseDirectory, "..", "..", "..", "..", "..", "database"));
+
+            var databasePath = Directory.Exists(dockerPath) ? dockerPath : devPath;
 
             _logger.LogInformation("Looking for database scripts in: {DatabasePath}", databasePath);
 
@@ -44,6 +49,8 @@ public class DatabaseInitializer
             await ExecuteScriptAsync(Path.Combine(databasePath, "02_stored_procedures.sql"), "Stored Procedures");
             await ExecuteScriptAsync(Path.Combine(databasePath, "03_seed.sql"), "Seed Data");
             await ExecuteScriptAsync(Path.Combine(databasePath, "04_indexes.sql"), "Indexes");
+            await ExecuteScriptAsync(Path.Combine(databasePath, "05_assessments.sql"), "Assessments");
+            await ExecuteScriptAsync(Path.Combine(databasePath, "06_escalation_log.sql"), "Escalation Log");
 
             _logger.LogInformation("Database initialization completed successfully");
         }
