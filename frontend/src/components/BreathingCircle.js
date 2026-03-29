@@ -43,8 +43,13 @@ export function BreathingCircle({
   const [currentCycle, setCurrentCycle] = useState(0);
   const timersRef = useRef([]);
   const isPausedRef = useRef(isPaused);
+  const onCycleCompleteRef = useRef(onCycleComplete);
+  const onSessionCompleteRef = useRef(onSessionComplete);
 
-  // Keep ref in sync with prop
+  // Keep refs in sync with props without causing re-renders
+  useEffect(() => { onCycleCompleteRef.current = onCycleComplete; }, [onCycleComplete]);
+  useEffect(() => { onSessionCompleteRef.current = onSessionComplete; }, [onSessionComplete]);
+
   useEffect(() => {
     isPausedRef.current = isPaused;
     if (isPaused) {
@@ -65,19 +70,15 @@ export function BreathingCircle({
     return id;
   }, []);
 
-  const setPhase = useCallback((idx) => {
-    setPhaseText(phases[idx] || "");
-  }, [phases]);
-
+  // Stable runCycle that reads callbacks from refs
   const runCycle = useCallback(
     (cycleIndex) => {
       if (isPausedRef.current) return;
       setIsRunning(true);
-      setPhase(0);
+      setPhaseText(phases[0]);
 
       const cycleMs = inhaleMs + holdMs + exhaleMs + hold2Ms;
 
-      // Build scale sequence
       const scaleSteps = [
         withTiming(1.0, { duration: inhaleMs, easing: Easing.inOut(Easing.ease) }),
         withTiming(1.0, { duration: holdMs }),
@@ -88,7 +89,6 @@ export function BreathingCircle({
       }
       scale.value = withSequence(...scaleSteps);
 
-      // Build opacity sequence
       const opacitySteps = [
         withTiming(1.0, { duration: inhaleMs, easing: Easing.inOut(Easing.ease) }),
         withTiming(0.85, { duration: holdMs }),
@@ -100,10 +100,10 @@ export function BreathingCircle({
       opacity.value = withSequence(...opacitySteps);
 
       // Phase text transitions
-      addTimer(() => setPhase(1), inhaleMs);
-      addTimer(() => setPhase(2), inhaleMs + holdMs);
+      addTimer(() => setPhaseText(phases[1]), inhaleMs);
+      addTimer(() => setPhaseText(phases[2]), inhaleMs + holdMs);
       if (hold2Ms > 0) {
-        addTimer(() => setPhase(3), inhaleMs + holdMs + exhaleMs);
+        addTimer(() => setPhaseText(phases[3]), inhaleMs + holdMs + exhaleMs);
       }
 
       // Cycle complete
@@ -111,21 +111,22 @@ export function BreathingCircle({
         if (isPausedRef.current) return;
         const nextCycle = cycleIndex + 1;
         setCurrentCycle(nextCycle);
-        onCycleComplete?.();
+        onCycleCompleteRef.current?.();
 
         if (nextCycle >= cycles) {
           setIsRunning(false);
           setPhaseText("");
-          onSessionComplete?.();
+          onSessionCompleteRef.current?.();
         } else {
           runCycle(nextCycle);
         }
       }, cycleMs);
     },
-    [scale, opacity, inhaleMs, holdMs, exhaleMs, hold2Ms, cycles, setPhase, addTimer, onCycleComplete, onSessionComplete]
+    // Only re-create when timing/cycle props change, NOT when callbacks change
+    [scale, opacity, inhaleMs, holdMs, exhaleMs, hold2Ms, cycles, phases, addTimer]
   );
 
-  // Public start method via autoStart
+  // Start on mount (once)
   useEffect(() => {
     if (autoStart) {
       const timer = setTimeout(() => runCycle(0), 300);
@@ -134,7 +135,8 @@ export function BreathingCircle({
         clearTimers();
       };
     }
-  }, [autoStart, runCycle, clearTimers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   // Cleanup on unmount
   useEffect(() => {
