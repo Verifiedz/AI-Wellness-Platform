@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-perimeter-security 01-00-PLAN.md
-last_updated: "2026-03-30T03:48:21.921Z"
+stopped_at: Completed 01-perimeter-security 01-03-PLAN.md
+last_updated: "2026-03-30T03:54:45.602Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 01 (perimeter-security) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-perimeter-security P04 | 4 | 2 tasks | 3 files |
 | Phase 01-perimeter-security P01 | 15m | 2 tasks | 13 files |
 | Phase 01-perimeter-security P00 | 5m | 2 tasks | 5 files |
+| Phase 01-perimeter-security P03 | 10m | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,8 @@ Recent decisions affecting current work:
 - [Phase 01-perimeter-security]: Empty string placeholder in appsettings.json preserves schema visibility while signaling env var override required
 - [Phase 01-perimeter-security]: Map AuthException subclasses to HTTP status codes in middleware switch expression; GetGenericMessage() provides safe user-facing strings
 - [Phase 01-perimeter-security]: IEmailService does not exist in auth-service; INotificationService (AIWellness.Auth.Services.Abstractions) is the correct abstraction
+- [Phase 01-perimeter-security]: Inject X-Internal-Api-Key on all YARP proxied requests (not just community-cluster) -- simpler, other services ignore the header
+- [Phase 01-perimeter-security]: GatewayAuthMiddleware skips /health internally via Path.StartsWithSegments check, not middleware ordering
 
 ### Pending Todos
 
@@ -82,6 +85,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T03:48:21.917Z
-Stopped at: Completed 01-perimeter-security 01-00-PLAN.md
+Last session: 2026-03-30T03:54:45.598Z
+Stopped at: Completed 01-perimeter-security 01-03-PLAN.md
 Resume file: None
