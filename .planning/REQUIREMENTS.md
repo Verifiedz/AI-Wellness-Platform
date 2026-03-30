@@ -37,15 +37,15 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 - [x] **REL-02**: StoredProcedureExecutor validates function names against allowed character pattern
 - [x] **REL-03**: Chat history queries have pagination support (limit/offset parameters)
 - [x] **REL-04**: CancellationToken propagated through chat service controller-service-provider chain
-- [ ] **REL-05**: User-generated content (posts, journals, chat) has input sanitization at storage boundary
+- [x] **REL-05**: User-generated content (posts, journals, chat) has input sanitization at storage boundary
 - [x] **REL-06**: Session entity mutations replaced with immutable patterns (use `with` expressions or new objects)
 
 ### Configuration
 
-- [ ] **CFG-01**: Docker Compose database passwords fail fast when env vars missing (no default fallbacks)
-- [ ] **CFG-02**: Auth service container has health check directive in docker-compose.yml
+- [x] **CFG-01**: Docker Compose database passwords fail fast when env vars missing (no default fallbacks)
+- [x] **CFG-02**: Auth service container has health check directive in docker-compose.yml
 - [ ] **CFG-03**: Firebase service account path validated at startup with clear error if missing
-- [ ] **CFG-04**: .env.example enumerates all required environment variables with placeholder values
+- [x] **CFG-04**: .env.example enumerates all required environment variables with placeholder values
 
 ### Tech Debt
 
@@ -124,12 +124,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REL-02 | Phase 2 | Complete |
 | REL-03 | Phase 4 | Complete |
 | REL-04 | Phase 4 | Complete |
-| REL-05 | Phase 4 | Pending |
+| REL-05 | Phase 4 | Complete |
 | REL-06 | Phase 4 | Complete |
-| CFG-01 | Phase 5 | Pending |
-| CFG-02 | Phase 5 | Pending |
+| CFG-01 | Phase 5 | Complete |
+| CFG-02 | Phase 5 | Complete |
 | CFG-03 | Phase 5 | Pending |
-| CFG-04 | Phase 5 | Pending |
+| CFG-04 | Phase 5 | Complete |
 | DEBT-01 | Phase 5 | Pending |
 | DEBT-02 | Phase 5 | Pending |
 | DEBT-03 | Phase 5 | Pending |
