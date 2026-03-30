@@ -1,7 +1,9 @@
+using System.Threading.RateLimiting;
+using ChatService.APIs.Clients;
 using ChatService.APIs.Providers;
 using ChatService.Interfaces;
 using ChatService.Services;
-using ChatService.APIs.Clients;
+using Microsoft.AspNetCore.RateLimiting;
 namespace ChatService;
 
 public static class DependencyInjectionContainer
@@ -56,6 +58,23 @@ public static class DependencyInjectionContainer
         });
 
       services.AddAuthorization();
+
+      services.AddRateLimiter(options =>
+      {
+          options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+          options.AddPolicy("PerUser", context =>
+              RateLimitPartition.GetFixedWindowLimiter(
+                  partitionKey: context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                      ?? context.Connection.RemoteIpAddress?.ToString()
+                      ?? "anonymous",
+                  factory: _ => new FixedWindowRateLimiterOptions
+                  {
+                      PermitLimit = 30,
+                      Window = TimeSpan.FromMinutes(1),
+                      QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                      QueueLimit = 0
+                  }));
+      });
 
       services.AddStackExchangeRedisCache(options =>
       {

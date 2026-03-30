@@ -15,13 +15,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("DenyAll");
-
-if (!app.Environment.IsDevelopment())
-{
-    app.UseAuthentication();
-    app.UseAuthorization();
-}
-
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run(); 
