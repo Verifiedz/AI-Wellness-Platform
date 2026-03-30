@@ -63,7 +63,7 @@ Plans:
 Plans:
 - [x] 03-01-PLAN.md -- IPasswordHasher abstraction and auth-service test expansion (TEST-08, TEST-01)
 - [x] 03-02-PLAN.md -- Community-service controller tests and journal-service test project (TEST-02, TEST-03)
-- [ ] 03-03-PLAN.md -- Notification-service test project and chat-service test expansion (TEST-04, TEST-05)
+- [x] 03-03-PLAN.md -- Notification-service test project and chat-service test expansion (TEST-04, TEST-05)
 - [x] 03-04-PLAN.md -- Frontend Jest configuration and AuthContext/api/chatApi tests (TEST-06, TEST-07)
 
 ### Phase 4: Reliability and Performance

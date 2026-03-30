@@ -25,8 +25,8 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 - [x] **TEST-01**: Auth service has unit and integration test project with tests covering auth flows, JWT, and password validation
 - [x] **TEST-02**: Community service has test project with tests covering post CRUD, reactions, and authentication middleware
 - [x] **TEST-03**: Journal service has test project with tests covering journal CRUD and pattern analysis
-- [ ] **TEST-04**: Notification service has test project with tests covering code delivery, push notifications, and scheduling
-- [ ] **TEST-05**: Chat service test coverage expanded to include SessionService, ChatController, and wrapper client
+- [x] **TEST-04**: Notification service has test project with tests covering code delivery, push notifications, and scheduling
+- [x] **TEST-05**: Chat service test coverage expanded to include SessionService, ChatController, and wrapper client
 - [x] **TEST-06**: Frontend test framework configured (Jest + React Native Testing Library)
 - [x] **TEST-07**: Frontend critical paths tested (AuthContext, api.js, chatApi.js)
 - [x] **TEST-08**: IPasswordHasher abstraction introduced in auth-service for testable password hashing
@@ -115,8 +115,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-01 | Phase 3 | Complete |
 | TEST-02 | Phase 3 | Complete |
 | TEST-03 | Phase 3 | Complete |
-| TEST-04 | Phase 3 | Pending |
-| TEST-05 | Phase 3 | Pending |
+| TEST-04 | Phase 3 | Complete |
+| TEST-05 | Phase 3 | Complete |
 | TEST-06 | Phase 3 | Complete |
 | TEST-07 | Phase 3 | Complete |
 | TEST-08 | Phase 3 | Complete |

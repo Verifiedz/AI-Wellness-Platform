@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 03-test-infrastructure 03-02-PLAN.md
-last_updated: "2026-03-30T06:38:08.732Z"
+status: verifying
+stopped_at: Completed 03-test-infrastructure 03-03-PLAN.md
+last_updated: "2026-03-30T06:39:51.486Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 11
-  completed_plans: 10
+  completed_plans: 11
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Phase: 03 (test-infrastructure) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-test-infrastructure P04 | 25m | 2 tasks | 7 files |
 | Phase 03-test-infrastructure P01 | 7m | 2 tasks | 7 files |
 | Phase 03-test-infrastructure P02 | 25m | 2 tasks | 13 files |
+| Phase 03-test-infrastructure P03 | 12m | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 03-test-infrastructure]: JWT NameIdentifier serializes as nameid short name in JwtSecurityTokenHandler round-trip -- tests check both full URI and short name
 - [Phase 03-test-infrastructure]: Extract IDatabaseService and ICommunityDbService interfaces to enable Moq unit testing: both services were concrete/sealed with no interface
 - [Phase 03-test-infrastructure]: StoredProcedureExecutor.ValidateFunctionName tested via BindingFlags.NonPublic reflection to validate SQL injection guard without modifying production code
+- [Phase 03-test-infrastructure]: Use WebApplicationFactory<Program> for notification-service controller tests — tests real middleware stack including CryptographicOperations.FixedTimeEquals
+- [Phase 03-test-infrastructure]: ChatControllerTests use ClaimsPrincipal on ControllerContext.HttpContext.User to avoid full web stack for identity-dependent unit tests
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T06:38:08.727Z
-Stopped at: Completed 03-test-infrastructure 03-02-PLAN.md
+Last session: 2026-03-30T06:39:51.482Z
+Stopped at: Completed 03-test-infrastructure 03-03-PLAN.md
 Resume file: None
