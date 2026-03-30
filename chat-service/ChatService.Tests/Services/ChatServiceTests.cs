@@ -46,16 +46,16 @@ public class ChatServiceTests
             .ReturnsAsync(session);
 
         _dbMock
-            .Setup(d => d.getChatsBySessionAsync(sessionId))
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Chat>());
 
         _dbMock
-            .Setup(d => d.createChatAsync(It.IsAny<Chat>()))
+            .Setup(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var expectedResponse = new ChatResponse(userId, "Hi there!", string.Empty, sessionId);
         _wrapperMock
-            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>()))
+            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedResponse);
 
         var response = await _sut.SendChatMessageAsync(request);
@@ -78,21 +78,21 @@ public class ChatServiceTests
             .ReturnsAsync(session);
 
         _dbMock
-            .Setup(d => d.getChatsBySessionAsync(sessionId))
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Chat>());
 
         _dbMock
-            .Setup(d => d.createChatAsync(It.IsAny<Chat>()))
+            .Setup(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         _wrapperMock
-            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>()))
+            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ChatResponse(userId, "AI response", string.Empty, sessionId));
 
         await _sut.SendChatMessageAsync(request);
 
         // createChatAsync should be called once for the user message and once for the AI response
-        _dbMock.Verify(d => d.createChatAsync(It.IsAny<Chat>()), Times.Exactly(2));
+        _dbMock.Verify(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -133,15 +133,15 @@ public class ChatServiceTests
             .Returns(Task.CompletedTask);
 
         _dbMock
-            .Setup(d => d.getChatsBySessionAsync(sessionId))
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Chat>());
 
         _dbMock
-            .Setup(d => d.createChatAsync(It.IsAny<Chat>()))
+            .Setup(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         _wrapperMock
-            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>()))
+            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ChatResponse(userId, "Reply", string.Empty, sessionId));
 
         await _sut.SendChatMessageAsync(request);
@@ -172,7 +172,7 @@ public class ChatServiceTests
             .ReturnsAsync(session);
 
         _dbMock
-            .Setup(d => d.getChatsBySessionAsync(sessionId))
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedChats);
 
         var result = await _sut.GetChatsbySessionAsync(sessionId, userId);
@@ -185,5 +185,66 @@ public class ChatServiceTests
     {
         await Assert.ThrowsAsync<ArgumentException>(
             () => _sut.GetChatsbySessionAsync(Guid.Empty, Guid.NewGuid()));
+    }
+
+    // ------------------------------------------------------------------ //
+    // Pagination — limit and offset forwarding
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task GetChatsbySessionAsync_PassesLimitOffset_ToDatabaseProvider()
+    {
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var session = new ChatSession { sessionID = sessionId, UserId = userId };
+
+        _sessionMock
+            .Setup(s => s.GetOrCreateSessionAsync(userId, sessionId))
+            .ReturnsAsync(session);
+
+        _dbMock
+            .Setup(d => d.getChatsBySessionAsync(sessionId, 20, 10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Chat>());
+
+        await _sut.GetChatsbySessionAsync(sessionId, userId, 20, 10);
+
+        _dbMock.Verify(
+            d => d.getChatsBySessionAsync(sessionId, 20, 10, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    // ------------------------------------------------------------------ //
+    // CancellationToken propagation
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task SendChatMessageAsync_Cancellation_PropagatesTokenToWrapper()
+    {
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var session = new ChatSession { sessionID = sessionId, UserId = userId };
+        var request = new ChatRequest(userId, "Hello", string.Empty, sessionId);
+
+        _sessionMock
+            .Setup(s => s.GetOrCreateSessionAsync(userId, sessionId))
+            .ReturnsAsync(session);
+
+        _dbMock
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Chat>());
+
+        _dbMock
+            .Setup(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        _wrapperMock
+            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(
+            () => _sut.SendChatMessageAsync(request, cts.Token));
     }
 }

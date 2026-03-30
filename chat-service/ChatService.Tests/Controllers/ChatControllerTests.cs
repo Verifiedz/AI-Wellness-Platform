@@ -67,7 +67,7 @@ public class ChatControllerTests
         var response = new ChatResponse(_userId, "Hi!", string.Empty, sessionId);
 
         _chatServiceMock
-            .Setup(s => s.SendChatMessageAsync(It.IsAny<ChatRequest>()))
+            .Setup(s => s.SendChatMessageAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(response);
 
         var result = await _sut.SendChat(request);
@@ -102,12 +102,31 @@ public class ChatControllerTests
         var request = new ChatRequest(_userId, string.Empty, string.Empty, null);
 
         _chatServiceMock
-            .Setup(s => s.SendChatMessageAsync(It.IsAny<ChatRequest>()))
+            .Setup(s => s.SendChatMessageAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new ArgumentException("Message cannot be empty"));
 
         var result = await _sut.SendChat(request);
 
         Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    // ------------------------------------------------------------------ //
+    // SendChat — CancellationToken returns 499
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task SendChat_CancellationToken_Returns499_WhenCancelled()
+    {
+        var request = new ChatRequest(_userId, "Hello", string.Empty, null);
+
+        _chatServiceMock
+            .Setup(s => s.SendChatMessageAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        var result = await _sut.SendChat(request);
+
+        var statusResult = Assert.IsType<StatusCodeResult>(result);
+        Assert.Equal(499, statusResult.StatusCode);
     }
 
     // ------------------------------------------------------------------ //
@@ -158,7 +177,7 @@ public class ChatControllerTests
         };
 
         _chatServiceMock
-            .Setup(s => s.GetChatsbySessionAsync(sessionId, _userId))
+            .Setup(s => s.GetChatsbySessionAsync(sessionId, _userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(chats);
 
         var result = await _sut.GetSessionChats(sessionId);
@@ -183,12 +202,70 @@ public class ChatControllerTests
         var sessionId = Guid.NewGuid();
 
         _chatServiceMock
-            .Setup(s => s.GetChatsbySessionAsync(sessionId, _userId))
+            .Setup(s => s.GetChatsbySessionAsync(sessionId, _userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new KeyNotFoundException("Session not found"));
 
         var result = await _sut.GetSessionChats(sessionId);
 
         Assert.IsType<NotFoundObjectResult>(result);
+    }
+
+    // ------------------------------------------------------------------ //
+    // GetSessionChats — pagination tests
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task GetSessionChats_Pagination_ReturnsPagedResults()
+    {
+        var sessionId = Guid.NewGuid();
+        var chats = Enumerable.Range(0, 20).Select(_ => new Chat
+        {
+            chatReferenceId = Guid.NewGuid(),
+            message = "msg",
+            status = enums.Status.Active
+        }).ToList();
+
+        _chatServiceMock
+            .Setup(s => s.GetChatsbySessionAsync(sessionId, _userId, 20, 0, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(chats);
+
+        var result = await _sut.GetSessionChats(sessionId, 20, 0);
+
+        var ok = Assert.IsType<OkObjectResult>(result);
+        var list = Assert.IsAssignableFrom<IReadOnlyList<Chat>>(ok.Value);
+        Assert.Equal(20, list.Count);
+    }
+
+    [Fact]
+    public async Task GetSessionChats_Pagination_InvalidLimit_ReturnsBadRequest()
+    {
+        var sessionId = Guid.NewGuid();
+
+        var result = await _sut.GetSessionChats(sessionId, 0, 0);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Contains("limit must be between 1 and 200", badRequest.Value?.ToString());
+    }
+
+    [Fact]
+    public async Task GetSessionChats_Pagination_LimitExceedsMax_ReturnsBadRequest()
+    {
+        var sessionId = Guid.NewGuid();
+
+        var result = await _sut.GetSessionChats(sessionId, 201, 0);
+
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task GetSessionChats_Pagination_NegativeOffset_ReturnsBadRequest()
+    {
+        var sessionId = Guid.NewGuid();
+
+        var result = await _sut.GetSessionChats(sessionId, 50, -1);
+
+        var badRequest = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Contains("offset must be non-negative", badRequest.Value?.ToString());
     }
 
     // ------------------------------------------------------------------ //
