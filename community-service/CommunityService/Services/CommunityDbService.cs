@@ -1,7 +1,6 @@
 namespace CommunityService.Services;
 
 using Npgsql;
-using NpgsqlTypes;
 using CommunityService.Models.Responses;
 
 public sealed class CommunityDbService : ICommunityDbService
@@ -55,10 +54,8 @@ public sealed class CommunityDbService : ICommunityDbService
         return results;
     }
 
-    public async Task<List<PostResponse>> GetPostsAsync(string slug, Guid currentUserId, int limit, int offset)
-    {
-        await using var conn = await OpenAsync();
-        const string sql = @"
+    private const string GetPostsSql = @"
+        WITH post_data AS (
             SELECT p.id, p.group_id, p.anonymous_name,
                    COALESCE((SELECT avatar_seed FROM anonymous_identities WHERE user_id = p.user_id AND group_id = p.group_id), 0) AS avatar_seed,
                    p.content, p.parent_id, p.created_at,
@@ -67,84 +64,75 @@ public sealed class CommunityDbService : ICommunityDbService
             JOIN support_groups g ON g.id = p.group_id
             WHERE g.slug = @slug AND p.parent_id IS NULL AND NOT p.is_hidden
             ORDER BY p.created_at DESC
-            LIMIT @limit OFFSET @offset";
+            LIMIT @limit OFFSET @offset
+        ),
+        reaction_counts AS (
+            SELECT r.post_id, r.reaction_type, COUNT(*)::int AS cnt
+            FROM reactions r
+            WHERE r.post_id IN (SELECT id FROM post_data)
+            GROUP BY r.post_id, r.reaction_type
+        ),
+        reaction_agg AS (
+            SELECT post_id,
+                   json_object_agg(reaction_type, cnt) AS reactions
+            FROM reaction_counts
+            GROUP BY post_id
+        ),
+        user_reaction_agg AS (
+            SELECT r.post_id,
+                   array_agg(r.reaction_type) AS user_reactions
+            FROM reactions r
+            WHERE r.post_id IN (SELECT id FROM post_data)
+              AND r.user_id = @currentUserId
+            GROUP BY r.post_id
+        )
+        SELECT pd.id, pd.group_id, pd.anonymous_name, pd.avatar_seed,
+               pd.content, pd.parent_id, pd.created_at, pd.reply_count,
+               COALESCE(ra.reactions, '{}'::json) AS reactions,
+               COALESCE(ura.user_reactions, ARRAY[]::varchar[]) AS user_reactions
+        FROM post_data pd
+        LEFT JOIN reaction_agg ra ON ra.post_id = pd.id
+        LEFT JOIN user_reaction_agg ura ON ura.post_id = pd.id
+        ORDER BY pd.created_at DESC";
 
-        await using var cmd = new NpgsqlCommand(sql, conn);
+    public async Task<List<PostResponse>> GetPostsAsync(string slug, Guid currentUserId, int limit, int offset)
+    {
+        await using var conn = await OpenAsync();
+        await using var cmd = new NpgsqlCommand(GetPostsSql, conn);
         cmd.Parameters.AddWithValue("slug", slug);
         cmd.Parameters.AddWithValue("limit", limit);
         cmd.Parameters.AddWithValue("offset", offset);
+        cmd.Parameters.AddWithValue("currentUserId", currentUserId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
         var posts = new List<PostResponse>();
-        var postIds = new List<Guid>();
 
         while (await reader.ReadAsync())
         {
-            var postId = reader.GetGuid(0);
-            postIds.Add(postId);
+            var reactionsJson = reader.GetString(8);
+            var reactions = string.IsNullOrWhiteSpace(reactionsJson) || reactionsJson == "{}"
+                ? new Dictionary<string, int>()
+                : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(reactionsJson)
+                  ?? new Dictionary<string, int>();
+
+            var userReactions = reader.IsDBNull(9)
+                ? Array.Empty<string>()
+                : reader.GetFieldValue<string[]>(9);
+
             posts.Add(new PostResponse(
-                postId, reader.GetGuid(1), reader.GetString(2), reader.GetInt32(3),
+                reader.GetGuid(0),
+                reader.GetGuid(1),
+                reader.GetString(2),
+                reader.GetInt32(3),
                 reader.GetString(4),
                 reader.IsDBNull(5) ? null : reader.GetGuid(5),
                 (int)reader.GetInt64(7),
-                new Dictionary<string, int>(), [],
+                reactions,
+                userReactions,
                 reader.GetDateTime(6)));
         }
 
-        if (postIds.Count == 0) return posts;
-
-        // Fetch reactions
-        var reactionMap = await GetReactionCountsAsync(conn, postIds);
-        var userReactions = await GetUserReactionsAsync(conn, postIds, currentUserId);
-
-        return posts.Select(p => p with
-        {
-            Reactions = reactionMap.GetValueOrDefault(p.Id, new Dictionary<string, int>()),
-            UserReactions = userReactions.GetValueOrDefault(p.Id, [])
-        }).ToList();
-    }
-
-    private static async Task<Dictionary<Guid, Dictionary<string, int>>> GetReactionCountsAsync(
-        NpgsqlConnection conn, List<Guid> postIds)
-    {
-        const string sql = @"
-            SELECT post_id, reaction_type, COUNT(*) FROM reactions
-            WHERE post_id = ANY(@ids) GROUP BY post_id, reaction_type";
-
-        await using var cmd = new NpgsqlCommand(sql, conn);
-        cmd.Parameters.Add(new NpgsqlParameter("ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = postIds.ToArray() });
-
-        var map = new Dictionary<Guid, Dictionary<string, int>>();
-        await using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            var postId = reader.GetGuid(0);
-            if (!map.ContainsKey(postId)) map[postId] = new Dictionary<string, int>();
-            map[postId][reader.GetString(1)] = (int)reader.GetInt64(2);
-        }
-        return map;
-    }
-
-    private static async Task<Dictionary<Guid, string[]>> GetUserReactionsAsync(
-        NpgsqlConnection conn, List<Guid> postIds, Guid userId)
-    {
-        const string sql = @"
-            SELECT post_id, reaction_type FROM reactions
-            WHERE post_id = ANY(@ids) AND user_id = @userId";
-
-        await using var cmd = new NpgsqlCommand(sql, conn);
-        cmd.Parameters.Add(new NpgsqlParameter("ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid) { Value = postIds.ToArray() });
-        cmd.Parameters.AddWithValue("userId", userId);
-
-        var map = new Dictionary<Guid, List<string>>();
-        await using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            var postId = reader.GetGuid(0);
-            if (!map.ContainsKey(postId)) map[postId] = [];
-            map[postId].Add(reader.GetString(1));
-        }
-        return map.ToDictionary(kv => kv.Key, kv => kv.Value.ToArray());
+        return posts;
     }
 
     public async Task<PostResponse> CreatePostAsync(string slug, Guid userId, string content)
