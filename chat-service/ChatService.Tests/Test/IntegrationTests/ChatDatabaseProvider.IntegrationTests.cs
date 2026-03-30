@@ -1,10 +1,10 @@
-﻿
-using System.Formats.Tar;
+
 using System.Transactions;
 using ChatService.APIs.Providers;
 using ChatService.DTOs;
 using ChatService.Interfaces;
 using ChatService.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace ChatService.Test.IntegrationTests;
@@ -12,14 +12,14 @@ namespace ChatService.Test.IntegrationTests;
 public class ChatDatabaseProviderIntegrationTests
 {
     private readonly IChatDatabaseProvider _chatDatabaseProvider;
-    
+
 
     public ChatDatabaseProviderIntegrationTests()
      {
        var stubconfigservice = new StubConfigurationService();
 
-       
-        _chatDatabaseProvider = new ChatDatabaseProvider(stubconfigservice);
+
+        _chatDatabaseProvider = new ChatDatabaseProvider(stubconfigservice, NullLogger<ChatDatabaseProvider>.Instance);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class ChatDatabaseProviderIntegrationTests
             chatUserId = Guid.NewGuid(),
             chatReferenceId = Guid.NewGuid(),
             message = "how are you sir?",
-            status = enums.Status.dummy1,
+            status = enums.Status.Active,
             isBookmarked = false,
             CreatedDate = DateTime.UtcNow,
         };
@@ -60,12 +60,12 @@ public class ChatDatabaseProviderIntegrationTests
             chatUserId = Guid.NewGuid(),
             chatReferenceId = Guid.NewGuid(),
             message = "how are you sir?",
-            status = enums.Status.dummy1,
+            status = enums.Status.Active,
             isBookmarked = false,
             CreatedDate = DateTime.UtcNow,
         };
 
-        // create a new entry chat 
+        // create a new entry chat
        await _chatDatabaseProvider.createChatAsync(expected);
 
         //delete the existence of the entry.
@@ -73,7 +73,7 @@ public class ChatDatabaseProviderIntegrationTests
 
         //attemp to recieve the entry
         var result =  await _chatDatabaseProvider.getChatAsync(expected.chatReferenceId);
-        Assert.Null(result); 
+        Assert.Null(result);
     }
 
 }
