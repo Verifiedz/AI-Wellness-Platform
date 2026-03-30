@@ -44,15 +44,15 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 
 - [x] **CFG-01**: Docker Compose database passwords fail fast when env vars missing (no default fallbacks)
 - [x] **CFG-02**: Auth service container has health check directive in docker-compose.yml
-- [ ] **CFG-03**: Firebase service account path validated at startup with clear error if missing
+- [x] **CFG-03**: Firebase service account path validated at startup with clear error if missing
 - [x] **CFG-04**: .env.example enumerates all required environment variables with placeholder values
 
 ### Tech Debt
 
 - [ ] **DEBT-01**: Chat service naming conventions standardized to PascalCase per .NET conventions
-- [ ] **DEBT-02**: Duplicated StoredProcedureExecutor consolidated (shared project reference or extracted pattern)
-- [ ] **DEBT-03**: Wearable service stub removed from UI or marked as coming-soon placeholder
-- [ ] **DEBT-04**: In-memory rate limiting scaling limitation documented in architecture docs
+- [x] **DEBT-02**: Duplicated StoredProcedureExecutor consolidated (shared project reference or extracted pattern)
+- [x] **DEBT-03**: Wearable service stub removed from UI or marked as coming-soon placeholder
+- [x] **DEBT-04**: In-memory rate limiting scaling limitation documented in architecture docs
 
 ## v2 Requirements
 
@@ -128,12 +128,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REL-06 | Phase 4 | Complete |
 | CFG-01 | Phase 5 | Complete |
 | CFG-02 | Phase 5 | Complete |
-| CFG-03 | Phase 5 | Pending |
+| CFG-03 | Phase 5 | Complete |
 | CFG-04 | Phase 5 | Complete |
 | DEBT-01 | Phase 5 | Pending |
-| DEBT-02 | Phase 5 | Pending |
-| DEBT-03 | Phase 5 | Pending |
-| DEBT-04 | Phase 5 | Pending |
+| DEBT-02 | Phase 5 | Complete |
+| DEBT-03 | Phase 5 | Complete |
+| DEBT-04 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 32 total

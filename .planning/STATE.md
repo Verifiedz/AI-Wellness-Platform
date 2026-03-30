@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-tech-debt-and-configuration 05-01-PLAN.md
-last_updated: "2026-03-30T10:39:31.141Z"
+stopped_at: Completed 05-tech-debt-and-configuration 05-02-PLAN.md
+last_updated: "2026-03-30T10:46:13.918Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 17
-  completed_plans: 15
+  completed_plans: 16
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 5 (tech-debt-and-configuration) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-reliability-and-performance P02 | 3m | 2 tasks | 3 files |
 | Phase 04-reliability-and-performance P03 | 7m | 2 tasks | 11 files |
 | Phase 05-tech-debt-and-configuration P01 | 5m | 2 tasks | 2 files |
+| Phase 05-tech-debt-and-configuration P02 | 4m | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -102,6 +103,8 @@ Recent decisions affecting current work:
 - [Phase 04-reliability-and-performance]: Keep class (not record) for ChatSession to avoid Redis deserialization risk; init-only setters provide immutability without changing the type
 - [Phase 04-reliability-and-performance]: HtmlSanitizer strip-all mode removes entire elements including inner content; <b>Hello</b> strips to empty not 'Hello' — correct behavior for wellness platform with no rich formatting requirement
 - [Phase 05-tech-debt-and-configuration]: curl -f used for auth-service healthcheck (consistent with ai-wrapper-service pattern; wget --spider unreliable on HTTP 404)
+- [Phase 05-tech-debt-and-configuration]: Firebase fail-fast check placed after Initialize() try/catch — preserves optional design while catching misconfigured paths
+- [Phase 05-tech-debt-and-configuration]: Test factories override Firebase:ServiceAccountPath to empty string — in-memory config overlays appsettings.json which sets a non-empty path
 
 ### Pending Todos
 
@@ -116,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:39:31.136Z
-Stopped at: Completed 05-tech-debt-and-configuration 05-01-PLAN.md
+Last session: 2026-03-30T10:46:13.913Z
+Stopped at: Completed 05-tech-debt-and-configuration 05-02-PLAN.md
 Resume file: None
