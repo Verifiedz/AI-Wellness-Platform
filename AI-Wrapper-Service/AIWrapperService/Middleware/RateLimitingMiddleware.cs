@@ -2,9 +2,18 @@ using System.Collections.Concurrent;
 
 namespace AIWrapperService.Middleware;
 
+/// <summary>
 /// Simple in-memory rate limiting middleware to protect upstream providers.
 /// Limits requests per IP address to prevent abuse.
-/// Production systems should use distributed rate limiting (Redis, etc.).
+/// </summary>
+/// <remarks>
+/// SCALING LIMITATION: Rate limit state is stored in a ConcurrentDictionary (in-process only).
+/// Counters are NOT shared across replicas in a multi-instance deployment.
+/// Each replica maintains independent rate limit counters, so a client could make
+/// N requests to each replica before hitting any single replica's limit.
+/// For multi-instance deployments, replace ConcurrentDictionary with IDistributedCache
+/// backed by Redis. See v2 requirement SEC-ADV-01.
+/// </remarks>
 public class RateLimitingMiddleware : IDisposable
 {
     private readonly RequestDelegate _next;

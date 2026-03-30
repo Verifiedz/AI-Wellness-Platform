@@ -146,6 +146,9 @@ public class NotificationTestFactory : WebApplicationFactory<Program>
                 // Email / SMS providers intentionally unconfigured
                 ["Email:Smtp:Host"] = "",
                 ["Sms:Twilio:AccountSid"] = "",
+
+                // Clear Firebase path so fail-fast check does not throw in tests
+                ["Firebase:ServiceAccountPath"] = "",
             });
         });
     }
@@ -171,6 +174,9 @@ public class NotificationBypassTestFactory : WebApplicationFactory<Program>
 
                 ["Email:Smtp:Host"] = "",
                 ["Sms:Twilio:AccountSid"] = "",
+
+                // Clear Firebase path so fail-fast check does not throw in tests
+                ["Firebase:ServiceAccountPath"] = "",
             });
         });
     }

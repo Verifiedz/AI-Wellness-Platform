@@ -2,6 +2,14 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace AIWellness.Auth.Middleware;
 
+/// <remarks>
+/// SCALING LIMITATION: Rate limit state is stored in IMemoryCache (in-process only).
+/// Counters are NOT shared across replicas in a multi-instance deployment.
+/// Each replica maintains independent rate limit counters, so a client could make
+/// N requests to each replica before hitting any single replica's limit.
+/// For multi-instance deployments, replace IMemoryCache with IDistributedCache
+/// backed by Redis. See v2 requirement SEC-ADV-01.
+/// </remarks>
 public class RateLimitingMiddleware
 {
   private readonly RequestDelegate _next;

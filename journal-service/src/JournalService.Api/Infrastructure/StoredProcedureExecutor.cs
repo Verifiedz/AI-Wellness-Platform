@@ -4,6 +4,16 @@ using Npgsql;
 using System.Data;
 using System.Text.RegularExpressions;
 
+/// <summary>
+/// Executes PostgreSQL stored procedures with parameterized queries and function name validation.
+/// </summary>
+/// <remarks>
+/// INTENTIONAL DUPLICATION: This class is duplicated in notification-service
+/// (NotificationService.Api.Infrastructure.StoredProcedureExecutor).
+/// Both copies are functionally identical except for the connection string key.
+/// Consolidation into a shared library is deferred to the infrastructure milestone (INFRA phase).
+/// See v2 requirement tracking for shared library extraction.
+/// </remarks>
 public class StoredProcedureExecutor
 {
     private readonly string _connectionString;

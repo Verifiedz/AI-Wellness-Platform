@@ -82,6 +82,18 @@ catch (Exception ex)
         "Push notifications will be sent via Expo Push API.", ex.Message);
 }
 
+// Fail fast if Firebase path was configured but initialization failed.
+// If the path is unset or empty, the service starts normally using Expo Push.
+// If the path is set but the file is missing/invalid, abort immediately with a clear error.
+var firebasePath = builder.Configuration["Firebase:ServiceAccountPath"];
+if (!string.IsNullOrWhiteSpace(firebasePath) && !firebaseService.IsInitialized)
+{
+    throw new InvalidOperationException(
+        $"Firebase:ServiceAccountPath is configured ('{firebasePath}') but initialization failed. " +
+        "Ensure the file exists and is a valid service account JSON. " +
+        "To run without Firebase, leave Firebase:ServiceAccountPath unset or empty.");
+}
+
 // Configure the HTTP request pipeline
 app.UseHttpsRedirection();
 

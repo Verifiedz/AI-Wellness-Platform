@@ -5,9 +5,15 @@ using System.Data;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Utility class for executing PostgreSQL stored procedures
-/// Provides methods for scalar queries, reader queries, and non-query operations
+/// Executes PostgreSQL stored procedures with parameterized queries and function name validation.
 /// </summary>
+/// <remarks>
+/// INTENTIONAL DUPLICATION: This class is duplicated in journal-service
+/// (JournalService.Api.Infrastructure.StoredProcedureExecutor).
+/// Both copies are functionally identical except for the connection string key.
+/// Consolidation into a shared library is deferred to the infrastructure milestone (INFRA phase).
+/// See v2 requirement tracking for shared library extraction.
+/// </remarks>
 public class StoredProcedureExecutor
 {
     private readonly string _connectionString;
