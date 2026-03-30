@@ -1,5 +1,6 @@
 using AIWellness.Auth.DTOs.Requests;
 using AIWellness.Auth.DTOs.Responses;
+using AIWellness.Auth.Exceptions;
 using AIWellness.Auth.Models;
 using AIWellness.Auth.Repositories;
 using AIWellness.Auth.Services.Abstractions;
@@ -39,21 +40,21 @@ public class AuthService : IAuthService
   {
     var (isValid, error) = _passwordValidator.ValidatePassword(request.Password);
     if (!isValid)
-      throw new Exception($"Password validation failed: {error}");
+      throw new AuthValidationException("PASSWORD_POLICY", $"Password validation failed: {error}");
 
     var existingEmail = await _userRepository.GetByEmailAsync(request.Email);
     if (existingEmail != null)
-      throw new Exception("Email already registered");
+      throw new AuthConflictException("EMAIL_EXISTS", "Email already registered");
 
     var existingUsername = await _userRepository.GetByUsernameAsync(request.Username);
     if (existingUsername != null)
-      throw new Exception("Username already taken");
+      throw new AuthConflictException("USERNAME_EXISTS", "Username already taken");
 
     if (!string.IsNullOrEmpty(request.Phone))
     {
       var existingPhone = await _userRepository.GetByPhoneAsync(request.Phone);
       if (existingPhone != null)
-        throw new Exception("Phone number already registered");
+        throw new AuthConflictException("PHONE_EXISTS", "Phone number already registered");
     }
 
     var user = new User
@@ -94,15 +95,15 @@ public class AuthService : IAuthService
     if (user == null)
     {
       await LogFailedLoginAttempt(null, "Invalid credentials");
-      throw new Exception("Invalid credentials");
+      throw new AuthSecurityException("INVALID_CREDENTIALS", "Invalid credentials - user not found");
     }
 
     if (!user.IsActive)
-      throw new Exception("Account is deactivated");
+      throw new AuthSecurityException("ACCOUNT_DEACTIVATED", "Account is deactivated");
 
     var isLocked = await _userRepository.IsAccountLockedAsync(user.Id);
     if (isLocked)
-      throw new Exception("Account is temporarily locked due to too many failed login attempts. Please try again later.");
+      throw new AuthSecurityException("ACCOUNT_LOCKED", "Account temporarily locked due to failed attempts");
 
     var passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
 
@@ -113,11 +114,11 @@ public class AuthService : IAuthService
     {
       await _userRepository.IncrementFailedLoginAsync(user.Id);
       await LogFailedLoginAttempt(user.Id, "Invalid password", ipAddress, userAgent);
-      throw new Exception("Invalid credentials");
+      throw new AuthSecurityException("INVALID_CREDENTIALS", "Invalid credentials - wrong password");
     }
 
     if (!user.IsEmailVerified)
-      throw new Exception("Email not verified. Please verify your email first.");
+      throw new AuthSecurityException("EMAIL_NOT_VERIFIED", "Email not verified");
 
     var twoFactorCode = GenerateRandomCode();
     await _userRepository.CreateTwoFactorCodeAsync(user.Id, twoFactorCode, ipAddress);
@@ -140,11 +141,11 @@ public class AuthService : IAuthService
   {
     var user = await _userRepository.GetByEmailAsync(request.Email);
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for 2FA verification");
 
     var isValid = await _userRepository.VerifyTwoFactorCodeAsync(user.Id, request.Code);
     if (!isValid)
-      throw new Exception("Invalid or expired 2FA code");
+      throw new AuthSecurityException("INVALID_2FA_CODE", "Invalid or expired 2FA code");
 
     var token = _jwtService.GenerateJwtToken(user);
     var refreshToken = _jwtService.GenerateRefreshToken();
@@ -161,14 +162,14 @@ public class AuthService : IAuthService
   {
     var user = await _userRepository.GetByEmailAsync(email);
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for email verification");
 
     if (user.IsEmailVerified)
-      throw new Exception("Email already verified");
+      throw new AuthValidationException("EMAIL_ALREADY_VERIFIED", "Email already verified");
 
     var isValid = await _userRepository.VerifyCodeAsync(user.Id, code, "email_verify");
     if (!isValid)
-      throw new Exception("Invalid or expired verification code");
+      throw new AuthSecurityException("INVALID_VERIFICATION_CODE", "Invalid or expired verification code");
 
     return true;
   }
@@ -183,10 +184,10 @@ public class AuthService : IAuthService
       user = await _userRepository.GetByUsernameAsync(request.Username);
 
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for resend verification");
 
     if (user.IsEmailVerified)
-      throw new Exception("Email already verified");
+      throw new AuthValidationException("EMAIL_ALREADY_VERIFIED", "Email already verified");
 
     var verificationCode = GenerateRandomCode();
     var ipAddress = GetClientIpAddress();
@@ -220,22 +221,22 @@ public class AuthService : IAuthService
   public async Task ResetPasswordAsync(ResetPasswordRequest request)
   {
     if (request.NewPassword != request.NewPassword2)
-      throw new Exception("New passwords do not match");
+      throw new AuthValidationException("PASSWORDS_DO_NOT_MATCH", "New passwords do not match");
 
     var (isValid, error) = _passwordValidator.ValidatePassword(request.NewPassword);
     if (!isValid)
-      throw new Exception($"Password validation failed: {error}");
+      throw new AuthValidationException("PASSWORD_POLICY", $"Password validation failed: {error}");
 
     var user = await _userRepository.GetByEmailAsync(request.Email);
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for password reset");
 
     if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
-      throw new Exception("Please choose a new password different from your current one");
+      throw new AuthValidationException("SAME_PASSWORD", "New password must differ from current");
 
     var isValidCode = await _userRepository.VerifyCodeAsync(user.Id, request.Code, "password_reset");
     if (!isValidCode)
-      throw new Exception("Invalid or expired reset code");
+      throw new AuthSecurityException("INVALID_RESET_CODE", "Invalid or expired reset code");
 
     var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
     await _userRepository.UpdatePasswordAsync(user.Id, newPasswordHash);
@@ -244,21 +245,21 @@ public class AuthService : IAuthService
   public async Task ChangePasswordAsync(ChangePasswordRequest request)
   {
     if (request.NewPassword != request.NewPassword2)
-      throw new Exception("New passwords do not match");
+      throw new AuthValidationException("PASSWORDS_DO_NOT_MATCH", "New passwords do not match");
 
     var (isValid, error) = _passwordValidator.ValidatePassword(request.NewPassword);
     if (!isValid)
-      throw new Exception($"Password validation failed: {error}");
+      throw new AuthValidationException("PASSWORD_POLICY", $"Password validation failed: {error}");
 
     var user = await _userRepository.GetByEmailAsync(request.Email);
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for password change");
 
     if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
-      throw new Exception("Current password is incorrect");
+      throw new AuthSecurityException("WRONG_CURRENT_PASSWORD", "Current password is incorrect");
 
     if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
-      throw new Exception("Please choose a new password different from your current one");
+      throw new AuthValidationException("SAME_PASSWORD", "New password must differ from current");
 
     var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
     await _userRepository.UpdatePasswordAsync(user.Id, newPasswordHash);
@@ -268,7 +269,7 @@ public class AuthService : IAuthService
   {
     var user = await _userRepository.GetByEmailAsync(email);
     if (user == null)
-      throw new Exception("User not found");
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for user info");
 
     var isLocked = await _userRepository.IsAccountLockedAsync(user.Id);
 
