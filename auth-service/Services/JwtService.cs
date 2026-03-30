@@ -61,4 +61,32 @@ public class JwtService : IJwtService
       return 60;
     return expiryInMinutes;
   }
+
+  public ClaimsPrincipal? ValidateExpiredToken(string token)
+  {
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var jwtKey = _configuration["Jwt:Key"]
+        ?? throw new InvalidOperationException("JWT Key is not configured");
+    var key = Encoding.ASCII.GetBytes(jwtKey);
+
+    var validationParameters = new TokenValidationParameters
+    {
+      ValidateIssuer = true,
+      ValidateAudience = true,
+      ValidateLifetime = false,
+      ValidateIssuerSigningKey = true,
+      ValidIssuer = _configuration["Jwt:Issuer"],
+      ValidAudience = _configuration["Jwt:Audience"],
+      IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+
+    try
+    {
+      return tokenHandler.ValidateToken(token, validationParameters, out _);
+    }
+    catch
+    {
+      return null;
+    }
+  }
 }

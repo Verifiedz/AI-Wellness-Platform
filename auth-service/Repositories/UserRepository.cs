@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Dapper;
 using AIWellness.Auth.Models;
 
@@ -18,6 +20,14 @@ public class UserRepository : IUserRepository
     return await connection.QueryFirstOrDefaultAsync<User>(
         "SELECT * FROM get_user_by_email(@Email)",
         new { Email = email });
+  }
+
+  public async Task<User?> GetByIdAsync(Guid id)
+  {
+    using var connection = _connectionFactory.CreateConnection();
+    return await connection.QueryFirstOrDefaultAsync<User>(
+        "SELECT * FROM users WHERE id = @Id",
+        new { Id = id });
   }
 
   public async Task<User?> GetByUsernameAsync(string username)
@@ -162,7 +172,7 @@ public class UserRepository : IUserRepository
   {
     using var connection = _connectionFactory.CreateConnection();
     await connection.ExecuteAsync(@"
-            UPDATE users 
+            UPDATE users
             SET username = @Username,
                 email = @Email,
                 phone = @Phone,
@@ -174,4 +184,40 @@ public class UserRepository : IUserRepository
                 lockeduntil = @LockedUntil
             WHERE id = @Id", user);
   }
+
+  public async Task StoreRefreshTokenAsync(Guid userId, string tokenHash, DateTime expiresAt)
+  {
+    using var connection = _connectionFactory.CreateConnection();
+    await connection.ExecuteAsync(
+        @"INSERT INTO refresh_tokens (userid, token_hash, expires_at)
+          VALUES (@UserId, @TokenHash, @ExpiresAt)",
+        new { UserId = userId, TokenHash = tokenHash, ExpiresAt = expiresAt });
+  }
+
+  public async Task<(Guid UserId, DateTime ExpiresAt, bool IsRevoked)?> GetRefreshTokenAsync(string tokenHash)
+  {
+    using var connection = _connectionFactory.CreateConnection();
+    var row = await connection.QueryFirstOrDefaultAsync(
+        @"SELECT userid, expires_at, (revoked_at IS NOT NULL) AS is_revoked
+          FROM refresh_tokens
+          WHERE token_hash = @TokenHash",
+        new { TokenHash = tokenHash });
+
+    if (row == null) return null;
+
+    return ((Guid)row.userid, (DateTime)row.expires_at, (bool)row.is_revoked);
+  }
+
+  public async Task RevokeRefreshTokenAsync(string tokenHash, string? replacedByHash = null)
+  {
+    using var connection = _connectionFactory.CreateConnection();
+    await connection.ExecuteAsync(
+        @"UPDATE refresh_tokens
+          SET revoked_at = now(), replaced_by_token_hash = @ReplacedByHash
+          WHERE token_hash = @TokenHash",
+        new { TokenHash = tokenHash, ReplacedByHash = replacedByHash });
+  }
+
+  private static string HashToken(string token) =>
+      Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
 }

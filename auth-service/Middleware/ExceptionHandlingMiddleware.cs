@@ -99,6 +99,9 @@ public class ExceptionHandlingMiddleware
     "SAME_PASSWORD" => "New password must be different from current password.",
     "INVALID_RESET_CODE" => "Invalid or expired reset code.",
     "WRONG_CURRENT_PASSWORD" => "Current password is incorrect.",
+    "INVALID_REFRESH_TOKEN" => "Invalid or expired refresh token.",
+    "REFRESH_TOKEN_REVOKED" => "Invalid or expired refresh token.",
+    "REFRESH_TOKEN_EXPIRED" => "Invalid or expired refresh token.",
     _ => "An error occurred. Please try again."
   };
 }

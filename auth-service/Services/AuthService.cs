@@ -153,6 +153,9 @@ public class AuthService : IAuthService
     var token = _jwtService.GenerateJwtToken(user);
     var refreshToken = _jwtService.GenerateRefreshToken();
 
+    var tokenHash = HashToken(refreshToken);
+    await _userRepository.StoreRefreshTokenAsync(user.Id, tokenHash, DateTime.UtcNow.AddDays(7));
+
     return new TwoFactorResponse
     {
       Token = token,
@@ -291,10 +294,46 @@ public class AuthService : IAuthService
     };
   }
 
+  public async Task<TwoFactorResponse> RefreshTokenAsync(string refreshToken)
+  {
+    var tokenHash = HashToken(refreshToken);
+    var tokenRecord = await _userRepository.GetRefreshTokenAsync(tokenHash);
+
+    if (tokenRecord == null)
+      throw new AuthSecurityException("INVALID_REFRESH_TOKEN", "Refresh token not found");
+
+    if (tokenRecord.Value.IsRevoked)
+      throw new AuthSecurityException("REFRESH_TOKEN_REVOKED", "Refresh token has been revoked");
+
+    if (tokenRecord.Value.ExpiresAt < DateTime.UtcNow)
+      throw new AuthSecurityException("REFRESH_TOKEN_EXPIRED", "Refresh token has expired");
+
+    var user = await _userRepository.GetByIdAsync(tokenRecord.Value.UserId);
+    if (user == null)
+      throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for refresh token");
+
+    var newJwt = _jwtService.GenerateJwtToken(user);
+    var newRefreshToken = _jwtService.GenerateRefreshToken();
+    var newTokenHash = HashToken(newRefreshToken);
+
+    await _userRepository.RevokeRefreshTokenAsync(tokenHash, newTokenHash);
+    await _userRepository.StoreRefreshTokenAsync(user.Id, newTokenHash, DateTime.UtcNow.AddDays(7));
+
+    return new TwoFactorResponse
+    {
+      Token = newJwt,
+      RefreshToken = newRefreshToken,
+      ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtService.GetJwtExpiryMinutes())
+    };
+  }
+
   private static string GenerateRandomCode()
   {
     return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
   }
+
+  private static string HashToken(string token) =>
+      Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
 
   private async Task LogSuccessfulLoginAttempt(Guid userId, string ipAddress, string userAgent)
   {

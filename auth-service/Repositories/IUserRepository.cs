@@ -5,6 +5,7 @@ namespace AIWellness.Auth.Repositories;
 public interface IUserRepository
 {
   Task<User?> GetByEmailAsync(string email);
+  Task<User?> GetByIdAsync(Guid id);
   Task<User?> GetByUsernameAsync(string username);
   Task<User?> GetByPhoneAsync(string phone);
   Task<Guid> CreateAsync(User user);
@@ -19,4 +20,7 @@ public interface IUserRepository
   Task<bool> VerifyTwoFactorCodeAsync(Guid userId, string code);
   Task CleanupExpiredCodesAsync();
   Task UpdateUserAsync(User user);
+  Task StoreRefreshTokenAsync(Guid userId, string tokenHash, DateTime expiresAt);
+  Task<(Guid UserId, DateTime ExpiresAt, bool IsRevoked)?> GetRefreshTokenAsync(string tokenHash);
+  Task RevokeRefreshTokenAsync(string tokenHash, string? replacedByHash = null);
 }

@@ -61,6 +61,19 @@ CREATE INDEX IF NOT EXISTS idx_login_attempts_user ON loginattempts (userid);
 
 CREATE INDEX IF NOT EXISTS idx_verification_codes_user ON verificationcodes (userid);
 
+-- REFRESH TOKENS table
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    userid UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    revoked_at TIMESTAMPTZ,
+    replaced_by_token_hash TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_userid ON refresh_tokens(userid);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
+
 -- Test user removed for production. To create a test user for local development,
 -- run this INSERT manually against your local database.
 

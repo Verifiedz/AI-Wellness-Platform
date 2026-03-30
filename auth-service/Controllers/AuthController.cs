@@ -106,6 +106,14 @@ public class AuthController : ControllerBase
     return Ok(userInfo);
   }
 
+  [HttpPost("refresh")]
+  [AllowAnonymous]
+  public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+  {
+    var result = await _authService.RefreshTokenAsync(request.RefreshToken);
+    return Ok(result);
+  }
+
   [HttpGet("health")]
   public IActionResult HealthCheck()
   {
