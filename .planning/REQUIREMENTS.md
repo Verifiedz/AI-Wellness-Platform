@@ -13,8 +13,8 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 - [x] **SEC-02**: Security codes use cryptographically secure random generation (replace `new Random()` with `RandomNumberGenerator`)
 - [x] **SEC-03**: Community service validates gateway shared-secret before processing requests
 - [ ] **SEC-04**: API key comparison in notification-service uses timing-safe equality (`CryptographicOperations.FixedTimeEquals`)
-- [ ] **SEC-05**: PII removed from log string interpolation in auth-service (convert to structured logging placeholders)
-- [ ] **SEC-06**: User info endpoint enforces authorization (users can only query their own data)
+- [x] **SEC-05**: PII removed from log string interpolation in auth-service (convert to structured logging placeholders)
+- [x] **SEC-06**: User info endpoint enforces authorization (users can only query their own data)
 - [x] **SEC-07**: Exception messages are not exposed to API clients (return generic errors, log details server-side)
 - [x] **SEC-08**: Auth service uses domain exception types instead of generic `Exception` (prerequisite for SEC-07)
 - [x] **SEC-09**: Hardcoded credentials removed from committed config files (community-service appsettings.json)
@@ -106,8 +106,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
 | SEC-04 | Phase 2 | Pending |
-| SEC-05 | Phase 1 | Pending |
-| SEC-06 | Phase 1 | Pending |
+| SEC-05 | Phase 1 | Complete |
+| SEC-06 | Phase 1 | Complete |
 | SEC-07 | Phase 1 | Complete |
 | SEC-08 | Phase 1 | Complete |
 | SEC-09 | Phase 1 | Complete |

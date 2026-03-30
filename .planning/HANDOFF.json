@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-30T04:06:04.137Z",
+  "phase": "01",
+  "phase_name": "perimeter-security",
+  "phase_dir": ".planning/phases/01-perimeter-security",
+  "plan": 5,
+  "task": null,
+  "total_tasks": 12,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": "01-00", "name": "Test project scaffolds", "status": "done", "commits": ["d5f8ff2", "4fb07fc", "a54579e"]},
+    {"id": "01-01", "name": "Exception handling & safe error responses", "status": "done", "commits": ["fe5c444", "168ff22"]},
+    {"id": "01-02", "name": "2FA CSPRNG, PII logging, dead endpoint removal", "status": "done", "commits": ["6f6d946", "39e8aa1", "883f1b9"]},
+    {"id": "01-03", "name": "Gateway auth for community-service", "status": "done", "commits": ["157cfce", "cdc3174", "62ccf21", "e6fc6c1"]},
+    {"id": "01-04", "name": "Credential scrubbing & .env.example", "status": "done", "commits": ["729d874", "3224abf", "5e9dce6"]}
+  ],
+  "remaining_tasks": [],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "Empty string placeholder in appsettings.json preserves schema visibility", "rationale": "Signals env var override required while keeping JSON structure discoverable", "phase": "01"},
+    {"decision": "AuthException subclasses map to HTTP status codes via middleware switch", "rationale": "Centralizes error response formatting, prevents info leakage", "phase": "01"},
+    {"decision": "X-Internal-Api-Key injected on ALL YARP proxied requests", "rationale": "Simpler than per-cluster config; other services ignore the header", "phase": "01"},
+    {"decision": "CSPRNG (RandomNumberGenerator.GetInt32) for all security codes", "rationale": "System.Random is predictable; CSPRNG required for 2FA codes", "phase": "01"},
+    {"decision": "2FA log line deleted entirely, not sanitized", "rationale": "Per D-09, no safe way to log 2FA codes", "phase": "01"},
+    {"decision": "ILogger named placeholders enforced across all auth-service", "rationale": "Prevents PII interpolation into log strings", "phase": "01"}
+  ],
+  "uncommitted_files": [".planning/REQUIREMENTS.md"],
+  "next_action": "Run phase verification: all 5 plans executed, need verifier to confirm SEC-01 through SEC-10 requirements are met. Then proceed to Phase 02.",
+  "context_notes": "All 5 plans in Phase 01 executed successfully across 2 waves. Wave 1 had worktree creation failures for 2 of 4 agents (git config lock contention) — retried without isolation. 01-01 merged from worktree with 2 conflict resolutions (Program.cs and ExceptionHandlingMiddleware.cs). All tests pass. Phase is at verification stage — STATE.md shows 'verifying' status. Some SUMMARY.md files have TBD-like content from the templates but the actual work is done."
+}
