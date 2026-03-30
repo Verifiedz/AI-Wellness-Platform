@@ -49,7 +49,7 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 
 ### Tech Debt
 
-- [ ] **DEBT-01**: Chat service naming conventions standardized to PascalCase per .NET conventions
+- [x] **DEBT-01**: Chat service naming conventions standardized to PascalCase per .NET conventions
 - [x] **DEBT-02**: Duplicated StoredProcedureExecutor consolidated (shared project reference or extracted pattern)
 - [x] **DEBT-03**: Wearable service stub removed from UI or marked as coming-soon placeholder
 - [x] **DEBT-04**: In-memory rate limiting scaling limitation documented in architecture docs
@@ -130,7 +130,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CFG-02 | Phase 5 | Complete |
 | CFG-03 | Phase 5 | Complete |
 | CFG-04 | Phase 5 | Complete |
-| DEBT-01 | Phase 5 | Pending |
+| DEBT-01 | Phase 5 | Complete |
 | DEBT-02 | Phase 5 | Complete |
 | DEBT-03 | Phase 5 | Complete |
 | DEBT-04 | Phase 5 | Complete |

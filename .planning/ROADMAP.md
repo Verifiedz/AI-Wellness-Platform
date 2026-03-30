@@ -94,7 +94,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md -- Docker config hardening and .env.example completion (CFG-01, CFG-02, CFG-04)
 - [x] 05-02-PLAN.md -- Firebase fail-fast, duplication docs, rate limit docs, wearable coming-soon (CFG-03, DEBT-02, DEBT-03, DEBT-04)
-- [ ] 05-03-PLAN.md -- Chat service PascalCase naming standardization (DEBT-01)
+- [x] 05-03-PLAN.md -- Chat service PascalCase naming standardization (DEBT-01)
 
 ## Progress
 
