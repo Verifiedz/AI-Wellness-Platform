@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
-| 2. Internal Communication Security | 0/2 | Complete    | 2026-03-30 |
+| 2. Internal Communication Security | 2/2 | Complete    | 2026-03-30 |
 | 3. Test Infrastructure | 0/TBD | Not started | - |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
