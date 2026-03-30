@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Perimeter Security** - Fix authentication at the gateway boundary (auth-service) and close the completely unauthenticated community-service (completed 2026-03-30)
 - [x] **Phase 2: Internal Communication Security** - Fix timing-safe API key comparison, middleware pipeline order, and SQL injection surface on stored procedures (completed 2026-03-30)
-- [ ] **Phase 3: Test Infrastructure** - Establish test projects for all five untested services and the frontend; write tests proving every Phase 1 and 2 fix
+- [x] **Phase 3: Test Infrastructure** - Establish test projects for all five untested services and the frontend; write tests proving every Phase 1 and 2 fix (completed 2026-03-30)
 - [ ] **Phase 4: Reliability and Performance** - Fix pagination, CancellationToken propagation, session immutability, and input sanitization
 - [ ] **Phase 5: Tech Debt and Configuration** - Clean deployment config, remove dead code, document scaling limitations, consolidate naming conventions
 
@@ -59,7 +59,7 @@ Plans:
   2. Community-service tests include a test that sends a request without the gateway shared secret and asserts 401
   3. Frontend `npm test` runs without configuration errors and AuthContext login, logout, and token-restore flows have passing tests
   4. All tests were written to fail against the pre-fix code and pass only after the fix (no characterization tests encoding broken behavior)
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 Plans:
 - [x] 03-01-PLAN.md -- IPasswordHasher abstraction and auth-service test expansion (TEST-08, TEST-01)
 - [x] 03-02-PLAN.md -- Community-service controller tests and journal-service test project (TEST-02, TEST-03)
@@ -97,6 +97,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
 | 2. Internal Communication Security | 2/2 | Complete    | 2026-03-30 |
-| 3. Test Infrastructure | 3/4 | In Progress|  |
+| 3. Test Infrastructure | 4/4 | Complete   | 2026-03-30 |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
