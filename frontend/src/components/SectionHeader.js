@@ -1,6 +1,6 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 export function SectionHeader({ title, action, onAction, style }) {
   const { colors, fonts } = useTheme();
@@ -10,7 +10,7 @@ export function SectionHeader({ title, action, onAction, style }) {
       <Text style={[fonts.heading3, { color: colors.text }]}>{title}</Text>
       {action && onAction && (
         <TouchableOpacity onPress={onAction}>
-          <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "600" }]}>
+          <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '600' }]}>
             {action}
           </Text>
         </TouchableOpacity>
@@ -21,9 +21,9 @@ export function SectionHeader({ title, action, onAction, style }) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 14,
   },
 });

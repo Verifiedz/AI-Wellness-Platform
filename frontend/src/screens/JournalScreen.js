@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,34 +8,34 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { format } from "date-fns";
-import { useTheme } from "../context/ThemeContext";
-import { journalApi } from "../services/journalApi";
-import { EMOTIONS } from "../constants/journal";
-import { Card } from "../components/Card";
-import { MoodSelector } from "../components/MoodSelector";
-import { ChipGroup } from "../components/ChipGroup";
-import { Input } from "../components/Input";
-import { Button } from "../components/Button";
-import { Banner } from "../components/Banner";
-import { SectionHeader } from "../components/SectionHeader";
-import { AnimatedCard } from "../components/AnimatedCard";
-import { VoiceInputButton } from "../components/VoiceInputButton";
-import { useVoiceInput } from "../hooks/useVoiceInput";
-import { useHaptic } from "../hooks/useHaptic";
-import { JournalSkeleton } from "../components/skeletons/JournalSkeleton";
-import { WordCount } from "../components/WordCount";
-import { useAutoSave } from "../hooks/useAutoSave";
-import { PhotoAttachment } from "../components/PhotoAttachment";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { format } from 'date-fns';
+import { useTheme } from '../context/ThemeContext';
+import { journalApi } from '../services/journalApi';
+import { EMOTIONS } from '../constants/journal';
+import { Card } from '../components/Card';
+import { MoodSelector } from '../components/MoodSelector';
+import { ChipGroup } from '../components/ChipGroup';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { Banner } from '../components/Banner';
+import { SectionHeader } from '../components/SectionHeader';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { VoiceInputButton } from '../components/VoiceInputButton';
+import { useVoiceInput } from '../hooks/useVoiceInput';
+import { useHaptic } from '../hooks/useHaptic';
+import { JournalSkeleton } from '../components/skeletons/JournalSkeleton';
+import { WordCount } from '../components/WordCount';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { PhotoAttachment } from '../components/PhotoAttachment';
 
 const ENERGY_LEVELS = [
-  { id: 1, label: "Very\nLow" },
-  { id: 2, label: "Low" },
-  { id: 3, label: "Mid" },
-  { id: 4, label: "High" },
-  { id: 5, label: "Very\nHigh" },
+  { id: 1, label: 'Very\nLow' },
+  { id: 2, label: 'Low' },
+  { id: 3, label: 'Mid' },
+  { id: 4, label: 'High' },
+  { id: 5, label: 'Very\nHigh' },
 ];
 
 export function JournalScreen({ navigation, route }) {
@@ -45,7 +45,7 @@ export function JournalScreen({ navigation, route }) {
   const [selectedMood, setSelectedMood] = useState(null);
   const [selectedEmotions, setSelectedEmotions] = useState([]);
   const [energyLevel, setEnergyLevel] = useState(3);
-  const [journalText, setJournalText] = useState("");
+  const [journalText, setJournalText] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [existingEntry, setExistingEntry] = useState(null);
@@ -53,7 +53,7 @@ export function JournalScreen({ navigation, route }) {
   const [refreshing, setRefreshing] = useState(false);
   const [photos, setPhotos] = useState([]);
 
-  const todayStr = format(new Date(), "yyyy-MM-dd");
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
   const selectedDate = route.params?.selectedDate || todayStr;
   const preselectedMood = route.params?.preselectedMood;
   const isViewingPast = selectedDate !== todayStr;
@@ -62,7 +62,7 @@ export function JournalScreen({ navigation, route }) {
   useEffect(() => {
     if (!voice.isListening && voice.transcript) {
       setJournalText((prev) => {
-        const separator = prev.trim() ? " " : "";
+        const separator = prev.trim() ? ' ' : '';
         return prev + separator + voice.transcript;
       });
       voice.resetTranscript();
@@ -84,15 +84,15 @@ export function JournalScreen({ navigation, route }) {
         setSelectedEmotions(result.data.emotions || []);
         const rawEnergy = result.data.energyLevel || 5;
         setEnergyLevel(Math.ceil(rawEnergy / 2));
-        setJournalText(result.data.content || "");
+        setJournalText(result.data.content || '');
       } else if (result.status === 404 || !result.data) {
         setExistingEntry(null);
       } else {
-        Alert.alert("Error", result.error || "Failed to load journal entry.");
+        Alert.alert('Error', result.error || 'Failed to load journal entry.');
         setExistingEntry(null);
       }
     } catch {
-      Alert.alert("Error", "Could not connect to server. Please try again.");
+      Alert.alert('Error', 'Could not connect to server. Please try again.');
       setExistingEntry(null);
     }
   }, [selectedDate]);
@@ -125,14 +125,14 @@ export function JournalScreen({ navigation, route }) {
     setSelectedMood(null);
     setSelectedEmotions([]);
     setEnergyLevel(3);
-    setJournalText("");
+    setJournalText('');
     setExistingEntry(null);
     setPhotos([]);
   };
 
   const handleSave = async () => {
     if (!selectedMood || !journalText.trim()) {
-      Alert.alert("Incomplete Entry", "Please select a mood and write a journal entry to save.");
+      Alert.alert('Incomplete Entry', 'Please select a mood and write a journal entry to save.');
       return;
     }
 
@@ -154,13 +154,13 @@ export function JournalScreen({ navigation, route }) {
       }
 
       if (result.error) {
-        Alert.alert("Error", result.error);
+        Alert.alert('Error', result.error);
       } else {
         setExistingEntry(result.data);
-        Alert.alert("Saved", existingEntry ? "Journal entry updated!" : "Journal entry saved!");
+        Alert.alert('Saved', existingEntry ? 'Journal entry updated!' : 'Journal entry saved!');
       }
     } catch {
-      Alert.alert("Error", "Failed to save journal entry. Please try again.");
+      Alert.alert('Error', 'Failed to save journal entry. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -168,22 +168,22 @@ export function JournalScreen({ navigation, route }) {
 
   const handleDelete = () => {
     if (!existingEntry) return;
-    Alert.alert("Delete Entry", "Are you sure you want to delete this journal entry?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert('Delete Entry', 'Are you sure you want to delete this journal entry?', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: "Delete",
-        style: "destructive",
+        text: 'Delete',
+        style: 'destructive',
         onPress: async () => {
           try {
             const result = await journalApi.deleteEntry(existingEntry.id);
             if (!result.error) {
               resetForm();
-              Alert.alert("Deleted", "Journal entry deleted.");
+              Alert.alert('Deleted', 'Journal entry deleted.');
             } else {
-              Alert.alert("Error", result.error);
+              Alert.alert('Error', result.error);
             }
           } catch {
-            Alert.alert("Error", "Failed to delete entry.");
+            Alert.alert('Error', 'Failed to delete entry.');
           }
         },
       },
@@ -201,7 +201,7 @@ export function JournalScreen({ navigation, route }) {
       content: journalText.trim(),
       entryDate: selectedDate,
     }),
-    [selectedMood, selectedEmotions, energyLevel, journalText, selectedDate],
+    [selectedMood, selectedEmotions, energyLevel, journalText, selectedDate]
   );
 
   const handleAutoSave = useCallback(
@@ -213,7 +213,7 @@ export function JournalScreen({ navigation, route }) {
       }
       return result;
     },
-    [existingEntry?.id],
+    [existingEntry?.id]
   );
 
   const autoSave = useAutoSave({
@@ -246,12 +246,12 @@ export function JournalScreen({ navigation, route }) {
         <View>
           <Text style={[fonts.heading1, { color: colors.text }]}>Mood Journal</Text>
           <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 2 }]}>
-            {format(new Date(selectedDate + "T00:00:00"), "EEEE, MMMM d, yyyy")}
+            {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
           </Text>
         </View>
         <TouchableOpacity
           style={[styles.calBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => navigation.navigate("MoodCalendar")}
+          onPress={() => navigation.navigate('MoodCalendar')}
         >
           <Ionicons name="calendar-outline" size={22} color={colors.primary} />
         </TouchableOpacity>
@@ -263,14 +263,20 @@ export function JournalScreen({ navigation, route }) {
           onPress={() => navigation.setParams({ selectedDate: undefined })}
         >
           <Ionicons name="arrow-back" size={16} color={colors.primary} />
-          <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "600" }]}>Back to Today</Text>
+          <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '600' }]}>
+            Back to Today
+          </Text>
         </TouchableOpacity>
       )}
 
       {existingEntry && (
         <Banner
           variant="success"
-          message={isViewingPast ? `Editing entry for ${format(new Date(selectedDate + "T00:00:00"), "MMMM d")}` : "Editing today's entry"}
+          message={
+            isViewingPast
+              ? `Editing entry for ${format(new Date(selectedDate + 'T00:00:00'), 'MMMM d')}`
+              : "Editing today's entry"
+          }
         />
       )}
 
@@ -280,12 +286,19 @@ export function JournalScreen({ navigation, route }) {
             <Ionicons name="bulb-outline" size={20} color={colors.primary} />
             <Text style={[fonts.heading3, { color: colors.text }]}>Today's Prompt</Text>
           </View>
-          <Text style={[fonts.body, { color: colors.text, fontStyle: "italic", lineHeight: 22, marginTop: 8 }]}>
+          <Text
+            style={[
+              fonts.body,
+              { color: colors.text, fontStyle: 'italic', lineHeight: 22, marginTop: 8 },
+            ]}
+          >
             {prompt.content}
           </Text>
           <TouchableOpacity onPress={loadPrompt} style={styles.refreshPrompt}>
             <Ionicons name="refresh-outline" size={16} color={colors.primary} />
-            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "500" }]}>New prompt</Text>
+            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '500' }]}>
+              New prompt
+            </Text>
           </TouchableOpacity>
         </Card>
       )}
@@ -293,128 +306,153 @@ export function JournalScreen({ navigation, route }) {
       {/* Mood */}
       <AnimatedCard index={0}>
         <Card style={{ marginBottom: 16 }}>
-          <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>How are you feeling?</Text>
-          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 16 }]}>Select your overall mood</Text>
+          <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>
+            How are you feeling?
+          </Text>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 16 }]}>
+            Select your overall mood
+          </Text>
           <MoodSelector selected={selectedMood} onSelect={setSelectedMood} />
         </Card>
       </AnimatedCard>
 
       {/* Energy */}
       <AnimatedCard index={1}>
-      <Card style={{ marginBottom: 16 }}>
-        <View style={styles.promptRow}>
-          <Ionicons name="flash" size={20} color={colors.primary} />
-          <Text style={[fonts.heading3, { color: colors.text }]}>Energy Level</Text>
-        </View>
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 4, marginBottom: 14 }]}>
-          How energized do you feel?
-        </Text>
-        <View style={styles.energyRow}>
-          {ENERGY_LEVELS.map((level) => {
-            const active = energyLevel === level.id;
-            return (
-              <TouchableOpacity
-                key={level.id}
-                style={[
-                  styles.energyBtn,
-                  {
-                    backgroundColor: active ? colors.primary : colors.background,
-                    borderColor: active ? colors.primary : colors.border,
-                  },
-                ]}
-                onPress={() => { haptic.triggerSelection(); setEnergyLevel(level.id); }}
-              >
-                <Text
+        <Card style={{ marginBottom: 16 }}>
+          <View style={styles.promptRow}>
+            <Ionicons name="flash" size={20} color={colors.primary} />
+            <Text style={[fonts.heading3, { color: colors.text }]}>Energy Level</Text>
+          </View>
+          <Text
+            style={[
+              fonts.bodySmall,
+              { color: colors.textSecondary, marginTop: 4, marginBottom: 14 },
+            ]}
+          >
+            How energized do you feel?
+          </Text>
+          <View style={styles.energyRow}>
+            {ENERGY_LEVELS.map((level) => {
+              const active = energyLevel === level.id;
+              return (
+                <TouchableOpacity
+                  key={level.id}
                   style={[
-                    fonts.caption,
-                    { color: active ? "#fff" : colors.textSecondary, fontWeight: active ? "600" : "400", textAlign: "center" },
+                    styles.energyBtn,
+                    {
+                      backgroundColor: active ? colors.primary : colors.background,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
                   ]}
+                  onPress={() => {
+                    haptic.triggerSelection();
+                    setEnergyLevel(level.id);
+                  }}
                 >
-                  {level.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </Card>
+                  <Text
+                    style={[
+                      fonts.caption,
+                      {
+                        color: active ? '#fff' : colors.textSecondary,
+                        fontWeight: active ? '600' : '400',
+                        textAlign: 'center',
+                      },
+                    ]}
+                  >
+                    {level.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Card>
       </AnimatedCard>
 
       {/* Emotions */}
       <AnimatedCard index={2}>
-      <Card style={{ marginBottom: 16 }}>
-        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Emotions</Text>
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>Select all that apply</Text>
-        <ChipGroup
-          items={EMOTIONS}
-          selected={selectedEmotions}
-          onSelect={setSelectedEmotions}
-          multiSelect
-        />
-      </Card>
+        <Card style={{ marginBottom: 16 }}>
+          <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Emotions</Text>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>
+            Select all that apply
+          </Text>
+          <ChipGroup
+            items={EMOTIONS}
+            selected={selectedEmotions}
+            onSelect={setSelectedEmotions}
+            multiSelect
+          />
+        </Card>
       </AnimatedCard>
 
       {/* Journal Text */}
       <AnimatedCard index={3}>
-      <Card style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <Text style={[fonts.heading3, { color: colors.text }]}>Journal Entry</Text>
-          {voice.isAvailable && (
-            <VoiceInputButton
-              isListening={voice.isListening}
-              onPress={voice.isListening ? voice.stopListening : voice.startListening}
-              disabled={saving}
-            />
-          )}
-        </View>
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>
-          {voice.isListening ? "Listening... tap mic to stop" : "What's on your mind?"}
-        </Text>
-        <Input
-          value={journalText}
-          onChangeText={setJournalText}
-          placeholder="Write about your day, thoughts, feelings..."
-          multiline
-          style={{ marginBottom: 0 }}
-        />
-        <View style={styles.metaRow}>
-          <WordCount text={journalText} style={{ marginTop: 0, textAlign: "left", flex: 1 }} />
-          {autoSave.isSaving && (
-            <View style={styles.autoSaveRow}>
-              <ActivityIndicator size="small" color={colors.textLight} />
-              <Text style={[fonts.caption, { color: colors.textLight }]}>Saving...</Text>
-            </View>
-          )}
-          {!autoSave.isSaving && autoSave.lastSavedAt && (
-            <View style={styles.autoSaveRow}>
-              <Ionicons name="checkmark-circle" size={14} color={colors.success} />
-              <Text style={[fonts.caption, { color: colors.textLight }]}>Auto-saved</Text>
-            </View>
-          )}
-          {autoSave.error && (
-            <Text style={[fonts.caption, { color: colors.error }]}>Save failed</Text>
-          )}
-        </View>
-      </Card>
+        <Card style={{ marginBottom: 16 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 4,
+            }}
+          >
+            <Text style={[fonts.heading3, { color: colors.text }]}>Journal Entry</Text>
+            {voice.isAvailable && (
+              <VoiceInputButton
+                isListening={voice.isListening}
+                onPress={voice.isListening ? voice.stopListening : voice.startListening}
+                disabled={saving}
+              />
+            )}
+          </View>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 14 }]}>
+            {voice.isListening ? 'Listening... tap mic to stop' : "What's on your mind?"}
+          </Text>
+          <Input
+            value={journalText}
+            onChangeText={setJournalText}
+            placeholder="Write about your day, thoughts, feelings..."
+            multiline
+            style={{ marginBottom: 0 }}
+          />
+          <View style={styles.metaRow}>
+            <WordCount text={journalText} style={{ marginTop: 0, textAlign: 'left', flex: 1 }} />
+            {autoSave.isSaving && (
+              <View style={styles.autoSaveRow}>
+                <ActivityIndicator size="small" color={colors.textLight} />
+                <Text style={[fonts.caption, { color: colors.textLight }]}>Saving...</Text>
+              </View>
+            )}
+            {!autoSave.isSaving && autoSave.lastSavedAt && (
+              <View style={styles.autoSaveRow}>
+                <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+                <Text style={[fonts.caption, { color: colors.textLight }]}>Auto-saved</Text>
+              </View>
+            )}
+            {autoSave.error && (
+              <Text style={[fonts.caption, { color: colors.error }]}>Save failed</Text>
+            )}
+          </View>
+        </Card>
       </AnimatedCard>
 
       {/* Photos */}
       <AnimatedCard index={4}>
-      <Card style={{ marginBottom: 16 }}>
-        <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Photos</Text>
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 4 }]}>
-          Attach up to 3 photos to your entry
-        </Text>
-        <PhotoAttachment
-          photos={photos}
-          onPhotosChange={setPhotos}
-          maxPhotos={3}
-          disabled={saving}
-        />
-      </Card>
+        <Card style={{ marginBottom: 16 }}>
+          <Text style={[fonts.heading3, { color: colors.text, marginBottom: 4 }]}>Photos</Text>
+          <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginBottom: 4 }]}>
+            Attach up to 3 photos to your entry
+          </Text>
+          <PhotoAttachment
+            photos={photos}
+            onPhotosChange={setPhotos}
+            maxPhotos={3}
+            disabled={saving}
+          />
+        </Card>
       </AnimatedCard>
 
       <Button
-        title={existingEntry ? "Update Journal Entry" : "Save Journal Entry"}
+        title={existingEntry ? 'Update Journal Entry' : 'Save Journal Entry'}
         onPress={handleSave}
         loading={saving}
         disabled={!isComplete}
@@ -432,7 +470,12 @@ export function JournalScreen({ navigation, route }) {
       )}
 
       {!isComplete && (
-        <Text style={[fonts.bodySmall, { color: colors.textSecondary, textAlign: "center", marginTop: 12 }]}>
+        <Text
+          style={[
+            fonts.bodySmall,
+            { color: colors.textSecondary, textAlign: 'center', marginTop: 12 },
+          ]}
+        >
           Select a mood and write an entry to save
         </Text>
       )}
@@ -446,9 +489,9 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
   calBtn: {
@@ -456,41 +499,41 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 14,
     borderWidth: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backBtn: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
     marginBottom: 14,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
-  promptRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  refreshPrompt: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 10 },
+  promptRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  refreshPrompt: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 10 },
   metaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 6,
   },
   autoSaveRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 4,
   },
-  energyRow: { flexDirection: "row", gap: 8 },
+  energyRow: { flexDirection: 'row', gap: 8 },
   energyBtn: {
     flex: 1,
     paddingVertical: 8,
     paddingHorizontal: 4,
     borderRadius: 12,
     borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     minHeight: 46,
   },
 });

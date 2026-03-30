@@ -22,13 +22,13 @@ This first slice implements the **app shell** (navigation, placeholder auth, pla
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | 18+ |
-| npm / yarn | latest |
-| Expo CLI | `npx expo` (bundled with the SDK) |
-| Expo Go **or** a dev client build | for on-device testing |
-| Physical device | required for push notifications |
+| Tool                              | Version                           |
+| --------------------------------- | --------------------------------- |
+| Node.js                           | 18+                               |
+| npm / yarn                        | latest                            |
+| Expo CLI                          | `npx expo` (bundled with the SDK) |
+| Expo Go **or** a dev client build | for on-device testing             |
+| Physical device                   | required for push notifications   |
 
 ---
 
@@ -55,10 +55,10 @@ npx expo start
 
 The app reads `EXPO_PUBLIC_API_URL` from the environment. If unset it defaults to `http://localhost:5085`.
 
-| Environment | Value |
-|-------------|-------|
-| Local dev | `http://<your-local-ip>:5085` |
-| Production | `https://<yarp-gateway-url>` (set when the gateway is deployed) |
+| Environment | Value                                                           |
+| ----------- | --------------------------------------------------------------- |
+| Local dev   | `http://<your-local-ip>:5085`                                   |
+| Production  | `https://<yarp-gateway-url>` (set when the gateway is deployed) |
 
 **Setting the variable:**
 
@@ -153,11 +153,11 @@ The `AuthContext` provides a **dev-only login** that accepts a User ID (and opti
 
 Base path: `${EXPO_PUBLIC_API_URL}/api/notifications`
 
-| Method | Path | Body | Response |
-|--------|------|------|----------|
-| `GET` | `/preferences` | — | `200`: preferences object; `404`: none yet |
-| `POST` | `/preferences` | `{ isEnabled, preferredTimeUtc, timezone }` | `200`: updated preferences |
-| `POST` | `/register-device` | `{ deviceToken }` | `200`: updated preferences with token |
+| Method | Path               | Body                                        | Response                                   |
+| ------ | ------------------ | ------------------------------------------- | ------------------------------------------ |
+| `GET`  | `/preferences`     | —                                           | `200`: preferences object; `404`: none yet |
+| `POST` | `/preferences`     | `{ isEnabled, preferredTimeUtc, timezone }` | `200`: updated preferences                 |
+| `POST` | `/register-device` | `{ deviceToken }`                           | `200`: updated preferences with token      |
 
 **Error shape:** `{ error, message, timestamp?, details? }`
 
@@ -174,6 +174,7 @@ When the YARP API gateway is not yet deployed:
 5. Configure the Notification Service to run in "dev mode" and accept the `userId` query parameter.
 
 When the gateway is ready:
+
 - Set `EXPO_PUBLIC_API_URL` to the gateway URL.
 - Set `EXPO_PUBLIC_DEV_MODE=false` (or remove it).
 - Replace the placeholder login with the real Auth Service call (see below).
@@ -203,8 +204,8 @@ When the Authentication Service is ready, only **two changes** are needed:
 
    // After (real):
    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-     method: "POST",
-     headers: { "Content-Type": "application/json" },
+     method: 'POST',
+     headers: { 'Content-Type': 'application/json' },
      body: JSON.stringify({ email, password }),
    });
    const { token, userId } = await response.json();
@@ -218,10 +219,10 @@ Everything else (token storage, `Authorization` header, navigation, notification
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npx expo start` | Start the dev server |
-| `npx expo start --android` | Start and open on Android |
-| `npx expo start --ios` | Start and open on iOS |
-| `npx expo run:android` | Build and run Android dev client |
-| `npx expo run:ios` | Build and run iOS dev client |
+| Command                    | Description                      |
+| -------------------------- | -------------------------------- |
+| `npx expo start`           | Start the dev server             |
+| `npx expo start --android` | Start and open on Android        |
+| `npx expo start --ios`     | Start and open on iOS            |
+| `npx expo run:android`     | Build and run Android dev client |
+| `npx expo run:ios`         | Build and run iOS dev client     |

@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../services/authApi';
 import { useOnboarding } from './OnboardingContext';
@@ -79,9 +73,7 @@ export function AuthProvider({ children }) {
       }
 
       const loginData = loginResult.data;
-      const requiresTwoFactor = Boolean(
-        loginData.requiresTwoFactor ?? loginData.RequiresTwoFactor,
-      );
+      const requiresTwoFactor = Boolean(loginData.requiresTwoFactor ?? loginData.RequiresTwoFactor);
       const issuedToken = loginData.token ?? loginData.Token;
 
       if (requiresTwoFactor && !issuedToken) {
@@ -89,13 +81,8 @@ export function AuthProvider({ children }) {
           requiresTwoFactor: true,
           email,
           message:
-            loginData.message ??
-            loginData.Message ??
-            'Enter your verification code to continue.',
-          twoFactorExpiresAt:
-            loginData.twoFactorExpiresAt ??
-            loginData.TwoFactorExpiresAt ??
-            null,
+            loginData.message ?? loginData.Message ?? 'Enter your verification code to continue.',
+          twoFactorExpiresAt: loginData.twoFactorExpiresAt ?? loginData.TwoFactorExpiresAt ?? null,
         };
       }
 
@@ -122,7 +109,7 @@ export function AuthProvider({ children }) {
       await persistSession(issuedToken, normalizedUser);
       return { requiresTwoFactor: false };
     },
-    [persistSession],
+    [persistSession]
   );
 
   const verifyTwoFactor = useCallback(
@@ -156,7 +143,7 @@ export function AuthProvider({ children }) {
 
       await persistSession(issuedToken, normalizedUser);
     },
-    [persistSession],
+    [persistSession]
   );
 
   const logout = useCallback(async () => {

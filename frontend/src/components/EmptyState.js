@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { Button } from "./Button";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { Button } from './Button';
 
 export function EmptyState({ icon, title, subtitle, actionTitle, onAction, children }) {
   const { colors, fonts } = useTheme();
@@ -12,12 +12,22 @@ export function EmptyState({ icon, title, subtitle, actionTitle, onAction, child
       {icon && <Ionicons name={icon} size={48} color={colors.textLight} />}
       {children}
       {title && (
-        <Text style={[fonts.heading3, { color: colors.textSecondary, marginTop: 16, textAlign: "center" }]}>
+        <Text
+          style={[
+            fonts.heading3,
+            { color: colors.textSecondary, marginTop: 16, textAlign: 'center' },
+          ]}
+        >
           {title}
         </Text>
       )}
       {subtitle && (
-        <Text style={[fonts.bodySmall, { color: colors.textLight, marginTop: 8, textAlign: "center", paddingHorizontal: 20 }]}>
+        <Text
+          style={[
+            fonts.bodySmall,
+            { color: colors.textLight, marginTop: 8, textAlign: 'center', paddingHorizontal: 20 },
+          ]}
+        >
           {subtitle}
         </Text>
       )}
@@ -35,7 +45,7 @@ export function EmptyState({ icon, title, subtitle, actionTitle, onAction, child
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 40,
     paddingHorizontal: 24,
   },

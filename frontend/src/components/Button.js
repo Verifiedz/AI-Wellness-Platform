@@ -1,22 +1,17 @@
-import React from "react";
-import {
-  Pressable,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
+import React from 'react';
+import { Pressable, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withSpring,
-} from "react-native-reanimated";
-import { useTheme } from "../context/ThemeContext";
+} from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function Button({
-  variant = "primary",
+  variant = 'primary',
   title,
   onPress,
   loading = false,
@@ -31,23 +26,23 @@ export function Button({
   const variants = {
     primary: {
       bg: colors.primary,
-      text: "#fff",
-      border: "transparent",
+      text: '#fff',
+      border: 'transparent',
     },
     secondary: {
-      bg: "transparent",
+      bg: 'transparent',
       text: colors.primary,
       border: colors.primary,
     },
     ghost: {
-      bg: "transparent",
+      bg: 'transparent',
       text: colors.primary,
-      border: "transparent",
+      border: 'transparent',
     },
     danger: {
-      bg: "transparent",
+      bg: 'transparent',
       text: colors.error,
-      border: "transparent",
+      border: 'transparent',
     },
   };
 
@@ -72,7 +67,7 @@ export function Button({
         {
           backgroundColor: v.bg,
           borderColor: v.border,
-          borderWidth: variant === "secondary" ? 1.5 : 0,
+          borderWidth: variant === 'secondary' ? 1.5 : 0,
           opacity: isDisabled ? 0.5 : 1,
         },
         animatedStyle,
@@ -97,9 +92,9 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 15,
     paddingHorizontal: 24,
     borderRadius: 24,

@@ -1,6 +1,6 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/api/journal/export";
+const BASE_PATH = '/api/journal/export';
 
 /**
  * Export REST API service.

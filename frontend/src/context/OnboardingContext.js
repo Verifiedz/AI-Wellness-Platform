@@ -1,27 +1,20 @@
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OnboardingContext = createContext(null);
 
-const ONBOARDING_KEY = "onboarding_completed_v1";
-const ONBOARDING_PREFS_KEY = "onboarding_preferences_v1";
+const ONBOARDING_KEY = 'onboarding_completed_v1';
+const ONBOARDING_PREFS_KEY = 'onboarding_preferences_v1';
 
 export function OnboardingProvider({ children }) {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  const [initialAuthRoute, setInitialAuthRoute] = useState("Login");
+  const [initialAuthRoute, setInitialAuthRoute] = useState('Login');
   const [preferences, setPreferences] = useState({
     goals: [],
-    checkInFrequency: "",
-    preferredTime: "",
+    checkInFrequency: '',
+    preferredTime: '',
   });
 
   useEffect(() => {
@@ -31,7 +24,7 @@ export function OnboardingProvider({ children }) {
           AsyncStorage.getItem(ONBOARDING_KEY),
           AsyncStorage.getItem(ONBOARDING_PREFS_KEY),
         ]);
-        if (completed === "true") setHasSeenOnboarding(true);
+        if (completed === 'true') setHasSeenOnboarding(true);
         if (prefs) {
           try {
             setPreferences(JSON.parse(prefs));
@@ -47,16 +40,16 @@ export function OnboardingProvider({ children }) {
     })();
   }, []);
 
-  const completeOnboarding = useCallback(async (prefs, targetAuthRoute = "Login") => {
+  const completeOnboarding = useCallback(async (prefs, targetAuthRoute = 'Login') => {
     setInitialAuthRoute(targetAuthRoute);
     const merged = {
       goals: prefs?.goals ?? [],
-      checkInFrequency: prefs?.checkInFrequency ?? "",
-      preferredTime: prefs?.preferredTime ?? "",
+      checkInFrequency: prefs?.checkInFrequency ?? '',
+      preferredTime: prefs?.preferredTime ?? '',
     };
     try {
       await Promise.all([
-        AsyncStorage.setItem(ONBOARDING_KEY, "true"),
+        AsyncStorage.setItem(ONBOARDING_KEY, 'true'),
         AsyncStorage.setItem(ONBOARDING_PREFS_KEY, JSON.stringify(merged)),
       ]);
     } catch {
@@ -75,7 +68,7 @@ export function OnboardingProvider({ children }) {
     } catch {
       // Reset failed — non-critical
     }
-    setPreferences({ goals: [], checkInFrequency: "", preferredTime: "" });
+    setPreferences({ goals: [], checkInFrequency: '', preferredTime: '' });
     setHasSeenOnboarding(false);
   }, []);
 
@@ -91,16 +84,11 @@ export function OnboardingProvider({ children }) {
     [hasSeenOnboarding, isReady, initialAuthRoute, preferences, completeOnboarding, resetOnboarding]
   );
 
-  return (
-    <OnboardingContext.Provider value={value}>
-      {children}
-    </OnboardingContext.Provider>
-  );
+  return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
 }
 
 export function useOnboarding() {
   const ctx = useContext(OnboardingContext);
-  if (!ctx)
-    throw new Error("useOnboarding must be used within an OnboardingProvider");
+  if (!ctx) throw new Error('useOnboarding must be used within an OnboardingProvider');
   return ctx;
 }

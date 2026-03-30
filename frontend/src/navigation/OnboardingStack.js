@@ -1,10 +1,10 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { WelcomeScreen } from "../screens/onboarding/WelcomeScreen";
-import { GoalScreen } from "../screens/onboarding/GoalScreen";
-import { FrequencyScreen } from "../screens/onboarding/FrequencyScreen";
-import { TimeOfDayScreen } from "../screens/onboarding/TimeOfDayScreen";
-import { FirstValueScreen } from "../screens/onboarding/FirstValueScreen";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { WelcomeScreen } from '../screens/onboarding/WelcomeScreen';
+import { GoalScreen } from '../screens/onboarding/GoalScreen';
+import { FrequencyScreen } from '../screens/onboarding/FrequencyScreen';
+import { TimeOfDayScreen } from '../screens/onboarding/TimeOfDayScreen';
+import { FirstValueScreen } from '../screens/onboarding/FirstValueScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,7 +13,7 @@ export function OnboardingStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        animation: "slide_from_right",
+        animation: 'slide_from_right',
         animationDuration: 350,
       }}
     >

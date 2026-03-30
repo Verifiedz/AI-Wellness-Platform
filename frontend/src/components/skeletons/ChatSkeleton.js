@@ -1,7 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Skeleton } from "../Skeleton";
-import { useTheme } from "../../context/ThemeContext";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Skeleton } from '../Skeleton';
+import { useTheme } from '../../context/ThemeContext';
 
 /**
  * Skeleton placeholder matching the AIChatScreen layout:
@@ -41,12 +41,12 @@ export function ChatSkeleton() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "space-between" },
+  container: { flex: 1, justifyContent: 'space-between' },
   messages: { flex: 1, gap: 12, paddingTop: 16, paddingHorizontal: 2 },
-  rowLeft: { flexDirection: "row", justifyContent: "flex-start" },
-  rowRight: { flexDirection: "row", justifyContent: "flex-end" },
+  rowLeft: { flexDirection: 'row', justifyContent: 'flex-start' },
+  rowRight: { flexDirection: 'row', justifyContent: 'flex-end' },
   inputRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     paddingTop: 10,
     paddingBottom: 12,

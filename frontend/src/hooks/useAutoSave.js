@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useDebounce } from "./useDebounce";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDebounce } from './useDebounce';
 
 /**
  * Auto-save hook that debounces a value and persists it when it changes.
@@ -57,7 +57,7 @@ export function useAutoSave({ value, delay = 2000, onSave, enabled = true }) {
         setLastSavedAt(new Date());
         return result;
       } catch (err) {
-        setError(err?.message || "Auto-save failed");
+        setError(err?.message || 'Auto-save failed');
       } finally {
         savingRef.current = false;
         setIsSaving(false);
@@ -70,7 +70,7 @@ export function useAutoSave({ value, delay = 2000, onSave, enabled = true }) {
         }
       }
     },
-    [serialize],
+    [serialize]
   );
 
   // Auto-save when debounced value changes

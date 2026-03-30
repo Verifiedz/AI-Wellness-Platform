@@ -1,8 +1,8 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { Card } from "../components/Card";
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { Card } from '../components/Card';
 
 /**
  * Card displaying today's wearable health metrics.
@@ -16,9 +16,24 @@ export function WearableMetricsCard({ steps, heartRate, sleepHours }) {
   if (!hasData) return null;
 
   const metrics = [
-    { icon: "footsteps-outline", label: "Steps", value: steps != null ? steps.toLocaleString() : "--", color: colors.primary },
-    { icon: "heart-outline", label: "Heart Rate", value: heartRate != null ? `${heartRate} bpm` : "--", color: colors.error },
-    { icon: "moon-outline", label: "Sleep", value: sleepHours != null ? `${sleepHours}h` : "--", color: colors.accent },
+    {
+      icon: 'footsteps-outline',
+      label: 'Steps',
+      value: steps != null ? steps.toLocaleString() : '--',
+      color: colors.primary,
+    },
+    {
+      icon: 'heart-outline',
+      label: 'Heart Rate',
+      value: heartRate != null ? `${heartRate} bpm` : '--',
+      color: colors.error,
+    },
+    {
+      icon: 'moon-outline',
+      label: 'Sleep',
+      value: sleepHours != null ? `${sleepHours}h` : '--',
+      color: colors.accent,
+    },
   ];
 
   return (
@@ -31,12 +46,8 @@ export function WearableMetricsCard({ steps, heartRate, sleepHours }) {
         {metrics.map((m) => (
           <View key={m.label} style={styles.metric}>
             <Ionicons name={m.icon} size={22} color={m.color} />
-            <Text style={[fonts.heading3, { color: colors.text, marginTop: 4 }]}>
-              {m.value}
-            </Text>
-            <Text style={[fonts.caption, { color: colors.textSecondary }]}>
-              {m.label}
-            </Text>
+            <Text style={[fonts.heading3, { color: colors.text, marginTop: 4 }]}>{m.value}</Text>
+            <Text style={[fonts.caption, { color: colors.textSecondary }]}>{m.label}</Text>
           </View>
         ))}
       </View>
@@ -46,7 +57,7 @@ export function WearableMetricsCard({ steps, heartRate, sleepHours }) {
 
 const styles = StyleSheet.create({
   card: { marginBottom: 20 },
-  header: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
-  metricsRow: { flexDirection: "row", justifyContent: "space-around" },
-  metric: { alignItems: "center", gap: 2 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  metricsRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  metric: { alignItems: 'center', gap: 2 },
 });

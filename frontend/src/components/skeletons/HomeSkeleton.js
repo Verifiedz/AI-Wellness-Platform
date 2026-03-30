@@ -1,7 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Skeleton } from "../Skeleton";
-import { Card } from "../Card";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Skeleton } from '../Skeleton';
+import { Card } from '../Card';
 
 /**
  * Skeleton placeholder matching the HomeScreen layout:
@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   container: { gap: 16 },
   card: { marginBottom: 0 },
   moodRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 8,
     marginTop: 16,
   },
-  actionsRow: { flexDirection: "row", gap: 14 },
-  actionCard: { flex: 1, alignItems: "center", marginBottom: 0 },
+  actionsRow: { flexDirection: 'row', gap: 14 },
+  actionCard: { flex: 1, alignItems: 'center', marginBottom: 0 },
   mt6: { marginTop: 6 },
   mt8: { marginTop: 8 },
   mt10: { marginTop: 10 },

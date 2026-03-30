@@ -10,11 +10,10 @@
  *   This should be explicitly enabled only for local integration testing.
  */
 
-export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL || "http://localhost:5051";
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5051';
 
 /** When true, sends userId as query param instead of relying on the gateway. */
-export const DEV_MODE = process.env.EXPO_PUBLIC_DEV_MODE === "true";
+export const DEV_MODE = process.env.EXPO_PUBLIC_DEV_MODE === 'true';
 
 /** HTTP request timeout in milliseconds. */
 export const API_TIMEOUT = 15_000;

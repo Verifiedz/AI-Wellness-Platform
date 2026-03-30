@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { getTimePeriod, TIME_OF_DAY_OVERRIDES } from "../theme/timeOfDay";
+import { useEffect, useMemo, useState } from 'react';
+import { getTimePeriod, TIME_OF_DAY_OVERRIDES } from '../theme/timeOfDay';
 
 const CHECK_INTERVAL_MS = 60_000; // 1 minute
 

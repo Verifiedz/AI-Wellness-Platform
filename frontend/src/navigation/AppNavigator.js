@@ -1,12 +1,12 @@
-import React from "react";
-import { View, ActivityIndicator } from "react-native";
-import { NavigationContainer, DarkTheme, DefaultTheme } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
-import { useOnboarding } from "../context/OnboardingContext";
-import { AuthStack } from "./AuthStack";
-import { MainTabs } from "./MainTabs";
-import { OnboardingStack } from "./OnboardingStack";
+import React from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useOnboarding } from '../context/OnboardingContext';
+import { AuthStack } from './AuthStack';
+import { MainTabs } from './MainTabs';
+import { OnboardingStack } from './OnboardingStack';
 
 /**
  * Navigation ref – allows navigating from outside React components
@@ -54,8 +54,8 @@ export function AppNavigator() {
       <View
         style={{
           flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
+          justifyContent: 'center',
+          alignItems: 'center',
           backgroundColor: colors.background,
         }}
       >

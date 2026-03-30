@@ -1,14 +1,14 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/chat/chatService/api";
+const BASE_PATH = '/chat/chatService/api';
 
-function normalizeMessage(raw, fallbackRole = "assistant") {
-  if (!raw || typeof raw !== "object") return null;
+function normalizeMessage(raw, fallbackRole = 'assistant') {
+  if (!raw || typeof raw !== 'object') return null;
 
   const id = raw.chatReferenceId ?? raw.ChatReferenceId;
-  const chatUserId = raw.chatUserId ?? raw.ChatUserId ?? "";
-  const sessionId = raw.sessionId ?? raw.SessionId ?? "";
-  const message = raw.message ?? raw.Message ?? "";
+  const chatUserId = raw.chatUserId ?? raw.ChatUserId ?? '';
+  const sessionId = raw.sessionId ?? raw.SessionId ?? '';
+  const message = raw.message ?? raw.Message ?? '';
   const createdAt = raw.createdDate ?? raw.CreatedDate ?? null;
 
   if (!id || !message) return null;
@@ -18,7 +18,7 @@ function normalizeMessage(raw, fallbackRole = "assistant") {
     chatUserId: String(chatUserId),
     sessionId: String(sessionId),
     message: String(message),
-    status: String(raw.status ?? raw.Status ?? ""),
+    status: String(raw.status ?? raw.Status ?? ''),
     createdAt,
     role: fallbackRole,
   };
@@ -27,13 +27,13 @@ function normalizeMessage(raw, fallbackRole = "assistant") {
 function normalizeMessageList(data) {
   if (!Array.isArray(data)) return [];
 
-  const currentUserId = String(apiClient.userId || "").toLowerCase();
+  const currentUserId = String(apiClient.userId || '').toLowerCase();
   return data
     .map((item, index) => {
-      const rawUserId = String(item?.chatUserId ?? item?.ChatUserId ?? "").toLowerCase();
-      let role = index % 2 === 0 ? "user" : "assistant";
+      const rawUserId = String(item?.chatUserId ?? item?.ChatUserId ?? '').toLowerCase();
+      let role = index % 2 === 0 ? 'user' : 'assistant';
       if (currentUserId && rawUserId && rawUserId !== currentUserId) {
-        role = "assistant";
+        role = 'assistant';
       }
 
       return normalizeMessage(item, role);
@@ -42,7 +42,7 @@ function normalizeMessageList(data) {
 }
 
 function normalizeSession(raw) {
-  if (!raw || typeof raw !== "object") return null;
+  if (!raw || typeof raw !== 'object') return null;
 
   const sessionId = raw.sessionID ?? raw.sessionId ?? raw.SessionID ?? raw.SessionId;
   const userId = raw.userId ?? raw.UserId ?? raw.externalUserId ?? raw.ExternalUserId;
@@ -50,7 +50,7 @@ function normalizeSession(raw) {
 
   return {
     sessionId: String(sessionId),
-    userId: String(userId ?? ""),
+    userId: String(userId ?? ''),
     isBookmarked: Boolean(raw.isBookmarked ?? raw.IsBookmarked),
     createdDate: raw.createdDate ?? raw.CreatedDate ?? null,
     sessionName: raw.sessionName ?? raw.SessionName ?? null,
@@ -75,8 +75,8 @@ export const chatApi = {
     });
   },
 
-  sendMessage({ messageRequest, context = "", sessionId = null }) {
-    const chatUserId = String(apiClient.userId || "");
+  sendMessage({ messageRequest, context = '', sessionId = null }) {
+    const chatUserId = String(apiClient.userId || '');
     const body = {
       chatUserId,
       messageRequest,

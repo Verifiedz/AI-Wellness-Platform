@@ -9,16 +9,16 @@
  */
 
 /** Triggers a row of mood quick-reply buttons. */
-export const MOOD_CHECK_MARKER = "[MOOD_CHECK]";
+export const MOOD_CHECK_MARKER = '[MOOD_CHECK]';
 
 /** Triggers an inline breathing exercise card. */
-export const EXERCISE_BREATHING_MARKER = "[EXERCISE:breathing]";
+export const EXERCISE_BREATHING_MARKER = '[EXERCISE:breathing]';
 
 /** Triggers an inline thought reframing card. */
-export const EXERCISE_REFRAMING_MARKER = "[EXERCISE:reframing]";
+export const EXERCISE_REFRAMING_MARKER = '[EXERCISE:reframing]';
 
 /** Triggers an inline grounding exercise card. */
-export const EXERCISE_GROUNDING_MARKER = "[EXERCISE:grounding]";
+export const EXERCISE_GROUNDING_MARKER = '[EXERCISE:grounding]';
 
 /**
  * Regex that matches any known marker in a message string.

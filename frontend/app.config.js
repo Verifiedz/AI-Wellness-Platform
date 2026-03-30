@@ -10,69 +10,69 @@
  */
 export default {
   expo: {
-    name: "Sakina",
-    slug: "sakina",
-    version: "1.0.0",
-    orientation: "portrait",
-    icon: "./assets/icon.png",
-    userInterfaceStyle: "automatic",
+    name: 'Sakina',
+    slug: 'sakina',
+    version: '1.0.0',
+    orientation: 'portrait',
+    icon: './assets/icon.png',
+    userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     splash: {
-      image: "./assets/splash-icon.png",
-      resizeMode: "contain",
-      backgroundColor: "#FAF8F5",
+      image: './assets/splash-icon.png',
+      resizeMode: 'contain',
+      backgroundColor: '#FAF8F5',
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.sakina.app",
+      bundleIdentifier: 'com.sakina.app',
       // Uncomment when you have the Firebase plist:
       // googleServicesFile: "./GoogleService-Info.plist",
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#FAF8F5",
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#FAF8F5',
       },
-      softwareKeyboardLayoutMode: "resize",
+      softwareKeyboardLayoutMode: 'resize',
       edgeToEdgeEnabled: true,
-      package: "com.sakina.app",
+      package: 'com.sakina.app',
       // Uncomment when you have the Firebase JSON:
       // googleServicesFile: "./google-services.json",
     },
     web: {
-      favicon: "./assets/favicon.png",
+      favicon: './assets/favicon.png',
     },
     plugins: [
-      "expo-secure-store",
-      "expo-localization",
-      "expo-font",
+      'expo-secure-store',
+      'expo-localization',
+      'expo-font',
       [
-        "expo-notifications",
+        'expo-notifications',
         {
-          icon: "./assets/icon.png",
-          color: "#5B7F6E",
+          icon: './assets/icon.png',
+          color: '#5B7F6E',
         },
       ],
       [
-        "expo-image-picker",
+        'expo-image-picker',
         {
-          photosPermission: "Allow Sakina to access your photos for journal entries.",
-          cameraPermission: "Allow Sakina to take photos for journal entries.",
+          photosPermission: 'Allow Sakina to access your photos for journal entries.',
+          cameraPermission: 'Allow Sakina to take photos for journal entries.',
         },
       ],
       [
-        "expo-speech-recognition",
+        'expo-speech-recognition',
         {
-          microphonePermission: "Allow Sakina to use the microphone for voice input.",
-          speechRecognitionPermission: "Allow Sakina to use speech recognition for voice input.",
-          androidSpeechServicePackages: ["com.google.android.googlequicksearchbox"],
+          microphonePermission: 'Allow Sakina to use the microphone for voice input.',
+          speechRecognitionPermission: 'Allow Sakina to use speech recognition for voice input.',
+          androidSpeechServicePackages: ['com.google.android.googlequicksearchbox'],
         },
       ],
     ],
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL || "http://localhost:5051",
+      apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5051',
       eas: {
-        projectId: "79057051-8f94-4dd2-b705-d8c5d2d5c060",
+        projectId: '79057051-8f94-4dd2-b705-d8c5d2d5c060',
       },
     },
   },

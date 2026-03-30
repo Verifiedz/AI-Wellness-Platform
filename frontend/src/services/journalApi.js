@@ -1,23 +1,21 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/api/journal";
+const BASE_PATH = '/api/journal';
 
 function normalizeEntry(raw) {
-  if (!raw || typeof raw !== "object") return null;
+  if (!raw || typeof raw !== 'object') return null;
 
   const id = raw.id ?? raw.Id;
   if (!id) return null;
 
   return {
     id: String(id),
-    userId: String(raw.userId ?? raw.UserId ?? ""),
-    mood: String(raw.mood ?? raw.Mood ?? ""),
-    emotions: Array.isArray(raw.emotions ?? raw.Emotions)
-      ? (raw.emotions ?? raw.Emotions)
-      : [],
+    userId: String(raw.userId ?? raw.UserId ?? ''),
+    mood: String(raw.mood ?? raw.Mood ?? ''),
+    emotions: Array.isArray(raw.emotions ?? raw.Emotions) ? (raw.emotions ?? raw.Emotions) : [],
     energyLevel: Number(raw.energyLevel ?? raw.EnergyLevel ?? 5),
-    content: String(raw.content ?? raw.Content ?? ""),
-    entryDate: String(raw.entryDate ?? raw.EntryDate ?? ""),
+    content: String(raw.content ?? raw.Content ?? ''),
+    entryDate: String(raw.entryDate ?? raw.EntryDate ?? ''),
     createdAt: raw.createdAt ?? raw.CreatedAt ?? null,
     updatedAt: raw.updatedAt ?? raw.UpdatedAt ?? null,
   };
@@ -59,10 +57,10 @@ export const journalApi = {
    */
   getEntries(params = {}) {
     const query = new URLSearchParams();
-    if (params.startDate) query.set("startDate", params.startDate);
-    if (params.endDate) query.set("endDate", params.endDate);
-    if (params.limit) query.set("limit", String(params.limit));
-    if (params.offset) query.set("offset", String(params.offset));
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.offset) query.set('offset', String(params.offset));
 
     const qs = query.toString();
     const path = qs ? `${BASE_PATH}/entries?${qs}` : `${BASE_PATH}/entries`;
@@ -89,12 +87,10 @@ export const journalApi = {
    * @param {string} date - yyyy-MM-dd
    */
   getEntryByDate(date) {
-    return apiClient
-      .get(`${BASE_PATH}/entries/date/${date}`)
-      .then((result) => {
-        if (result.error || !result.data) return result;
-        return { ...result, data: normalizeEntry(result.data) };
-      });
+    return apiClient.get(`${BASE_PATH}/entries/date/${date}`).then((result) => {
+      if (result.error || !result.data) return result;
+      return { ...result, data: normalizeEntry(result.data) };
+    });
   },
 
   /**
@@ -103,12 +99,10 @@ export const journalApi = {
    * @param {{ mood: string, emotions: string[], energyLevel: number, content: string }} entry
    */
   updateEntry(id, entry) {
-    return apiClient
-      .put(`${BASE_PATH}/entries/${id}`, entry)
-      .then((result) => {
-        if (result.error || !result.data) return result;
-        return { ...result, data: normalizeEntry(result.data) };
-      });
+    return apiClient.put(`${BASE_PATH}/entries/${id}`, entry).then((result) => {
+      if (result.error || !result.data) return result;
+      return { ...result, data: normalizeEntry(result.data) };
+    });
   },
 
   /**
@@ -140,8 +134,8 @@ export const journalApi = {
    */
   getMoodSummary(params = {}) {
     const query = new URLSearchParams();
-    if (params.startDate) query.set("startDate", params.startDate);
-    if (params.endDate) query.set("endDate", params.endDate);
+    if (params.startDate) query.set('startDate', params.startDate);
+    if (params.endDate) query.set('endDate', params.endDate);
 
     const qs = query.toString();
     const path = qs ? `${BASE_PATH}/summary?${qs}` : `${BASE_PATH}/summary`;

@@ -1,4 +1,4 @@
-import { API_BASE_URL, DEV_MODE, API_TIMEOUT } from "../config";
+import { API_BASE_URL, DEV_MODE, API_TIMEOUT } from '../config';
 
 /**
  * Lightweight API client with auth header support.
@@ -36,7 +36,7 @@ class ApiClient {
   _buildUrl(path) {
     let url = `${this.baseUrl}${path}`;
     if (DEV_MODE && this.userId) {
-      const separator = url.includes("?") ? "&" : "?";
+      const separator = url.includes('?') ? '&' : '?';
       url += `${separator}userId=${encodeURIComponent(this.userId)}`;
     }
     return url;
@@ -45,11 +45,11 @@ class ApiClient {
   /** Build headers, including Authorization when a token is available. */
   _buildHeaders(extraHeaders = {}) {
     const headers = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...extraHeaders,
     };
     if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
+      headers['Authorization'] = `Bearer ${this.token}`;
     }
     return headers;
   }
@@ -79,20 +79,20 @@ class ApiClient {
 
       /* --- status-specific handling --- */
       if (response.status === 401) {
-        return { status: 401, data: null, error: message || "Unauthorized" };
+        return { status: 401, data: null, error: message || 'Unauthorized' };
       }
       if (response.status === 403) {
-        return { status: 403, data: null, error: message || "Forbidden" };
+        return { status: 403, data: null, error: message || 'Forbidden' };
       }
       if (response.status === 404) {
-        return { status: 404, data: null, error: message || "Not found" };
+        return { status: 404, data: null, error: message || 'Not found' };
       }
       if (response.status === 429) {
         return {
           status: 429,
           data: null,
-          error: message || "Too many requests",
-          retryAfter: response.headers.get("Retry-After"),
+          error: message || 'Too many requests',
+          retryAfter: response.headers.get('Retry-After'),
         };
       }
 
@@ -107,29 +107,29 @@ class ApiClient {
 
       return { status: response.status, data, error: null };
     } catch (error) {
-      if (error.name === "AbortError") {
-        return { status: 0, data: null, error: "Request timed out" };
+      if (error.name === 'AbortError') {
+        return { status: 0, data: null, error: 'Request timed out' };
       }
-      return { status: 0, data: null, error: error.message || "Network error" };
+      return { status: 0, data: null, error: error.message || 'Network error' };
     } finally {
       clearTimeout(timeout);
     }
   }
 
   get(path) {
-    return this._request("GET", path);
+    return this._request('GET', path);
   }
   post(path, body) {
-    return this._request("POST", path, body);
+    return this._request('POST', path, body);
   }
   put(path, body) {
-    return this._request("PUT", path, body);
+    return this._request('PUT', path, body);
   }
   patch(path, body) {
-    return this._request("PATCH", path, body);
+    return this._request('PATCH', path, body);
   }
   delete(path) {
-    return this._request("DELETE", path);
+    return this._request('DELETE', path);
   }
 }
 

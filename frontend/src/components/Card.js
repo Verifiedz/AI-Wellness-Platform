@@ -1,6 +1,6 @@
-import React from "react";
-import { View, StyleSheet, Platform } from "react-native";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 export function Card({ children, style, elevated = false }) {
   const { colors } = useTheme();
@@ -24,7 +24,7 @@ export function Card({ children, style, elevated = false }) {
 
 const shadow = Platform.select({
   ios: {
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,

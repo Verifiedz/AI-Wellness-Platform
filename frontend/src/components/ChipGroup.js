@@ -1,15 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useTheme } from "../context/ThemeContext";
-import { useHaptic } from "../hooks/useHaptic";
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
+import { useHaptic } from '../hooks/useHaptic';
 
-export function ChipGroup({
-  items,
-  selected,
-  onSelect,
-  multiSelect = false,
-  style,
-}) {
+export function ChipGroup({ items, selected, onSelect, multiSelect = false, style }) {
   const { colors, fonts } = useTheme();
   const haptic = useHaptic();
 
@@ -22,9 +16,7 @@ export function ChipGroup({
     haptic.triggerSelection();
     if (multiSelect) {
       const arr = Array.isArray(selected) ? selected : [];
-      const next = arr.includes(item)
-        ? arr.filter((i) => i !== item)
-        : [...arr, item];
+      const next = arr.includes(item) ? arr.filter((i) => i !== item) : [...arr, item];
       onSelect(next);
     } else {
       onSelect(item);
@@ -32,8 +24,8 @@ export function ChipGroup({
   };
 
   const chipItems = items.map((item) => {
-    const label = typeof item === "string" ? item : item.label;
-    const value = typeof item === "string" ? item : item.id;
+    const label = typeof item === 'string' ? item : item.label;
+    const value = typeof item === 'string' ? item : item.id;
     return { label, value };
   });
 
@@ -59,7 +51,7 @@ export function ChipGroup({
                 fonts.bodySmall,
                 {
                   color: active ? colors.primary : colors.textSecondary,
-                  fontWeight: active ? "600" : "400",
+                  fontWeight: active ? '600' : '400',
                 },
               ]}
             >
@@ -74,8 +66,8 @@ export function ChipGroup({
 
 const styles = StyleSheet.create({
   wrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   chip: {

@@ -1,12 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import {
   format,
   addMonths,
@@ -21,26 +15,26 @@ import {
   isToday,
   getDay,
   getDaysInMonth,
-} from "date-fns";
-import { useTheme } from "../context/ThemeContext";
-import { journalApi } from "../services/journalApi";
-import { MOOD_COLORS } from "../constants/journal";
-import { Card } from "../components/Card";
-import { ChipGroup } from "../components/ChipGroup";
-import { Banner } from "../components/Banner";
-import { CalendarSkeleton } from "../components/skeletons/CalendarSkeleton";
+} from 'date-fns';
+import { useTheme } from '../context/ThemeContext';
+import { journalApi } from '../services/journalApi';
+import { MOOD_COLORS } from '../constants/journal';
+import { Card } from '../components/Card';
+import { ChipGroup } from '../components/ChipGroup';
+import { Banner } from '../components/Banner';
+import { CalendarSkeleton } from '../components/skeletons/CalendarSkeleton';
 
-const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const VIEW_MODES = [
-  { id: "monthly", label: "Monthly" },
-  { id: "weekly", label: "Weekly" },
-  { id: "yearly", label: "Yearly" },
+  { id: 'monthly', label: 'Monthly' },
+  { id: 'weekly', label: 'Weekly' },
+  { id: 'yearly', label: 'Yearly' },
 ];
 
 export function MoodCalendarScreen({ navigation }) {
   const { colors, fonts } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState("monthly");
+  const [viewMode, setViewMode] = useState('monthly');
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -51,12 +45,12 @@ export function MoodCalendarScreen({ navigation }) {
     setError(null);
     try {
       let startDate, endDate;
-      if (viewMode === "monthly") {
-        startDate = format(startOfMonth(currentDate), "yyyy-MM-dd");
-        endDate = format(endOfMonth(currentDate), "yyyy-MM-dd");
-      } else if (viewMode === "weekly") {
-        startDate = format(startOfWeek(currentDate), "yyyy-MM-dd");
-        endDate = format(endOfWeek(currentDate), "yyyy-MM-dd");
+      if (viewMode === 'monthly') {
+        startDate = format(startOfMonth(currentDate), 'yyyy-MM-dd');
+        endDate = format(endOfMonth(currentDate), 'yyyy-MM-dd');
+      } else if (viewMode === 'weekly') {
+        startDate = format(startOfWeek(currentDate), 'yyyy-MM-dd');
+        endDate = format(endOfWeek(currentDate), 'yyyy-MM-dd');
       } else {
         startDate = `${currentDate.getFullYear()}-01-01`;
         endDate = `${currentDate.getFullYear()}-12-31`;
@@ -70,37 +64,39 @@ export function MoodCalendarScreen({ navigation }) {
       if (!entriesResult.error && entriesResult.data) setEntries(entriesResult.data);
       if (!summaryResult.error && summaryResult.data) setSummary(summaryResult.data);
     } catch {
-      setError("Failed to load mood data. Tap to retry.");
+      setError('Failed to load mood data. Tap to retry.');
     } finally {
       setLoading(false);
     }
   }, [currentDate, viewMode]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const getEntryForDate = (date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
+    const dateStr = format(date, 'yyyy-MM-dd');
     return entries.find((e) => e.entryDate === dateStr);
   };
 
   const navigatePrevious = () => {
-    if (viewMode === "monthly") setCurrentDate((d) => subMonths(d, 1));
-    else if (viewMode === "weekly") setCurrentDate((d) => subWeeks(d, 1));
+    if (viewMode === 'monthly') setCurrentDate((d) => subMonths(d, 1));
+    else if (viewMode === 'weekly') setCurrentDate((d) => subWeeks(d, 1));
     else setCurrentDate((d) => new Date(d.getFullYear() - 1, d.getMonth(), d.getDate()));
   };
 
   const navigateNext = () => {
-    if (viewMode === "monthly") setCurrentDate((d) => addMonths(d, 1));
-    else if (viewMode === "weekly") setCurrentDate((d) => addWeeks(d, 1));
+    if (viewMode === 'monthly') setCurrentDate((d) => addMonths(d, 1));
+    else if (viewMode === 'weekly') setCurrentDate((d) => addWeeks(d, 1));
     else setCurrentDate((d) => new Date(d.getFullYear() + 1, d.getMonth(), d.getDate()));
   };
 
   const getHeaderTitle = () => {
-    if (viewMode === "monthly") return format(currentDate, "MMMM yyyy");
-    if (viewMode === "weekly") {
+    if (viewMode === 'monthly') return format(currentDate, 'MMMM yyyy');
+    if (viewMode === 'weekly') {
       const start = startOfWeek(currentDate);
       const end = endOfWeek(currentDate);
-      return `${format(start, "MMM d")} - ${format(end, "MMM d, yyyy")}`;
+      return `${format(start, 'MMM d')} - ${format(end, 'MMM d, yyyy')}`;
     }
     return String(currentDate.getFullYear());
   };
@@ -108,7 +104,7 @@ export function MoodCalendarScreen({ navigation }) {
   const handleDateTap = (date) => {
     const entry = getEntryForDate(date);
     if (entry) {
-      navigation.navigate("JournalHome", { selectedDate: format(date, "yyyy-MM-dd") });
+      navigation.navigate('JournalHome', { selectedDate: format(date, 'yyyy-MM-dd') });
     }
   };
 
@@ -129,12 +125,24 @@ export function MoodCalendarScreen({ navigation }) {
       cells.push(
         <TouchableOpacity
           key={day}
-          style={[styles.dayCell, today && { backgroundColor: `${colors.primaryLight}20`, borderRadius: 10 }]}
+          style={[
+            styles.dayCell,
+            today && { backgroundColor: `${colors.primaryLight}20`, borderRadius: 10 },
+          ]}
           onPress={() => handleDateTap(date)}
         >
-          <Text style={[fonts.bodySmall, { color: today ? colors.primary : colors.text, fontWeight: today ? "700" : "400" }]}>{day}</Text>
+          <Text
+            style={[
+              fonts.bodySmall,
+              { color: today ? colors.primary : colors.text, fontWeight: today ? '700' : '400' },
+            ]}
+          >
+            {day}
+          </Text>
           {entry && (
-            <View style={[styles.moodDot, { backgroundColor: MOOD_COLORS[entry.mood] || "#ccc" }]} />
+            <View
+              style={[styles.moodDot, { backgroundColor: MOOD_COLORS[entry.mood] || '#ccc' }]}
+            />
           )}
         </TouchableOpacity>
       );
@@ -178,16 +186,29 @@ export function MoodCalendarScreen({ navigation }) {
               onPress={() => handleDateTap(date)}
             >
               <View>
-                <Text style={[fonts.caption, { color: colors.textSecondary }]}>{DAY_NAMES[idx]}</Text>
-                <Text style={[fonts.body, { color: colors.text, marginTop: 2 }]}>{format(date, "MMM d")}</Text>
+                <Text style={[fonts.caption, { color: colors.textSecondary }]}>
+                  {DAY_NAMES[idx]}
+                </Text>
+                <Text style={[fonts.body, { color: colors.text, marginTop: 2 }]}>
+                  {format(date, 'MMM d')}
+                </Text>
               </View>
               {entry ? (
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View style={[styles.weekMoodDot, { backgroundColor: MOOD_COLORS[entry.mood] || "#ccc" }]} />
-                  <Text style={[fonts.body, { color: colors.text, textTransform: "capitalize" }]}>{entry.mood}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View
+                    style={[
+                      styles.weekMoodDot,
+                      { backgroundColor: MOOD_COLORS[entry.mood] || '#ccc' },
+                    ]}
+                  />
+                  <Text style={[fonts.body, { color: colors.text, textTransform: 'capitalize' }]}>
+                    {entry.mood}
+                  </Text>
                 </View>
               ) : (
-                <Text style={[fonts.bodySmall, { color: colors.textLight, fontStyle: "italic" }]}>No entry</Text>
+                <Text style={[fonts.bodySmall, { color: colors.textLight, fontStyle: 'italic' }]}>
+                  No entry
+                </Text>
               )}
             </TouchableOpacity>
           );
@@ -208,19 +229,36 @@ export function MoodCalendarScreen({ navigation }) {
             return d.getMonth() === month && d.getFullYear() === year;
           });
           const moodCounts = {};
-          monthEntries.forEach((e) => { moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1; });
+          monthEntries.forEach((e) => {
+            moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1;
+          });
           const dominant = Object.entries(moodCounts).sort(([, a], [, b]) => b - a)[0];
 
           return (
             <TouchableOpacity
               key={month}
-              style={[styles.yearCard, { borderColor: colors.border, backgroundColor: colors.background }]}
-              onPress={() => { setCurrentDate(new Date(year, month, 1)); setViewMode("monthly"); }}
+              style={[
+                styles.yearCard,
+                { borderColor: colors.border, backgroundColor: colors.background },
+              ]}
+              onPress={() => {
+                setCurrentDate(new Date(year, month, 1));
+                setViewMode('monthly');
+              }}
             >
-              <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]}>{format(new Date(year, month), "MMM")}</Text>
-              <Text style={[fonts.caption, { color: colors.textSecondary }]}>{monthEntries.length} entries</Text>
+              <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
+                {format(new Date(year, month), 'MMM')}
+              </Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary }]}>
+                {monthEntries.length} entries
+              </Text>
               {dominant && (
-                <View style={[styles.yearMoodDot, { backgroundColor: MOOD_COLORS[dominant[0]] || "#ccc" }]} />
+                <View
+                  style={[
+                    styles.yearMoodDot,
+                    { backgroundColor: MOOD_COLORS[dominant[0]] || '#ccc' },
+                  ]}
+                />
               )}
             </TouchableOpacity>
           );
@@ -230,36 +268,64 @@ export function MoodCalendarScreen({ navigation }) {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
-      <ChipGroup items={VIEW_MODES} selected={viewMode} onSelect={setViewMode} style={{ marginBottom: 16 }} />
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
+      <ChipGroup
+        items={VIEW_MODES}
+        selected={viewMode}
+        onSelect={setViewMode}
+        style={{ marginBottom: 16 }}
+      />
 
       <View style={styles.navRow}>
-        <TouchableOpacity style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={navigatePrevious}>
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          onPress={navigatePrevious}
+        >
           <Ionicons name="chevron-back" size={20} color={colors.text} />
         </TouchableOpacity>
         <Text style={[fonts.heading3, { color: colors.text }]}>{getHeaderTitle()}</Text>
-        <TouchableOpacity style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={navigateNext}>
+        <TouchableOpacity
+          style={[styles.navBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          onPress={navigateNext}
+        >
           <Ionicons name="chevron-forward" size={20} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       {summary && (
         <Card style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <Ionicons name="bar-chart-outline" size={20} color={colors.primary} />
             <Text style={[fonts.heading3, { color: colors.text }]}>Summary</Text>
           </View>
           <View style={styles.summaryRow}>
             <View style={styles.summaryItem}>
-              <Text style={[fonts.heading2, { color: colors.text }]}>{summary.totalEntries ?? 0}</Text>
+              <Text style={[fonts.heading2, { color: colors.text }]}>
+                {summary.totalEntries ?? 0}
+              </Text>
               <Text style={[fonts.caption, { color: colors.textSecondary }]}>Entries</Text>
             </View>
             <View style={styles.summaryItem}>
               {summary.mostCommonMood ? (
                 <>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <View style={[styles.summaryMoodDot, { backgroundColor: MOOD_COLORS[summary.mostCommonMood] || "#ccc" }]} />
-                    <Text style={[fonts.body, { color: colors.text, fontWeight: "600", textTransform: "capitalize" }]}>{summary.mostCommonMood}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <View
+                      style={[
+                        styles.summaryMoodDot,
+                        { backgroundColor: MOOD_COLORS[summary.mostCommonMood] || '#ccc' },
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        fonts.body,
+                        { color: colors.text, fontWeight: '600', textTransform: 'capitalize' },
+                      ]}
+                    >
+                      {summary.mostCommonMood}
+                    </Text>
                   </View>
                   <Text style={[fonts.caption, { color: colors.textSecondary }]}>Top Mood</Text>
                 </>
@@ -268,7 +334,9 @@ export function MoodCalendarScreen({ navigation }) {
               )}
             </View>
             <View style={styles.summaryItem}>
-              <Text style={[fonts.heading2, { color: colors.text }]}>{summary.averageEnergy ? Number(summary.averageEnergy).toFixed(1) : "—"}</Text>
+              <Text style={[fonts.heading2, { color: colors.text }]}>
+                {summary.averageEnergy ? Number(summary.averageEnergy).toFixed(1) : '—'}
+              </Text>
               <Text style={[fonts.caption, { color: colors.textSecondary }]}>Avg Energy</Text>
             </View>
           </View>
@@ -282,9 +350,9 @@ export function MoodCalendarScreen({ navigation }) {
           <CalendarSkeleton />
         ) : (
           <>
-            {viewMode === "monthly" && renderMonthlyView()}
-            {viewMode === "weekly" && renderWeeklyView()}
-            {viewMode === "yearly" && renderYearlyView()}
+            {viewMode === 'monthly' && renderMonthlyView()}
+            {viewMode === 'weekly' && renderWeeklyView()}
+            {viewMode === 'yearly' && renderYearlyView()}
           </>
         )}
       </Card>
@@ -295,7 +363,9 @@ export function MoodCalendarScreen({ navigation }) {
           {Object.entries(MOOD_COLORS).map(([mood, color]) => (
             <View key={mood} style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: color }]} />
-              <Text style={[fonts.bodySmall, { color: colors.text, textTransform: "capitalize" }]}>{mood}</Text>
+              <Text style={[fonts.bodySmall, { color: colors.text, textTransform: 'capitalize' }]}>
+                {mood}
+              </Text>
             </View>
           ))}
         </View>
@@ -309,22 +379,47 @@ export function MoodCalendarScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
-  navRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-  navBtn: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, justifyContent: "center", alignItems: "center" },
-  summaryRow: { flexDirection: "row", justifyContent: "space-around" },
-  summaryItem: { alignItems: "center", gap: 4 },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  navBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-around' },
+  summaryItem: { alignItems: 'center', gap: 4 },
   summaryMoodDot: { width: 14, height: 14, borderRadius: 7 },
-  dayNamesRow: { flexDirection: "row", marginBottom: 4 },
-  dayNameCell: { flex: 1, alignItems: "center", paddingVertical: 6 },
-  calendarGrid: { flexDirection: "row", flexWrap: "wrap" },
-  dayCell: { width: "14.28%", alignItems: "center", paddingVertical: 8, gap: 3 },
+  dayNamesRow: { flexDirection: 'row', marginBottom: 4 },
+  dayNameCell: { flex: 1, alignItems: 'center', paddingVertical: 6 },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  dayCell: { width: '14.28%', alignItems: 'center', paddingVertical: 8, gap: 3 },
   moodDot: { width: 8, height: 8, borderRadius: 4 },
-  weekRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, borderRadius: 14 },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 14,
+  },
   weekMoodDot: { width: 14, height: 14, borderRadius: 7 },
-  yearGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  yearCard: { width: "30%", alignItems: "center", padding: 12, borderRadius: 14, borderWidth: 1, gap: 4 },
+  yearGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  yearCard: {
+    width: '30%',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 4,
+  },
   yearMoodDot: { width: 20, height: 20, borderRadius: 10, marginTop: 4 },
-  legendRow: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  legendRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 12, height: 12, borderRadius: 6 },
 });

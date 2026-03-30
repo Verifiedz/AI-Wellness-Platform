@@ -1,14 +1,14 @@
-import { useCallback, useState } from "react";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   isWearableAvailable,
   getSteps,
   getHeartRate,
   getSleepHours,
-} from "../services/wearableService";
+} from '../services/wearableService';
 
-const WEARABLE_ENABLED_KEY = "wearable_enabled_v1";
+const WEARABLE_ENABLED_KEY = 'wearable_enabled_v1';
 
 /**
  * Hook to fetch today's wearable metrics.
@@ -23,7 +23,7 @@ export function useWearableData() {
   const loadEnabled = useCallback(async () => {
     try {
       const val = await AsyncStorage.getItem(WEARABLE_ENABLED_KEY);
-      setIsEnabled(val === "true");
+      setIsEnabled(val === 'true');
     } catch {
       setIsEnabled(false);
     }

@@ -1,13 +1,13 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/api/notifications";
+const BASE_PATH = '/api/notifications';
 
-function toCamelString(value, fallback = "") {
-  return typeof value === "string" ? value : fallback;
+function toCamelString(value, fallback = '') {
+  return typeof value === 'string' ? value : fallback;
 }
 
 function normalizePreferences(raw) {
-  if (!raw || typeof raw !== "object") return null;
+  if (!raw || typeof raw !== 'object') return null;
 
   const userId = raw.userId ?? raw.UserId;
   if (!userId) return null;
@@ -15,12 +15,9 @@ function normalizePreferences(raw) {
   return {
     userId: String(userId),
     isEnabled: Boolean(raw.isEnabled ?? raw.IsEnabled),
-    preferredTimeUtc: toCamelString(
-      raw.preferredTimeUtc ?? raw.PreferredTimeUtc,
-      "09:00:00"
-    ),
-    timezone: toCamelString(raw.timezone ?? raw.Timezone, "UTC"),
-    deviceToken: toCamelString(raw.deviceToken ?? raw.DeviceToken, ""),
+    preferredTimeUtc: toCamelString(raw.preferredTimeUtc ?? raw.PreferredTimeUtc, '09:00:00'),
+    timezone: toCamelString(raw.timezone ?? raw.Timezone, 'UTC'),
+    deviceToken: toCamelString(raw.deviceToken ?? raw.DeviceToken, ''),
     createdAt: raw.createdAt ?? raw.CreatedAt ?? null,
     updatedAt: raw.updatedAt ?? raw.UpdatedAt ?? null,
   };
@@ -49,7 +46,7 @@ export const notificationApi = {
         return {
           status: result.status,
           data: null,
-          error: "Invalid preferences payload from server",
+          error: 'Invalid preferences payload from server',
         };
       }
 
@@ -69,9 +66,9 @@ export const notificationApi = {
   savePreferences(prefs) {
     return apiClient
       .post(`${BASE_PATH}/preferences`, {
-      isEnabled: prefs.isEnabled,
-      preferredTimeUtc: prefs.preferredTimeUtc,
-      timezone: prefs.timezone,
+        isEnabled: prefs.isEnabled,
+        preferredTimeUtc: prefs.preferredTimeUtc,
+        timezone: prefs.timezone,
       })
       .then((result) => {
         if (result.error || !result.data) return result;
@@ -80,7 +77,7 @@ export const notificationApi = {
           return {
             status: result.status,
             data: null,
-            error: "Invalid preferences payload from server",
+            error: 'Invalid preferences payload from server',
           };
         }
 
@@ -88,7 +85,7 @@ export const notificationApi = {
           ...result,
           data: normalized,
         };
-    });
+      });
   },
 
   /**

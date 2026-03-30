@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 const TipContext = createContext(null);
 
@@ -13,8 +13,8 @@ export function TipProvider({ children }) {
 
   const setTip = useCallback((tip) => {
     setCurrentTip({
-      title: tip.title || "Your Daily Wellness Tip",
-      body: tip.body || "",
+      title: tip.title || 'Your Daily Wellness Tip',
+      body: tip.body || '',
       tipId: tip.tipId || null,
       category: tip.category || null,
       receivedAt: new Date().toISOString(),
@@ -26,14 +26,12 @@ export function TipProvider({ children }) {
   }, []);
 
   return (
-    <TipContext.Provider value={{ currentTip, setTip, clearTip }}>
-      {children}
-    </TipContext.Provider>
+    <TipContext.Provider value={{ currentTip, setTip, clearTip }}>{children}</TipContext.Provider>
   );
 }
 
 export function useTip() {
   const ctx = useContext(TipContext);
-  if (!ctx) throw new Error("useTip must be used within a TipProvider");
+  if (!ctx) throw new Error('useTip must be used within a TipProvider');
   return ctx;
 }

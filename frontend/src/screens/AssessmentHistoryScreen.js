@@ -1,23 +1,17 @@
-import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
-import { format } from "date-fns";
-import { useTheme } from "../context/ThemeContext";
-import { Card } from "../components/Card";
-import { Button } from "../components/Button";
-import { Banner } from "../components/Banner";
-import { AnimatedCard } from "../components/AnimatedCard";
-import { ChipGroup } from "../components/ChipGroup";
-import { EmptyState } from "../components/EmptyState";
-import { ASSESSMENTS, getSeverityBand, CLINICAL_DISCLAIMER } from "../constants/assessments";
-import { assessmentApi } from "../services/assessmentApi";
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { format } from 'date-fns';
+import { useTheme } from '../context/ThemeContext';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { Banner } from '../components/Banner';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { ChipGroup } from '../components/ChipGroup';
+import { EmptyState } from '../components/EmptyState';
+import { ASSESSMENTS, getSeverityBand, CLINICAL_DISCLAIMER } from '../constants/assessments';
+import { assessmentApi } from '../services/assessmentApi';
 
 /**
  * Timeline view of past assessments with before/after comparison.
@@ -26,7 +20,7 @@ import { assessmentApi } from "../services/assessmentApi";
  *   - assessmentType: "PHQ9" | "GAD7" (default: "PHQ9")
  */
 export function AssessmentHistoryScreen({ navigation, route }) {
-  const initialType = route.params?.assessmentType || "PHQ9";
+  const initialType = route.params?.assessmentType || 'PHQ9';
   const { colors, fonts } = useTheme();
 
   const [activeType, setActiveType] = useState(initialType);
@@ -67,21 +61,21 @@ export function AssessmentHistoryScreen({ navigation, route }) {
   );
 
   const typeChips = [
-    { key: "PHQ9", label: "Depression (PHQ-9)" },
-    { key: "GAD7", label: "Anxiety (GAD-7)" },
+    { key: 'PHQ9', label: 'Depression (PHQ-9)' },
+    { key: 'GAD7', label: 'Anxiety (GAD-7)' },
   ];
 
   const trendIcon =
-    comparison?.trendDirection === "improving"
-      ? "trending-down-outline"
-      : comparison?.trendDirection === "worsening"
-        ? "trending-up-outline"
-        : "remove-outline";
+    comparison?.trendDirection === 'improving'
+      ? 'trending-down-outline'
+      : comparison?.trendDirection === 'worsening'
+        ? 'trending-up-outline'
+        : 'remove-outline';
 
   const trendColor =
-    comparison?.trendDirection === "improving"
+    comparison?.trendDirection === 'improving'
       ? colors.success
-      : comparison?.trendDirection === "worsening"
+      : comparison?.trendDirection === 'worsening'
         ? colors.error
         : colors.textSecondary;
 
@@ -89,15 +83,9 @@ export function AssessmentHistoryScreen({ navigation, route }) {
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={() => loadData(true)} />
-      }
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadData(true)} />}
     >
-      <ChipGroup
-        options={typeChips}
-        selected={activeType}
-        onSelect={setActiveType}
-      />
+      <ChipGroup options={typeChips} selected={activeType} onSelect={setActiveType} />
 
       {/* Comparison card */}
       {comparison?.first && comparison?.latest && comparison.first.id !== comparison.latest.id && (
@@ -127,9 +115,11 @@ export function AssessmentHistoryScreen({ navigation, route }) {
                 </Text>
               </View>
             </View>
-            <Text style={[fonts.bodySmall, { color: trendColor, textAlign: "center", marginTop: 8 }]}>
-              {comparison.scoreChange > 0 ? "+" : ""}{comparison.scoreChange} points (
-              {comparison.trendDirection})
+            <Text
+              style={[fonts.bodySmall, { color: trendColor, textAlign: 'center', marginTop: 8 }]}
+            >
+              {comparison.scoreChange > 0 ? '+' : ''}
+              {comparison.scoreChange} points ({comparison.trendDirection})
             </Text>
           </Card>
         </AnimatedCard>
@@ -151,7 +141,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
                 <View style={styles.historyRow}>
                   <View style={[styles.severityDot, { backgroundColor: band.color }]} />
                   <View style={{ flex: 1 }}>
-                    <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]}>
+                    <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
                       Score: {item.totalScore}/{assessment.maxScore}
                     </Text>
                     <Text style={[fonts.bodySmall, { color: band.color }]}>
@@ -159,7 +149,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
                     </Text>
                   </View>
                   <Text style={[fonts.caption, { color: colors.textLight }]}>
-                    {format(new Date(item.completedAt), "MMM d, yyyy")}
+                    {format(new Date(item.completedAt), 'MMM d, yyyy')}
                   </Text>
                 </View>
               </Card>
@@ -172,7 +162,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
 
       <Button
         title={`Take ${assessment.name} Assessment`}
-        onPress={() => navigation.navigate("Assessment", { assessmentType: activeType })}
+        onPress={() => navigation.navigate('Assessment', { assessmentType: activeType })}
         icon={<Ionicons name="clipboard-outline" size={16} color="#FFFFFF" />}
         style={{ marginTop: 16 }}
       />
@@ -185,12 +175,12 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   comparisonCard: { marginVertical: 12 },
   comparisonRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
   },
-  comparisonItem: { alignItems: "center", gap: 2 },
+  comparisonItem: { alignItems: 'center', gap: 2 },
   historyItem: { marginBottom: 8 },
-  historyRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  historyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   severityDot: { width: 12, height: 12, borderRadius: 6 },
 });

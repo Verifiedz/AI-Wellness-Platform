@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,8 +7,8 @@ import Animated, {
   withSequence,
   Easing,
   cancelAnimation,
-} from "react-native-reanimated";
-import { useTheme } from "../context/ThemeContext";
+} from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 const DEFAULT_INHALE_MS = 4000;
 const DEFAULT_HOLD_MS = 2000;
@@ -17,9 +17,9 @@ const DEFAULT_HOLD2_MS = 0;
 
 function buildPhases(hold2Ms) {
   if (hold2Ms > 0) {
-    return ["Breathe in...", "Hold...", "Breathe out...", "Hold..."];
+    return ['Breathe in...', 'Hold...', 'Breathe out...', 'Hold...'];
   }
-  return ["Breathe in...", "Hold...", "Breathe out..."];
+  return ['Breathe in...', 'Hold...', 'Breathe out...'];
 }
 
 export function BreathingCircle({
@@ -38,7 +38,7 @@ export function BreathingCircle({
   const scale = useSharedValue(0.6);
   const opacity = useSharedValue(0.7);
   const phases = buildPhases(hold2Ms);
-  const [phaseText, setPhaseText] = useState(autoStart ? phases[0] : "");
+  const [phaseText, setPhaseText] = useState(autoStart ? phases[0] : '');
   const [isRunning, setIsRunning] = useState(false);
   const [currentCycle, setCurrentCycle] = useState(0);
   const timersRef = useRef([]);
@@ -47,8 +47,12 @@ export function BreathingCircle({
   const onSessionCompleteRef = useRef(onSessionComplete);
 
   // Keep refs in sync with props without causing re-renders
-  useEffect(() => { onCycleCompleteRef.current = onCycleComplete; }, [onCycleComplete]);
-  useEffect(() => { onSessionCompleteRef.current = onSessionComplete; }, [onSessionComplete]);
+  useEffect(() => {
+    onCycleCompleteRef.current = onCycleComplete;
+  }, [onCycleComplete]);
+  useEffect(() => {
+    onSessionCompleteRef.current = onSessionComplete;
+  }, [onSessionComplete]);
 
   useEffect(() => {
     isPausedRef.current = isPaused;
@@ -115,7 +119,7 @@ export function BreathingCircle({
 
         if (nextCycle >= cycles) {
           setIsRunning(false);
-          setPhaseText("");
+          setPhaseText('');
           onSessionCompleteRef.current?.();
         } else {
           runCycle(nextCycle);
@@ -163,13 +167,7 @@ export function BreathingCircle({
           animatedCircle,
         ]}
       />
-      <Text
-        style={[
-          fonts.heading3,
-          styles.phaseText,
-          { color: colors.textSecondary },
-        ]}
-      >
+      <Text style={[fonts.heading3, styles.phaseText, { color: colors.textSecondary }]}>
         {phaseText}
       </Text>
     </View>
@@ -178,7 +176,7 @@ export function BreathingCircle({
 
 const shadow = Platform.select({
   ios: {
-    shadowColor: "#5B7F6E",
+    shadowColor: '#5B7F6E',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 24,
@@ -189,15 +187,15 @@ const shadow = Platform.select({
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   circle: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   phaseText: {
     marginTop: 32,
-    textAlign: "center",
+    textAlign: 'center',
   },
 });

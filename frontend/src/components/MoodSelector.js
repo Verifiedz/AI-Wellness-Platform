@@ -1,9 +1,9 @@
-import React, { useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { MOODS } from "../constants/journal";
-import { useHaptic } from "../hooks/useHaptic";
+import React, { useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { MOODS } from '../constants/journal';
+import { useHaptic } from '../hooks/useHaptic';
 
 export function MoodSelector({ selected, onSelect, style }) {
   const { colors, fonts } = useTheme();
@@ -49,17 +49,13 @@ function MoodButton({ mood, isSelected, onPress, colors, fonts }) {
         onPress={handlePress}
         activeOpacity={0.8}
       >
-        <Ionicons
-          name={mood.icon}
-          size={24}
-          color={isSelected ? "#fff" : mood.color}
-        />
+        <Ionicons name={mood.icon} size={24} color={isSelected ? '#fff' : mood.color} />
         <Text
           style={[
             fonts.caption,
             {
-              color: isSelected ? "#fff" : mood.color,
-              fontWeight: "600",
+              color: isSelected ? '#fff' : mood.color,
+              fontWeight: '600',
               marginTop: 4,
             },
           ]}
@@ -73,14 +69,14 @@ function MoodButton({ mood, isSelected, onPress, colors, fonts }) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 8,
   },
   moodBtn: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 4,
     borderRadius: 16,

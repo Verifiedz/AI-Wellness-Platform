@@ -1,14 +1,14 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DarkColors, LightColors } from "../theme/colors";
-import { Typography } from "../theme/typography";
-import { useTimeOfDay } from "../hooks/useTimeOfDay";
-import { DEFAULT_ACCENT_ID, getAccentById } from "../theme/accents";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DarkColors, LightColors } from '../theme/colors';
+import { Typography } from '../theme/typography';
+import { useTimeOfDay } from '../hooks/useTimeOfDay';
+import { DEFAULT_ACCENT_ID, getAccentById } from '../theme/accents';
 
 const ThemeContext = createContext(null);
-const THEME_MODE_KEY = "theme_mode_v1";
-const DYNAMIC_THEME_KEY = "dynamic_theme_v1";
-const ACCENT_ID_KEY = "accent_id_v1";
+const THEME_MODE_KEY = 'theme_mode_v1';
+const DYNAMIC_THEME_KEY = 'dynamic_theme_v1';
+const ACCENT_ID_KEY = 'accent_id_v1';
 
 /**
  * Resolves the final color palette by layering:
@@ -54,8 +54,8 @@ export function ThemeProvider({ children }) {
           AsyncStorage.getItem(ACCENT_ID_KEY),
         ]);
 
-        if (modeVal === "dark") setIsDarkMode(true);
-        if (dynamicVal !== null) setIsDynamicThemeState(dynamicVal === "true");
+        if (modeVal === 'dark') setIsDarkMode(true);
+        if (dynamicVal !== null) setIsDynamicThemeState(dynamicVal === 'true');
         if (accentVal) setAccentIdState(accentVal);
       } catch {
         // Theme restore failed — use defaults
@@ -68,7 +68,7 @@ export function ThemeProvider({ children }) {
   const setDarkMode = useCallback(async (enabled) => {
     setIsDarkMode(enabled);
     try {
-      await AsyncStorage.setItem(THEME_MODE_KEY, enabled ? "dark" : "light");
+      await AsyncStorage.setItem(THEME_MODE_KEY, enabled ? 'dark' : 'light');
     } catch {
       // Theme persist failed — non-critical
     }
@@ -117,7 +117,19 @@ export function ThemeProvider({ children }) {
       setDynamicTheme,
       setAccentId,
     }),
-    [colors, fonts, isDarkMode, isDynamicTheme, accentId, period, isThemeReady, setDarkMode, toggleDarkMode, setDynamicTheme, setAccentId]
+    [
+      colors,
+      fonts,
+      isDarkMode,
+      isDynamicTheme,
+      accentId,
+      period,
+      isThemeReady,
+      setDarkMode,
+      toggleDarkMode,
+      setDynamicTheme,
+      setAccentId,
+    ]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
@@ -125,6 +137,6 @@ export function ThemeProvider({ children }) {
 
 export function useTheme() {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within a ThemeProvider");
+  if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
   return ctx;
 }

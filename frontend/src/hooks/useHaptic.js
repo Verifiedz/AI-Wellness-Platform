@@ -1,5 +1,5 @@
-import { Platform } from "react-native";
-import { useCallback, useRef } from "react";
+import { Platform } from 'react-native';
+import { useCallback, useRef } from 'react';
 
 /**
  * Platform-safe haptic feedback hook.
@@ -11,10 +11,10 @@ export function useHaptic() {
   const loadedRef = useRef(false);
 
   const getHaptics = useCallback(() => {
-    if (Platform.OS === "web") return null;
+    if (Platform.OS === 'web') return null;
     if (loadedRef.current) return hapticsRef.current;
     try {
-      hapticsRef.current = require("expo-haptics");
+      hapticsRef.current = require('expo-haptics');
     } catch {
       hapticsRef.current = null;
     }
@@ -33,7 +33,7 @@ export function useHaptic() {
   }, [getHaptics]);
 
   const triggerImpact = useCallback(
-    (style = "Light") => {
+    (style = 'Light') => {
       const haptics = getHaptics();
       if (!haptics) return;
       try {
@@ -42,11 +42,11 @@ export function useHaptic() {
         // Unsupported — silently ignore
       }
     },
-    [getHaptics],
+    [getHaptics]
   );
 
   const triggerNotification = useCallback(
-    (type = "Success") => {
+    (type = 'Success') => {
       const haptics = getHaptics();
       if (!haptics) return;
       try {
@@ -55,7 +55,7 @@ export function useHaptic() {
         // Unsupported — silently ignore
       }
     },
-    [getHaptics],
+    [getHaptics]
   );
 
   return { triggerSelection, triggerImpact, triggerNotification };

@@ -1,8 +1,8 @@
-import React from "react";
-import { View, TouchableOpacity, Text, StyleSheet, FlatList } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { ACCENT_PRESETS } from "../theme/accents";
+import React from 'react';
+import { View, TouchableOpacity, Text, StyleSheet, FlatList } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { ACCENT_PRESETS } from '../theme/accents';
 
 /**
  * Horizontal row of circular color swatches for accent selection.
@@ -16,11 +16,7 @@ export function AccentPicker({ selectedId, onSelect }) {
     const isSelected = item.id === selectedId;
 
     return (
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => onSelect(item.id)}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={styles.item} onPress={() => onSelect(item.id)} activeOpacity={0.7}>
         <View
           style={[
             styles.swatch,
@@ -29,9 +25,7 @@ export function AccentPicker({ selectedId, onSelect }) {
             isSelected && { borderColor: item.swatch },
           ]}
         >
-          {isSelected && (
-            <Ionicons name="checkmark" size={18} color="#FFFFFF" />
-          )}
+          {isSelected && <Ionicons name="checkmark" size={18} color="#FFFFFF" />}
         </View>
         <Text
           style={[
@@ -59,18 +53,18 @@ export function AccentPicker({ selectedId, onSelect }) {
 
 const styles = StyleSheet.create({
   list: { gap: 16, paddingVertical: 8, paddingHorizontal: 4 },
-  item: { alignItems: "center", width: 52 },
+  item: { alignItems: 'center', width: 52 },
   swatch: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   selectedSwatch: {
     borderWidth: 3,
-    borderColor: "#FFFFFF",
-    shadowColor: "#000",
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

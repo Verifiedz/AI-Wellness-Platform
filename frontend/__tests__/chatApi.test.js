@@ -98,7 +98,11 @@ describe('chatApi', () => {
         error: null,
       });
 
-      await chatApi.sendMessage({ messageRequest: 'Test message', context: '', sessionId: 'sess-1' });
+      await chatApi.sendMessage({
+        messageRequest: 'Test message',
+        context: '',
+        sessionId: 'sess-1',
+      });
 
       expect(apiClient.post).toHaveBeenCalledWith(
         expect.any(String),

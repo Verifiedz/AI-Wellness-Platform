@@ -1,11 +1,11 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 let DEFAULT_LOGO = null;
 try {
-  DEFAULT_LOGO = require("../../assets/logo-sakina.png");
+  DEFAULT_LOGO = require('../../assets/logo-sakina.png');
 } catch {
   DEFAULT_LOGO = null;
 }
@@ -16,7 +16,7 @@ const SIZES = {
   large: { icon: 52, text: 36, container: 96 },
 };
 
-export function Logo({ size = "medium", showText = true, source }) {
+export function Logo({ size = 'medium', showText = true, source }) {
   const { colors, fonts } = useTheme();
   const dim = SIZES[size] || SIZES.medium;
   const logoSource = source || DEFAULT_LOGO;
@@ -40,7 +40,7 @@ export function Logo({ size = "medium", showText = true, source }) {
             style={{
               width: dim.icon * 1.2,
               height: dim.icon * 1.2,
-              resizeMode: "contain",
+              resizeMode: 'contain',
             }}
           />
         ) : (
@@ -54,7 +54,7 @@ export function Logo({ size = "medium", showText = true, source }) {
             {
               fontSize: dim.text,
               color: colors.text,
-              marginTop: size === "small" ? 0 : 12,
+              marginTop: size === 'small' ? 0 : 12,
             },
           ]}
         >
@@ -66,6 +66,6 @@ export function Logo({ size = "medium", showText = true, source }) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { alignItems: "center" },
-  circle: { justifyContent: "center", alignItems: "center" },
+  wrapper: { alignItems: 'center' },
+  circle: { justifyContent: 'center', alignItems: 'center' },
 });

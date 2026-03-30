@@ -1,5 +1,5 @@
-import { API_BASE_URL, API_TIMEOUT } from "../config";
-import { apiClient } from "./api";
+import { API_BASE_URL, API_TIMEOUT } from '../config';
+import { apiClient } from './api';
 
 function normalizeError(status, data, fallback) {
   return {
@@ -16,29 +16,25 @@ async function requestWithToken(path, token) {
 
   try {
     const response = await fetch(`${API_BASE_URL}${path}`, {
-      method: "GET",
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       signal: controller.signal,
     });
 
     const data = await response.json().catch(() => null);
     if (!response.ok) {
-      return normalizeError(
-        response.status,
-        data,
-        `Request failed with status ${response.status}`
-      );
+      return normalizeError(response.status, data, `Request failed with status ${response.status}`);
     }
 
     return { status: response.status, data, error: null };
   } catch (error) {
-    if (error.name === "AbortError") {
-      return { status: 0, data: null, error: "Request timed out" };
+    if (error.name === 'AbortError') {
+      return { status: 0, data: null, error: 'Request timed out' };
     }
-    return { status: 0, data: null, error: error.message || "Network error" };
+    return { status: 0, data: null, error: error.message || 'Network error' };
   } finally {
     clearTimeout(timeout);
   }
@@ -46,39 +42,39 @@ async function requestWithToken(path, token) {
 
 export const authApi = {
   login(email, password) {
-    return apiClient.post("/api/auth/login", { email, password });
+    return apiClient.post('/api/auth/login', { email, password });
   },
 
   verifyTwoFactor(email, code) {
-    return apiClient.post("/api/auth/verify-2fa", { email, code });
+    return apiClient.post('/api/auth/verify-2fa', { email, code });
   },
 
   getCurrentUser(token) {
-    return requestWithToken("/api/auth/user-info", token);
+    return requestWithToken('/api/auth/user-info', token);
   },
 
   register(username, email, password, phone = null) {
-    return apiClient.post("/api/auth/register", { username, email, password, phone });
+    return apiClient.post('/api/auth/register', { username, email, password, phone });
   },
 
   verifyEmail(email, code) {
-    return apiClient.post("/api/auth/verify-email", { email, code });
+    return apiClient.post('/api/auth/verify-email', { email, code });
   },
 
   resendVerification(email) {
-    return apiClient.post("/api/auth/resend-verification", { email });
+    return apiClient.post('/api/auth/resend-verification', { email });
   },
 
   forgotPassword(email) {
-    return apiClient.post("/api/auth/forgot-password", { email });
+    return apiClient.post('/api/auth/forgot-password', { email });
   },
 
   resetPassword(email, code, newPassword, newPassword2) {
-    return apiClient.post("/api/auth/reset-password", { email, code, newPassword, newPassword2 });
+    return apiClient.post('/api/auth/reset-password', { email, code, newPassword, newPassword2 });
   },
 
   changePassword(email, currentPassword, newPassword, newPassword2) {
-    return apiClient.post("/api/auth/change-password", {
+    return apiClient.post('/api/auth/change-password', {
       email,
       currentPassword,
       newPassword,

@@ -1,20 +1,13 @@
-import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
-import { useTheme } from "../context/ThemeContext";
-import { Card } from "../components/Card";
-import { AnimatedCard } from "../components/AnimatedCard";
-import { Banner } from "../components/Banner";
-import { SectionHeader } from "../components/SectionHeader";
-import { communityApi } from "../services/communityApi";
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
+import { Card } from '../components/Card';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { Banner } from '../components/Banner';
+import { SectionHeader } from '../components/SectionHeader';
+import { communityApi } from '../services/communityApi';
 
 /**
  * Community hub showing support group topics.
@@ -43,7 +36,9 @@ export function CommunityScreen({ navigation }) {
   }, []);
 
   useFocusEffect(
-    useCallback(() => { loadGroups(false); }, [loadGroups])
+    useCallback(() => {
+      loadGroups(false);
+    }, [loadGroups])
   );
 
   return (
@@ -64,9 +59,14 @@ export function CommunityScreen({ navigation }) {
 
       {groups.length === 0 && !isLoading && (
         <Card>
-          <View style={{ alignItems: "center", paddingVertical: 20 }}>
+          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
             <Ionicons name="people-outline" size={40} color={colors.textLight} />
-            <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 8, textAlign: "center" }]}>
+            <Text
+              style={[
+                fonts.body,
+                { color: colors.textSecondary, marginTop: 8, textAlign: 'center' },
+              ]}
+            >
               Community groups are being set up. Check back soon!
             </Text>
           </View>
@@ -78,17 +78,22 @@ export function CommunityScreen({ navigation }) {
           <AnimatedCard key={group.id || group.slug} index={idx}>
             <TouchableOpacity
               style={[styles.groupCard, { backgroundColor: colors.surface }]}
-              onPress={() => navigation.navigate("GroupFeed", { slug: group.slug, name: group.name })}
+              onPress={() =>
+                navigation.navigate('GroupFeed', { slug: group.slug, name: group.name })
+              }
               activeOpacity={0.7}
             >
               <View style={[styles.groupIcon, { backgroundColor: `${colors.primary}12` }]}>
-                <Ionicons name={group.icon || "people-outline"} size={28} color={colors.primary} />
+                <Ionicons name={group.icon || 'people-outline'} size={28} color={colors.primary} />
               </View>
               <Text style={[fonts.heading3, { color: colors.text, marginTop: 10 }]}>
                 {group.name}
               </Text>
               <Text
-                style={[fonts.caption, { color: colors.textSecondary, marginTop: 4, textAlign: "center" }]}
+                style={[
+                  fonts.caption,
+                  { color: colors.textSecondary, marginTop: 4, textAlign: 'center' },
+                ]}
                 numberOfLines={2}
               >
                 {group.description}
@@ -113,8 +118,8 @@ const styles = StyleSheet.create({
   groupCard: {
     borderRadius: 16,
     padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -124,7 +129,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -1,7 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import Animated, { useAnimatedStyle, withTiming } from "react-native-reanimated";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 export function ProgressBar({ step, total, color, style }) {
   const { colors } = useTheme();
@@ -14,9 +14,7 @@ export function ProgressBar({ step, total, color, style }) {
 
   return (
     <View style={[styles.track, { backgroundColor: colors.border }, style]}>
-      <Animated.View
-        style={[styles.fill, { backgroundColor: fillColor }, animatedStyle]}
-      />
+      <Animated.View style={[styles.fill, { backgroundColor: fillColor }, animatedStyle]} />
     </View>
   );
 }
@@ -25,10 +23,10 @@ const styles = StyleSheet.create({
   track: {
     height: 4,
     borderRadius: 2,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   fill: {
-    height: "100%",
+    height: '100%',
     borderRadius: 2,
   },
 });

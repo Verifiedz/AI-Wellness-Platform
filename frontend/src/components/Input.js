@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 export function Input({
   label,
@@ -10,7 +10,7 @@ export function Input({
   placeholder,
   secureTextEntry = false,
   keyboardType,
-  autoCapitalize = "none",
+  autoCapitalize = 'none',
   autoCorrect = false,
   returnKeyType,
   onSubmitEditing,
@@ -31,7 +31,7 @@ export function Input({
         <Text style={[fonts.caption, styles.label, { color: colors.text }]}>
           {label}
           {optional && (
-            <Text style={{ color: colors.textSecondary, fontWeight: "400" }}> (optional)</Text>
+            <Text style={{ color: colors.textSecondary, fontWeight: '400' }}> (optional)</Text>
           )}
         </Text>
       )}
@@ -66,7 +66,7 @@ export function Input({
           textContentType={textContentType}
           onBlur={onBlur}
           multiline={multiline}
-          textAlignVertical={multiline ? "top" : "center"}
+          textAlignVertical={multiline ? 'top' : 'center'}
         />
         {secureTextEntry && (
           <TouchableOpacity
@@ -74,7 +74,7 @@ export function Input({
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Ionicons
-              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              name={showPassword ? 'eye-off-outline' : 'eye-outline'}
               size={22}
               color={colors.textSecondary}
             />
@@ -90,21 +90,21 @@ export function Input({
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
-  label: { marginBottom: 6, fontWeight: "600" },
+  label: { marginBottom: 6, fontWeight: '600' },
   inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 14 : 4,
+    paddingVertical: Platform.OS === 'ios' ? 14 : 4,
   },
   input: {
     flex: 1,
-    paddingVertical: Platform.OS === "ios" ? 0 : 10,
+    paddingVertical: Platform.OS === 'ios' ? 0 : 10,
   },
   multiline: {
-    alignItems: "flex-start",
+    alignItems: 'flex-start',
     minHeight: 120,
     paddingVertical: 14,
   },

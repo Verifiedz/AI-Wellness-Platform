@@ -1,5 +1,5 @@
-import React, { useEffect, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -7,11 +7,11 @@ import Animated, {
   withSequence,
   withTiming,
   Easing,
-} from "react-native-reanimated";
-import { useTheme } from "../../context/ThemeContext";
-import { useOnboarding } from "../../context/OnboardingContext";
-import { Logo } from "../../components/Logo";
-import { Button } from "../../components/Button";
+} from 'react-native-reanimated';
+import { useTheme } from '../../context/ThemeContext';
+import { useOnboarding } from '../../context/OnboardingContext';
+import { Logo } from '../../components/Logo';
+import { Button } from '../../components/Button';
 
 export function WelcomeScreen({ navigation }) {
   const { colors, fonts } = useTheme();
@@ -19,7 +19,7 @@ export function WelcomeScreen({ navigation }) {
   const pulse = useSharedValue(1);
 
   const handleSignIn = useCallback(async () => {
-    await completeOnboarding({}, "Login");
+    await completeOnboarding({}, 'Login');
   }, [completeOnboarding]);
 
   useEffect(() => {
@@ -47,36 +47,22 @@ export function WelcomeScreen({ navigation }) {
         <Text style={[fonts.heading1, styles.title, { color: colors.text }]}>
           Welcome to Sakina
         </Text>
-        <Text
-          style={[fonts.body, styles.subtitle, { color: colors.textSecondary }]}
-        >
+        <Text style={[fonts.body, styles.subtitle, { color: colors.textSecondary }]}>
           Your AI wellness companion
         </Text>
         <Text
-          style={[
-            fonts.body,
-            styles.tagline,
-            { color: colors.textLight, fontStyle: "italic" },
-          ]}
+          style={[fonts.body, styles.tagline, { color: colors.textLight, fontStyle: 'italic' }]}
         >
-          Take a deep breath.{"\n"}We'll figure this out together.
+          Take a deep breath.{'\n'}We'll figure this out together.
         </Text>
       </View>
 
       <View style={styles.footer}>
-        <Button
-          title="Get Started"
-          onPress={() => navigation.navigate("Goal")}
-        />
-        <TouchableOpacity
-          style={styles.signInLink}
-          onPress={handleSignIn}
-        >
+        <Button title="Get Started" onPress={() => navigation.navigate('Goal')} />
+        <TouchableOpacity style={styles.signInLink} onPress={handleSignIn}>
           <Text style={[fonts.body, { color: colors.textSecondary }]}>
-            Already have an account?{" "}
-            <Text style={{ color: colors.secondary, fontWeight: "600" }}>
-              Sign in
-            </Text>
+            Already have an account?{' '}
+            <Text style={{ color: colors.secondary, fontWeight: '600' }}>Sign in</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -93,25 +79,25 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     marginTop: 28,
-    textAlign: "center",
+    textAlign: 'center',
   },
   subtitle: {
     marginTop: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
   tagline: {
     marginTop: 20,
-    textAlign: "center",
+    textAlign: 'center',
     lineHeight: 24,
   },
   footer: {
     gap: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   signInLink: {
     paddingVertical: 8,

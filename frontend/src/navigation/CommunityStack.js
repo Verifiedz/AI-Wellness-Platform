@@ -1,9 +1,9 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { CommunityScreen } from "../screens/CommunityScreen";
-import { GroupFeedScreen } from "../screens/GroupFeedScreen";
-import { useTheme } from "../context/ThemeContext";
-import { CrisisButton } from "../components/CrisisButton";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { CommunityScreen } from '../screens/CommunityScreen';
+import { GroupFeedScreen } from '../screens/GroupFeedScreen';
+import { useTheme } from '../context/ThemeContext';
+import { CrisisButton } from '../components/CrisisButton';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,12 +24,12 @@ export function CommunityStack() {
       <Stack.Screen
         name="CommunityHome"
         component={CommunityScreen}
-        options={{ title: "Community" }}
+        options={{ title: 'Community' }}
       />
       <Stack.Screen
         name="GroupFeed"
         component={GroupFeedScreen}
-        options={({ route }) => ({ title: route.params?.name || "Group" })}
+        options={({ route }) => ({ title: route.params?.name || 'Group' })}
       />
     </Stack.Navigator>
   );

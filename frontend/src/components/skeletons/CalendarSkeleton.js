@@ -1,6 +1,6 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Skeleton } from "../Skeleton";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Skeleton } from '../Skeleton';
 
 /**
  * Skeleton placeholder matching the MoodCalendarScreen calendar grid:
@@ -34,19 +34,19 @@ export function CalendarSkeleton() {
 const styles = StyleSheet.create({
   container: { paddingVertical: 8 },
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 8,
   },
-  headerCell: { alignSelf: "center" },
+  headerCell: { alignSelf: 'center' },
   gridRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: 6,
   },
   dayCell: {
-    width: "14.28%",
-    alignItems: "center",
+    width: '14.28%',
+    alignItems: 'center',
     paddingVertical: 6,
     gap: 3,
   },

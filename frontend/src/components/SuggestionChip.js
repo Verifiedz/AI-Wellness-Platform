@@ -1,6 +1,6 @@
-import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 export function SuggestionChip({ label, onPress, style }) {
   const { colors, fonts } = useTheme();
@@ -18,9 +18,7 @@ export function SuggestionChip({ label, onPress, style }) {
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "500" }]}>
-        {label}
-      </Text>
+      <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '500' }]}>{label}</Text>
     </TouchableOpacity>
   );
 }

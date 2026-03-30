@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useTheme } from "../../context/ThemeContext";
-import { Button } from "../../components/Button";
-import { ProgressBar } from "../../components/ProgressBar";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTheme } from '../../context/ThemeContext';
+import { Button } from '../../components/Button';
+import { ProgressBar } from '../../components/ProgressBar';
 
 const OPTIONS = [
-  { id: "daily", label: "Every day", recommended: true },
-  { id: "few_weekly", label: "A few times a week", recommended: false },
-  { id: "weekly", label: "Weekly", recommended: false },
-  { id: "later", label: "I'll decide later", recommended: false },
+  { id: 'daily', label: 'Every day', recommended: true },
+  { id: 'few_weekly', label: 'A few times a week', recommended: false },
+  { id: 'weekly', label: 'Weekly', recommended: false },
+  { id: 'later', label: "I'll decide later", recommended: false },
 ];
 
 export function FrequencyScreen({ navigation, route }) {
@@ -16,9 +16,9 @@ export function FrequencyScreen({ navigation, route }) {
   const [selected, setSelected] = useState(null);
 
   const handleContinue = () => {
-    navigation.navigate("TimeOfDay", {
+    navigation.navigate('TimeOfDay', {
       ...route.params,
-      checkInFrequency: selected || "",
+      checkInFrequency: selected || '',
     });
   };
 
@@ -30,12 +30,7 @@ export function FrequencyScreen({ navigation, route }) {
         <Text style={[fonts.heading2, { color: colors.text }]}>
           How often would you like to check in?
         </Text>
-        <Text
-          style={[
-            fonts.body,
-            { color: colors.textSecondary, marginTop: 8, marginBottom: 28 },
-          ]}
-        >
+        <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 8, marginBottom: 28 }]}>
           We'll send gentle reminders at your pace
         </Text>
 
@@ -47,9 +42,7 @@ export function FrequencyScreen({ navigation, route }) {
               style={[
                 styles.optionCard,
                 {
-                  backgroundColor: isSelected
-                    ? `${colors.primary}10`
-                    : colors.surface,
+                  backgroundColor: isSelected ? `${colors.primary}10` : colors.surface,
                   borderColor: isSelected ? colors.primary : colors.border,
                 },
               ]}
@@ -58,12 +51,7 @@ export function FrequencyScreen({ navigation, route }) {
             >
               <View style={styles.radioOuter}>
                 {isSelected && (
-                  <View
-                    style={[
-                      styles.radioInner,
-                      { backgroundColor: colors.primary },
-                    ]}
-                  />
+                  <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
                 )}
               </View>
               <Text
@@ -72,22 +60,15 @@ export function FrequencyScreen({ navigation, route }) {
                   {
                     flex: 1,
                     color: isSelected ? colors.primary : colors.text,
-                    fontWeight: isSelected ? "600" : "400",
+                    fontWeight: isSelected ? '600' : '400',
                   },
                 ]}
               >
                 {opt.label}
               </Text>
               {opt.recommended && (
-                <View
-                  style={[
-                    styles.badge,
-                    { backgroundColor: `${colors.primary}20` },
-                  ]}
-                >
-                  <Text style={[fonts.caption, { color: colors.primary }]}>
-                    Recommended
-                  </Text>
+                <View style={[styles.badge, { backgroundColor: `${colors.primary}20` }]}>
+                  <Text style={[fonts.caption, { color: colors.primary }]}>Recommended</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -100,7 +81,7 @@ export function FrequencyScreen({ navigation, route }) {
           title="Continue"
           onPress={handleContinue}
           disabled={!selected}
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
         />
       </View>
     </View>
@@ -121,8 +102,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 18,
     borderRadius: 16,
     borderWidth: 1.5,
@@ -134,9 +115,9 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: "#C5C5C5",
-    alignItems: "center",
-    justifyContent: "center",
+    borderColor: '#C5C5C5',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   radioInner: {
     width: 12,
@@ -149,7 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   footer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingTop: 12,
   },
 });

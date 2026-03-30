@@ -1,22 +1,16 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
-import { Button } from "../../components/Button";
-import { ProgressBar } from "../../components/ProgressBar";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
+import { Button } from '../../components/Button';
+import { ProgressBar } from '../../components/ProgressBar';
 
 const GOALS = [
-  { id: "stress", label: "Reduce stress & anxiety", icon: "leaf-outline" },
-  { id: "sleep", label: "Sleep better", icon: "moon-outline" },
-  { id: "focus", label: "Improve focus", icon: "bulb-outline" },
-  { id: "journal", label: "Track my mood & journal", icon: "journal-outline" },
-  { id: "talk", label: "Talk to someone (AI)", icon: "chatbubbles-outline" },
+  { id: 'stress', label: 'Reduce stress & anxiety', icon: 'leaf-outline' },
+  { id: 'sleep', label: 'Sleep better', icon: 'moon-outline' },
+  { id: 'focus', label: 'Improve focus', icon: 'bulb-outline' },
+  { id: 'journal', label: 'Track my mood & journal', icon: 'journal-outline' },
+  { id: 'talk', label: 'Talk to someone (AI)', icon: 'chatbubbles-outline' },
 ];
 
 export function GoalScreen({ navigation, route }) {
@@ -24,24 +18,22 @@ export function GoalScreen({ navigation, route }) {
   const [selected, setSelected] = useState([]);
 
   const toggle = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
-    );
+    setSelected((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]));
   };
 
   const handleContinue = () => {
-    navigation.navigate("Frequency", {
+    navigation.navigate('Frequency', {
       ...route.params,
       goals: selected,
     });
   };
 
   const handleSkip = () => {
-    navigation.navigate("FirstValue", {
+    navigation.navigate('FirstValue', {
       ...route.params,
       goals: [],
-      checkInFrequency: "",
-      preferredTime: "",
+      checkInFrequency: '',
+      preferredTime: '',
     });
   };
 
@@ -54,15 +46,8 @@ export function GoalScreen({ navigation, route }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[fonts.heading2, { color: colors.text }]}>
-          What brings you here?
-        </Text>
-        <Text
-          style={[
-            fonts.body,
-            { color: colors.textSecondary, marginTop: 8, marginBottom: 24 },
-          ]}
-        >
+        <Text style={[fonts.heading2, { color: colors.text }]}>What brings you here?</Text>
+        <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 8, marginBottom: 24 }]}>
           Select all that apply
         </Text>
 
@@ -74,9 +59,7 @@ export function GoalScreen({ navigation, route }) {
               style={[
                 styles.goalCard,
                 {
-                  backgroundColor: isSelected
-                    ? `${colors.primary}10`
-                    : colors.surface,
+                  backgroundColor: isSelected ? `${colors.primary}10` : colors.surface,
                   borderColor: isSelected ? colors.primary : colors.border,
                 },
               ]}
@@ -87,9 +70,7 @@ export function GoalScreen({ navigation, route }) {
                 style={[
                   styles.iconWrap,
                   {
-                    backgroundColor: isSelected
-                      ? `${colors.primary}20`
-                      : `${colors.textLight}15`,
+                    backgroundColor: isSelected ? `${colors.primary}20` : `${colors.textLight}15`,
                   },
                 ]}
               >
@@ -105,19 +86,13 @@ export function GoalScreen({ navigation, route }) {
                   {
                     flex: 1,
                     color: isSelected ? colors.primary : colors.text,
-                    fontWeight: isSelected ? "600" : "400",
+                    fontWeight: isSelected ? '600' : '400',
                   },
                 ]}
               >
                 {goal.label}
               </Text>
-              {isSelected && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={22}
-                  color={colors.primary}
-                />
-              )}
+              {isSelected && <Ionicons name="checkmark-circle" size={22} color={colors.primary} />}
             </TouchableOpacity>
           );
         })}
@@ -128,12 +103,10 @@ export function GoalScreen({ navigation, route }) {
           title="Continue"
           onPress={handleContinue}
           disabled={selected.length === 0}
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
         />
         <TouchableOpacity onPress={handleSkip} style={styles.skipBtn}>
-          <Text style={[fonts.body, { color: colors.textSecondary }]}>
-            Skip
-          </Text>
+          <Text style={[fonts.body, { color: colors.textSecondary }]}>Skip</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -157,8 +130,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   goalCard: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
     borderRadius: 16,
     borderWidth: 1.5,
@@ -169,11 +142,11 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   footer: {
-    alignItems: "center",
+    alignItems: 'center',
     gap: 12,
     paddingTop: 12,
   },

@@ -1,15 +1,11 @@
-import React from "react";
-import { View } from "react-native";
-import Markdown from "react-native-markdown-display";
-import {
-  MOOD_CHECK_MARKER,
-  MARKER_REGEX,
-  getExerciseType,
-} from "../../constants/exerciseMarkers";
-import { getEscalationType } from "../../constants/escalationMarkers";
-import { MoodQuickReply } from "./MoodQuickReply";
-import { ExerciseCard } from "./ExerciseCard";
-import { EscalationCard } from "./EscalationCard";
+import React from 'react';
+import { View } from 'react-native';
+import Markdown from 'react-native-markdown-display';
+import { MOOD_CHECK_MARKER, MARKER_REGEX, getExerciseType } from '../../constants/exerciseMarkers';
+import { getEscalationType } from '../../constants/escalationMarkers';
+import { MoodQuickReply } from './MoodQuickReply';
+import { ExerciseCard } from './ExerciseCard';
+import { EscalationCard } from './EscalationCard';
 
 /**
  * Parses an assistant message into segments of plain text and interactive

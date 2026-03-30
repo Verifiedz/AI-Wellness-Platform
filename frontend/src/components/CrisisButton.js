@@ -1,7 +1,7 @@
-import React from "react";
-import { StyleSheet, Pressable, View, DeviceEventEmitter } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
+import React from 'react';
+import { StyleSheet, Pressable, View, DeviceEventEmitter } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 export function CrisisButton() {
   const { colors } = useTheme();
@@ -9,7 +9,7 @@ export function CrisisButton() {
   return (
     <Pressable
       style={styles.btn}
-      onPress={() => DeviceEventEmitter.emit("crisis:open")}
+      onPress={() => DeviceEventEmitter.emit('crisis:open')}
       hitSlop={8}
     >
       <View
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

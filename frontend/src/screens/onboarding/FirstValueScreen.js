@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { useTheme } from "../../context/ThemeContext";
-import { useOnboarding } from "../../context/OnboardingContext";
-import { BreathingCircle } from "../../components/BreathingCircle";
-import { Button } from "../../components/Button";
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { useTheme } from '../../context/ThemeContext';
+import { useOnboarding } from '../../context/OnboardingContext';
+import { BreathingCircle } from '../../components/BreathingCircle';
+import { Button } from '../../components/Button';
 
 export function FirstValueScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
@@ -12,8 +12,8 @@ export function FirstValueScreen({ navigation, route }) {
   const [cycleFinished, setCycleFinished] = useState(false);
 
   const goals = route.params?.goals ?? [];
-  const checkInFrequency = route.params?.checkInFrequency ?? "";
-  const preferredTime = route.params?.preferredTime ?? "";
+  const checkInFrequency = route.params?.checkInFrequency ?? '';
+  const preferredTime = route.params?.preferredTime ?? '';
 
   const handleCycleComplete = useCallback(() => {
     setCycleFinished(true);
@@ -21,10 +21,7 @@ export function FirstValueScreen({ navigation, route }) {
 
   const finish = useCallback(
     async (targetAuthRoute) => {
-      await completeOnboarding(
-        { goals, checkInFrequency, preferredTime },
-        targetAuthRoute
-      );
+      await completeOnboarding({ goals, checkInFrequency, preferredTime }, targetAuthRoute);
     },
     [completeOnboarding, goals, checkInFrequency, preferredTime]
   );
@@ -37,7 +34,7 @@ export function FirstValueScreen({ navigation, route }) {
             <Text
               style={[
                 fonts.body,
-                { color: colors.textSecondary, marginBottom: 40, textAlign: "center" },
+                { color: colors.textSecondary, marginBottom: 40, textAlign: 'center' },
               ]}
             >
               Let's start with a moment of calm
@@ -46,9 +43,7 @@ export function FirstValueScreen({ navigation, route }) {
           </>
         ) : (
           <Animated.View entering={FadeIn.duration(600)} style={styles.doneWrap}>
-            <Text
-              style={[fonts.heading1, { color: colors.text, textAlign: "center" }]}
-            >
+            <Text style={[fonts.heading1, { color: colors.text, textAlign: 'center' }]}>
               You're ready.
             </Text>
             <Text
@@ -56,13 +51,13 @@ export function FirstValueScreen({ navigation, route }) {
                 fonts.body,
                 {
                   color: colors.textSecondary,
-                  textAlign: "center",
+                  textAlign: 'center',
                   marginTop: 12,
                   lineHeight: 22,
                 },
               ]}
             >
-              That felt good, didn't it?{"\n"}Let's set up your account.
+              That felt good, didn't it?{'\n'}Let's set up your account.
             </Text>
           </Animated.View>
         )}
@@ -72,13 +67,10 @@ export function FirstValueScreen({ navigation, route }) {
         <Animated.View entering={FadeIn.delay(300).duration(400)} style={styles.footer}>
           <Button
             title="Create Account"
-            onPress={() => finish("Register")}
-            style={{ width: "100%" }}
+            onPress={() => finish('Register')}
+            style={{ width: '100%' }}
           />
-          <TouchableOpacity
-            onPress={() => finish("Login")}
-            style={styles.signInLink}
-          >
+          <TouchableOpacity onPress={() => finish('Login')} style={styles.signInLink}>
             <Text style={[fonts.body, { color: colors.textSecondary }]}>
               I already have an account
             </Text>
@@ -98,14 +90,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   doneWrap: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   footer: {
-    alignItems: "center",
+    alignItems: 'center',
     gap: 16,
   },
   signInLink: {

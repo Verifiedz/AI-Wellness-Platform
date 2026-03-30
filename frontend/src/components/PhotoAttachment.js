@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,13 @@ import {
   StyleSheet,
   Platform,
   Linking,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 let ImagePicker = null;
 try {
-  ImagePicker = require("expo-image-picker");
+  ImagePicker = require('expo-image-picker');
 } catch {
   // expo-image-picker not available — component will be hidden
 }
@@ -40,25 +40,25 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
 
   const requestPermission = useCallback(async (type) => {
     const requester =
-      type === "camera"
+      type === 'camera'
         ? ImagePicker.requestCameraPermissionsAsync
         : ImagePicker.requestMediaLibraryPermissionsAsync;
 
     const { status } = await requester();
-    if (status !== "granted") {
+    if (status !== 'granted') {
       Alert.alert(
-        "Permission Required",
-        `Sakina needs ${type === "camera" ? "camera" : "photo library"} access to attach photos. Please enable it in Settings.`,
+        'Permission Required',
+        `Sakina needs ${type === 'camera' ? 'camera' : 'photo library'} access to attach photos. Please enable it in Settings.`,
         [
-          { text: "Cancel", style: "cancel" },
+          { text: 'Cancel', style: 'cancel' },
           {
-            text: "Open Settings",
+            text: 'Open Settings',
             onPress: () => {
-              if (Platform.OS === "ios") Linking.openURL("app-settings:");
+              if (Platform.OS === 'ios') Linking.openURL('app-settings:');
               else Linking.openSettings();
             },
           },
-        ],
+        ]
       );
       return false;
     }
@@ -66,11 +66,11 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
   }, []);
 
   const pickFromCamera = useCallback(async () => {
-    const granted = await requestPermission("camera");
+    const granted = await requestPermission('camera');
     if (!granted) return;
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ['images'],
       quality: 0.7,
       allowsEditing: false,
     });
@@ -81,11 +81,11 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
   }, [photos, onPhotosChange, requestPermission]);
 
   const pickFromLibrary = useCallback(async () => {
-    const granted = await requestPermission("library");
+    const granted = await requestPermission('library');
     if (!granted) return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ['images'],
       quality: 0.7,
       allowsEditing: false,
       allowsMultipleSelection: true,
@@ -100,14 +100,14 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
 
   const handleAddPhoto = useCallback(() => {
     if (photos.length >= maxPhotos) {
-      Alert.alert("Limit Reached", `You can attach up to ${maxPhotos} photos per entry.`);
+      Alert.alert('Limit Reached', `You can attach up to ${maxPhotos} photos per entry.`);
       return;
     }
 
-    Alert.alert("Add Photo", "Choose a source", [
-      { text: "Take Photo", onPress: pickFromCamera },
-      { text: "Choose from Library", onPress: pickFromLibrary },
-      { text: "Cancel", style: "cancel" },
+    Alert.alert('Add Photo', 'Choose a source', [
+      { text: 'Take Photo', onPress: pickFromCamera },
+      { text: 'Choose from Library', onPress: pickFromLibrary },
+      { text: 'Cancel', style: 'cancel' },
     ]);
   }, [photos.length, maxPhotos, pickFromCamera, pickFromLibrary]);
 
@@ -116,26 +116,33 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
       const next = photos.filter((_, i) => i !== index);
       onPhotosChange(next);
     },
-    [photos, onPhotosChange],
+    [photos, onPhotosChange]
   );
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <TouchableOpacity
-          style={[styles.addBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
+          style={[
+            styles.addBtn,
+            { borderColor: colors.border, backgroundColor: colors.background },
+          ]}
           onPress={handleAddPhoto}
           disabled={disabled}
           activeOpacity={0.7}
         >
-          <Ionicons name="camera-outline" size={20} color={disabled ? colors.textLight : colors.primary} />
+          <Ionicons
+            name="camera-outline"
+            size={20}
+            color={disabled ? colors.textLight : colors.primary}
+          />
           <Text
             style={[
               fonts.bodySmall,
-              { color: disabled ? colors.textLight : colors.primary, fontWeight: "500" },
+              { color: disabled ? colors.textLight : colors.primary, fontWeight: '500' },
             ]}
           >
-            Add Photo{photos.length > 0 ? ` (${photos.length}/${maxPhotos})` : ""}
+            Add Photo{photos.length > 0 ? ` (${photos.length}/${maxPhotos})` : ''}
           </Text>
         </TouchableOpacity>
       </View>
@@ -169,12 +176,12 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
 const styles = StyleSheet.create({
   container: { marginTop: 8 },
   headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   addBtn: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -182,7 +189,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   thumbRow: { gap: 10, marginTop: 10, paddingRight: 4 },
-  thumbWrapper: { position: "relative" },
+  thumbWrapper: { position: 'relative' },
   thumb: {
     width: 80,
     height: 80,
@@ -190,13 +197,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   removeBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: -6,
     right: -6,
     width: 22,
     height: 22,
     borderRadius: 11,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

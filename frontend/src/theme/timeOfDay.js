@@ -7,9 +7,9 @@
  */
 
 export const TIME_PERIODS = {
-  MORNING: "morning",
-  AFTERNOON: "afternoon",
-  EVENING: "evening",
+  MORNING: 'morning',
+  AFTERNOON: 'afternoon',
+  EVENING: 'evening',
 };
 
 /**
@@ -31,14 +31,14 @@ export function getTimePeriod(date = new Date()) {
 export const TIME_OF_DAY_OVERRIDES = {
   [TIME_PERIODS.MORNING]: {
     light: {
-      background: "#FFF8F0",
-      accent: "#D4956A",
-      secondary: "#D4956A",
+      background: '#FFF8F0',
+      accent: '#D4956A',
+      secondary: '#D4956A',
     },
     dark: {
-      background: "#1D1A18",
-      accent: "#D4A87A",
-      secondary: "#D4A87A",
+      background: '#1D1A18',
+      accent: '#D4A87A',
+      secondary: '#D4A87A',
     },
   },
   [TIME_PERIODS.AFTERNOON]: {
@@ -47,14 +47,14 @@ export const TIME_OF_DAY_OVERRIDES = {
   },
   [TIME_PERIODS.EVENING]: {
     light: {
-      background: "#F5F5FA",
-      accent: "#7C7CB2",
-      secondary: "#9B8EC4",
+      background: '#F5F5FA',
+      accent: '#7C7CB2',
+      secondary: '#9B8EC4',
     },
     dark: {
-      background: "#18191F",
-      accent: "#8B8BC8",
-      secondary: "#A89DD4",
+      background: '#18191F',
+      accent: '#8B8BC8',
+      secondary: '#A89DD4',
     },
   },
 };
@@ -67,12 +67,12 @@ export const TIME_OF_DAY_OVERRIDES = {
 export function getTimePeriodIcon(period) {
   switch (period) {
     case TIME_PERIODS.MORNING:
-      return "sunny-outline";
+      return 'sunny-outline';
     case TIME_PERIODS.AFTERNOON:
-      return "partly-sunny-outline";
+      return 'partly-sunny-outline';
     case TIME_PERIODS.EVENING:
-      return "moon-outline";
+      return 'moon-outline';
     default:
-      return "partly-sunny-outline";
+      return 'partly-sunny-outline';
   }
 }

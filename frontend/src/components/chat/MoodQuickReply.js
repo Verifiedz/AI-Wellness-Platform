@@ -1,8 +1,8 @@
-import React from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
-import { MOODS } from "../../constants/journal";
+import React from 'react';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
+import { MOODS } from '../../constants/journal';
 
 export function MoodQuickReply({ onMoodSelect, selectedMood, disabled }) {
   const { colors, fonts } = useTheme();
@@ -42,7 +42,7 @@ export function MoodQuickReply({ onMoodSelect, selectedMood, disabled }) {
                   fonts.caption,
                   {
                     color: isSelected ? mood.color : colors.textSecondary,
-                    fontWeight: isSelected ? "600" : "400",
+                    fontWeight: isSelected ? '600' : '400',
                     marginTop: 2,
                   },
                 ]}
@@ -62,12 +62,12 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 6,
   },
   moodBtn: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 4,
     borderRadius: 12,

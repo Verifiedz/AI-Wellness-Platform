@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { Platform } from "react-native";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Platform } from 'react-native';
 
 let ExpoSpeechRecognitionModule = null;
 let useSpeechRecognitionEvent = null;
 
 try {
-  const mod = require("expo-speech-recognition");
+  const mod = require('expo-speech-recognition');
   ExpoSpeechRecognitionModule = mod.ExpoSpeechRecognitionModule;
   useSpeechRecognitionEvent = mod.useSpeechRecognitionEvent;
 } catch {
@@ -22,33 +22,33 @@ try {
  */
 export function useVoiceInput() {
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  const [transcript, setTranscript] = useState('');
   const [error, setError] = useState(null);
-  const isAvailable = ExpoSpeechRecognitionModule != null && Platform.OS !== "web";
-  const transcriptRef = useRef("");
+  const isAvailable = ExpoSpeechRecognitionModule != null && Platform.OS !== 'web';
+  const transcriptRef = useRef('');
 
   // Register event listeners when the module is available
   if (useSpeechRecognitionEvent) {
-    useSpeechRecognitionEvent("start", () => {
+    useSpeechRecognitionEvent('start', () => {
       setIsListening(true);
       setError(null);
     });
 
-    useSpeechRecognitionEvent("end", () => {
+    useSpeechRecognitionEvent('end', () => {
       setIsListening(false);
     });
 
-    useSpeechRecognitionEvent("result", (event) => {
-      const text = event.results?.[0]?.transcript ?? "";
+    useSpeechRecognitionEvent('result', (event) => {
+      const text = event.results?.[0]?.transcript ?? '';
       transcriptRef.current = text;
       setTranscript(text);
     });
 
-    useSpeechRecognitionEvent("error", (event) => {
+    useSpeechRecognitionEvent('error', (event) => {
       setIsListening(false);
       // "no-speech" is not a real error, just means user didn't say anything
-      if (event.error !== "no-speech") {
-        setError(event.message || "Speech recognition failed");
+      if (event.error !== 'no-speech') {
+        setError(event.message || 'Speech recognition failed');
       }
     });
   }
@@ -57,17 +57,17 @@ export function useVoiceInput() {
     if (!ExpoSpeechRecognitionModule) return;
 
     setError(null);
-    setTranscript("");
-    transcriptRef.current = "";
+    setTranscript('');
+    transcriptRef.current = '';
 
     const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!result.granted) {
-      setError("Microphone permission denied");
+      setError('Microphone permission denied');
       return;
     }
 
     ExpoSpeechRecognitionModule.start({
-      lang: "en-US",
+      lang: 'en-US',
       interimResults: true,
       continuous: false,
     });
@@ -79,8 +79,8 @@ export function useVoiceInput() {
   }, []);
 
   const resetTranscript = useCallback(() => {
-    setTranscript("");
-    transcriptRef.current = "";
+    setTranscript('');
+    transcriptRef.current = '';
   }, []);
 
   return {

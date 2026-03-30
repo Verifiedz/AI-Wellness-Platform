@@ -1,6 +1,6 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/api/journal/assessments";
+const BASE_PATH = '/api/journal/assessments';
 
 /**
  * Assessment REST API service.
@@ -26,9 +26,9 @@ export const assessmentApi = {
    */
   getHistory(params = {}) {
     const query = new URLSearchParams();
-    if (params.type) query.set("type", params.type);
-    if (params.limit) query.set("limit", String(params.limit));
-    if (params.offset) query.set("offset", String(params.offset));
+    if (params.type) query.set('type', params.type);
+    if (params.limit) query.set('limit', String(params.limit));
+    if (params.offset) query.set('offset', String(params.offset));
 
     const qs = query.toString();
     const path = qs ? `${BASE_PATH}?${qs}` : BASE_PATH;
@@ -39,7 +39,7 @@ export const assessmentApi = {
    * Get the most recent assessment of a given type.
    * @param {string} type - "PHQ9" or "GAD7"
    */
-  getLatest(type = "PHQ9") {
+  getLatest(type = 'PHQ9') {
     return apiClient.get(`${BASE_PATH}/latest?type=${type}`);
   },
 
@@ -47,7 +47,7 @@ export const assessmentApi = {
    * Get first vs. latest comparison for a given type.
    * @param {string} type - "PHQ9" or "GAD7"
    */
-  getComparison(type = "PHQ9") {
+  getComparison(type = 'PHQ9') {
     return apiClient.get(`${BASE_PATH}/comparison?type=${type}`);
   },
 };

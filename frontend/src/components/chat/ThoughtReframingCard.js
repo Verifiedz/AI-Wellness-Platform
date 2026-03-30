@@ -1,31 +1,31 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
 
 const DISTORTIONS = [
-  "All-or-Nothing",
-  "Catastrophizing",
-  "Mind Reading",
-  "Fortune Telling",
-  "Emotional Reasoning",
-  "Should Statements",
-  "Labeling",
-  "Overgeneralizing",
+  'All-or-Nothing',
+  'Catastrophizing',
+  'Mind Reading',
+  'Fortune Telling',
+  'Emotional Reasoning',
+  'Should Statements',
+  'Labeling',
+  'Overgeneralizing',
 ];
 
 const STEP_LABELS = [
   "What's the automatic thought?",
-  "What distortion might this be?",
+  'What distortion might this be?',
   "What's a more balanced thought?",
 ];
 
 export function ThoughtReframingCard({ onComplete }) {
   const { colors, fonts } = useTheme();
   const [step, setStep] = useState(0);
-  const [automaticThought, setAutomaticThought] = useState("");
+  const [automaticThought, setAutomaticThought] = useState('');
   const [selectedDistortion, setSelectedDistortion] = useState(null);
-  const [balancedThought, setBalancedThought] = useState("");
+  const [balancedThought, setBalancedThought] = useState('');
   const [isComplete, setIsComplete] = useState(false);
 
   const canAdvance = () => {
@@ -48,7 +48,7 @@ export function ThoughtReframingCard({ onComplete }) {
     return (
       <View style={styles.completeWrap}>
         <Ionicons name="checkmark-circle" size={32} color={colors.success} />
-        <Text style={[fonts.body, { color: colors.text, fontWeight: "600", marginTop: 8 }]}>
+        <Text style={[fonts.body, { color: colors.text, fontWeight: '600', marginTop: 8 }]}>
           Thought reframed
         </Text>
 
@@ -60,7 +60,7 @@ export function ThoughtReframingCard({ onComplete }) {
           <View style={[styles.summaryDivider, { backgroundColor: colors.border }]} />
           <View style={styles.summaryRow}>
             <Text style={[fonts.caption, { color: colors.textSecondary }]}>Distortion:</Text>
-            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: "600" }]}>
+            <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '600' }]}>
               {selectedDistortion}
             </Text>
           </View>
@@ -78,12 +78,10 @@ export function ThoughtReframingCard({ onComplete }) {
     <View>
       {/* Header */}
       <View style={styles.headerRow}>
-        <Text style={[fonts.body, { color: colors.text, fontWeight: "600" }]}>
+        <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
           Thought Reframing
         </Text>
-        <Text style={[fonts.caption, { color: colors.textSecondary }]}>
-          Step {step + 1} of 3
-        </Text>
+        <Text style={[fonts.caption, { color: colors.textSecondary }]}>Step {step + 1} of 3</Text>
       </View>
 
       {/* Progress dots */}
@@ -91,10 +89,7 @@ export function ThoughtReframingCard({ onComplete }) {
         {[0, 1, 2].map((i) => (
           <View
             key={i}
-            style={[
-              styles.dot,
-              { backgroundColor: i <= step ? colors.primary : colors.border },
-            ]}
+            style={[styles.dot, { backgroundColor: i <= step ? colors.primary : colors.border }]}
           />
         ))}
       </View>
@@ -147,7 +142,7 @@ export function ThoughtReframingCard({ onComplete }) {
                     fonts.caption,
                     {
                       color: isSelected ? colors.primary : colors.textSecondary,
-                      fontWeight: isSelected ? "600" : "400",
+                      fontWeight: isSelected ? '600' : '400',
                     },
                   ]}
                 >
@@ -186,7 +181,9 @@ export function ThoughtReframingCard({ onComplete }) {
             style={[styles.backBtn, { borderColor: colors.border }]}
             onPress={() => setStep((prev) => prev - 1)}
           >
-            <Text style={[fonts.caption, { color: colors.textSecondary, fontWeight: "600" }]}>Back</Text>
+            <Text style={[fonts.caption, { color: colors.textSecondary, fontWeight: '600' }]}>
+              Back
+            </Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
@@ -201,9 +198,7 @@ export function ThoughtReframingCard({ onComplete }) {
           disabled={!canAdvance()}
           activeOpacity={0.8}
         >
-          <Text style={[fonts.button, { color: "#fff" }]}>
-            {step < 2 ? "Next" : "Finish"}
-          </Text>
+          <Text style={[fonts.button, { color: '#fff' }]}>{step < 2 ? 'Next' : 'Finish'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -212,13 +207,13 @@ export function ThoughtReframingCard({ onComplete }) {
 
 const styles = StyleSheet.create({
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 10,
   },
   dotsRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 6,
     marginBottom: 14,
   },
@@ -234,11 +229,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   chipWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   chip: {
@@ -248,12 +243,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   navRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 12,
   },
   backBtn: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 14,
@@ -261,16 +256,16 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 12,
     borderRadius: 14,
   },
   completeWrap: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 12,
   },
   summaryCard: {
-    width: "100%",
+    width: '100%',
     borderRadius: 12,
     padding: 14,
     marginTop: 12,

@@ -1,7 +1,7 @@
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import Constants from "expo-constants";
-import { Platform } from "react-native";
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 /**
  * Configure how notifications are presented when the app is in the foreground.
@@ -31,34 +31,31 @@ export async function registerForPushNotificationsAsync() {
   }
 
   // Check / request permissions
-  const { status: existingStatus } =
-    await Notifications.getPermissionsAsync();
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
-  if (existingStatus !== "granted") {
+  if (existingStatus !== 'granted') {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
 
-  if (finalStatus !== "granted") {
+  if (finalStatus !== 'granted') {
     return null;
   }
 
   // Android: create a high-importance channel for daily tips
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("daily-tips", {
-      name: "Daily Wellness Tips",
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('daily-tips', {
+      name: 'Daily Wellness Tips',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#4A90D9",
+      lightColor: '#4A90D9',
     });
   }
 
   try {
     // Get the Expo project ID (set by `npx eas init`)
-    const projectId =
-      Constants.expoConfig?.extra?.eas?.projectId ??
-      Constants.easConfig?.projectId;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
 
     if (!projectId) {
       return null;

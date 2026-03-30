@@ -1,7 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Skeleton } from "../Skeleton";
-import { Card } from "../Card";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Skeleton } from '../Skeleton';
+import { Card } from '../Card';
 
 /**
  * Skeleton placeholder matching the JournalScreen layout:
@@ -46,7 +46,7 @@ export function JournalSkeleton() {
       <Card style={styles.card}>
         <Skeleton width={110} height={14} />
         <Skeleton width="100%" height={120} borderRadius={12} style={styles.mt10} />
-        <Skeleton width={90} height={10} style={[styles.mt6, { alignSelf: "flex-end" }]} />
+        <Skeleton width={90} height={10} style={[styles.mt6, { alignSelf: 'flex-end' }]} />
       </Card>
     </View>
   );
@@ -56,19 +56,19 @@ const styles = StyleSheet.create({
   container: { gap: 16 },
   card: { marginBottom: 0 },
   moodRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     gap: 8,
     marginTop: 16,
   },
   energyRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
     marginTop: 14,
   },
   chipRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginTop: 14,
   },

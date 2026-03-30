@@ -1,16 +1,32 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Linking } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
-import { Card } from "../components/Card";
-import { Button } from "../components/Button";
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 
 const DATA_ITEMS = [
-  { icon: "journal-outline", title: "Journal Entries", desc: "Your mood logs, emotions, energy levels, and journal text." },
-  { icon: "chatbubbles-outline", title: "Chat Conversations", desc: "Messages exchanged with the AI wellness assistant." },
-  { icon: "notifications-outline", title: "Notification Preferences", desc: "Your preferred delivery time and opt-in status." },
-  { icon: "person-outline", title: "Account Information", desc: "Username, email address, and hashed password." },
+  {
+    icon: 'journal-outline',
+    title: 'Journal Entries',
+    desc: 'Your mood logs, emotions, energy levels, and journal text.',
+  },
+  {
+    icon: 'chatbubbles-outline',
+    title: 'Chat Conversations',
+    desc: 'Messages exchanged with the AI wellness assistant.',
+  },
+  {
+    icon: 'notifications-outline',
+    title: 'Notification Preferences',
+    desc: 'Your preferred delivery time and opt-in status.',
+  },
+  {
+    icon: 'person-outline',
+    title: 'Account Information',
+    desc: 'Username, email address, and hashed password.',
+  },
 ];
 
 export function PrivacySettingsScreen() {
@@ -19,17 +35,24 @@ export function PrivacySettingsScreen() {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      "Delete Account",
-      "This action is permanent and cannot be undone. All your data will be deleted.\n\nTo proceed, please contact support.",
+      'Delete Account',
+      'This action is permanent and cannot be undone. All your data will be deleted.\n\nTo proceed, please contact support.',
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Contact Support", onPress: () => Linking.openURL("mailto:support@sakina.app?subject=Account%20Deletion%20Request") },
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Contact Support',
+          onPress: () =>
+            Linking.openURL('mailto:support@sakina.app?subject=Account%20Deletion%20Request'),
+        },
       ]
     );
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       <Card style={{ marginBottom: 16 }}>
         <View style={styles.cardHeader}>
           <Ionicons name="server-outline" size={22} color={colors.primary} />
@@ -50,11 +73,24 @@ export function PrivacySettingsScreen() {
               <View style={[styles.iconBox, { backgroundColor: `${colors.primary}15` }]}>
                 <Ionicons name={item.icon} size={20} color={colors.primary} />
               </View>
-              <Text style={[fonts.body, { color: colors.text, fontWeight: "600", flex: 1 }]}>{item.title}</Text>
-              <Ionicons name={expanded === idx ? "chevron-up" : "chevron-down"} size={18} color={colors.textSecondary} />
+              <Text style={[fonts.body, { color: colors.text, fontWeight: '600', flex: 1 }]}>
+                {item.title}
+              </Text>
+              <Ionicons
+                name={expanded === idx ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={colors.textSecondary}
+              />
             </View>
             {expanded === idx && (
-              <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 8, marginLeft: 46, lineHeight: 19 }]}>{item.desc}</Text>
+              <Text
+                style={[
+                  fonts.bodySmall,
+                  { color: colors.textSecondary, marginTop: 8, marginLeft: 46, lineHeight: 19 },
+                ]}
+              >
+                {item.desc}
+              </Text>
             )}
           </TouchableOpacity>
         ))}
@@ -66,10 +102,12 @@ export function PrivacySettingsScreen() {
           <Text style={[fonts.heading3, { color: colors.text }]}>Privacy Policy</Text>
         </View>
         <Text style={[fonts.body, { color: colors.text, lineHeight: 22, marginBottom: 12 }]}>
-          Your privacy is important to us. We do not sell or share your personal data with third parties. All data is encrypted in transit and at rest.
+          Your privacy is important to us. We do not sell or share your personal data with third
+          parties. All data is encrypted in transit and at rest.
         </Text>
         <Text style={[fonts.body, { color: colors.text, lineHeight: 22 }]}>
-          AI chat conversations are processed to provide wellness support and are not used to train machine learning models. You can delete your data at any time.
+          AI chat conversations are processed to provide wellness support and are not used to train
+          machine learning models. You can delete your data at any time.
         </Text>
       </Card>
 
@@ -97,8 +135,14 @@ export function PrivacySettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   dataRow: { paddingVertical: 12, borderBottomWidth: 1 },
-  dataRowHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBox: { width: 36, height: 36, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  dataRowHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

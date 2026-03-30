@@ -1,20 +1,12 @@
-import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Switch,
-  Alert,
-  Linking,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { Card } from "../components/Card";
-import { Button } from "../components/Button";
-import { Banner } from "../components/Banner";
-import { useWearableData } from "../hooks/useWearableData";
-import { isWearableAvailable, requestPermissions } from "../services/wearableService";
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Switch, Alert, Linking } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { Card } from '../components/Card';
+import { Button } from '../components/Button';
+import { Banner } from '../components/Banner';
+import { useWearableData } from '../hooks/useWearableData';
+import { isWearableAvailable, requestPermissions } from '../services/wearableService';
 
 /**
  * Wearable device settings screen (Coming Soon).
@@ -26,32 +18,35 @@ export function WearableSettingsScreen() {
   const { isAvailable, isEnabled, setEnabled, data } = useWearableData();
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const handleToggle = useCallback(async (enabled) => {
-    if (enabled) {
-      setIsConnecting(true);
-      try {
-        const granted = await requestPermissions();
-        if (!granted) {
-          Alert.alert(
-            "Permission Required",
-            "Please grant health data access in your device settings.",
-            [
-              { text: "Cancel", style: "cancel" },
-              { text: "Open Settings", onPress: () => Linking.openSettings() },
-            ]
-          );
-          return;
+  const handleToggle = useCallback(
+    async (enabled) => {
+      if (enabled) {
+        setIsConnecting(true);
+        try {
+          const granted = await requestPermissions();
+          if (!granted) {
+            Alert.alert(
+              'Permission Required',
+              'Please grant health data access in your device settings.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Open Settings', onPress: () => Linking.openSettings() },
+              ]
+            );
+            return;
+          }
+          await setEnabled(true);
+        } catch {
+          Alert.alert('Error', 'Failed to connect to health data.');
+        } finally {
+          setIsConnecting(false);
         }
-        await setEnabled(true);
-      } catch {
-        Alert.alert("Error", "Failed to connect to health data.");
-      } finally {
-        setIsConnecting(false);
+      } else {
+        await setEnabled(false);
       }
-    } else {
-      await setEnabled(false);
-    }
-  }, [setEnabled]);
+    },
+    [setEnabled]
+  );
 
   return (
     <ScrollView
@@ -78,7 +73,7 @@ export function WearableSettingsScreen() {
           <View style={{ flex: 1 }}>
             <Text style={[fonts.body, { color: colors.text }]}>Health Data</Text>
             <Text style={[fonts.caption, { color: colors.textSecondary }]}>
-              {isEnabled ? "Connected" : "Not connected"}
+              {isEnabled ? 'Connected' : 'Not connected'}
             </Text>
           </View>
           <Switch
@@ -86,7 +81,7 @@ export function WearableSettingsScreen() {
             onValueChange={handleToggle}
             disabled={!isAvailable || isConnecting}
             trackColor={{ false: colors.border, true: colors.primaryLight }}
-            thumbColor={isEnabled ? colors.primary : "#f4f3f4"}
+            thumbColor={isEnabled ? colors.primary : '#f4f3f4'}
             ios_backgroundColor={colors.border}
           />
         </View>
@@ -98,9 +93,21 @@ export function WearableSettingsScreen() {
             Data Sources
           </Text>
           {[
-            { icon: "footsteps-outline", label: "Steps", value: data.steps?.toLocaleString() || "No data" },
-            { icon: "heart-outline", label: "Heart Rate", value: data.heartRate ? `${data.heartRate} bpm` : "No data" },
-            { icon: "moon-outline", label: "Sleep", value: data.sleepHours ? `${data.sleepHours}h` : "No data" },
+            {
+              icon: 'footsteps-outline',
+              label: 'Steps',
+              value: data.steps?.toLocaleString() || 'No data',
+            },
+            {
+              icon: 'heart-outline',
+              label: 'Heart Rate',
+              value: data.heartRate ? `${data.heartRate} bpm` : 'No data',
+            },
+            {
+              icon: 'moon-outline',
+              label: 'Sleep',
+              value: data.sleepHours ? `${data.sleepHours}h` : 'No data',
+            },
           ].map((item) => (
             <View key={item.label} style={styles.dataRow}>
               <Ionicons name={item.icon} size={20} color={colors.primary} />
@@ -127,17 +134,17 @@ export function WearableSettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
-  toggleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dataRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
     paddingVertical: 10,
   },

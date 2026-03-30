@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { insightApi } from "../services/insightApi";
+import { useState, useCallback, useRef } from 'react';
+import { insightApi } from '../services/insightApi';
 
 /**
  * Fetches and caches pattern insights for the current session.

@@ -1,6 +1,6 @@
-import { apiClient } from "./api";
+import { apiClient } from './api';
 
-const BASE_PATH = "/api/community";
+const BASE_PATH = '/api/community';
 
 /**
  * Community REST API service.
@@ -21,9 +21,7 @@ export const communityApi = {
 
   /** Get posts in a group. */
   getPosts(slug, { limit = 20, offset = 0 } = {}) {
-    return apiClient.get(
-      `${BASE_PATH}/groups/${slug}/posts?limit=${limit}&offset=${offset}`
-    );
+    return apiClient.get(`${BASE_PATH}/groups/${slug}/posts?limit=${limit}&offset=${offset}`);
   },
 
   /** Create a new post in a group. */
@@ -40,9 +38,7 @@ export const communityApi = {
 
   /** Remove a reaction from a post. */
   removeReaction(postId, reactionType) {
-    return apiClient.delete(
-      `${BASE_PATH}/posts/${postId}/reactions/${reactionType}`
-    );
+    return apiClient.delete(`${BASE_PATH}/posts/${postId}/reactions/${reactionType}`);
   },
 
   /** Report a post. */

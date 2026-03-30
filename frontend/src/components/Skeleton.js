@@ -1,13 +1,13 @@
-import React, { useEffect } from "react";
-import { StyleSheet } from "react-native";
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withTiming,
   Easing,
-} from "react-native-reanimated";
-import { useTheme } from "../context/ThemeContext";
+} from 'react-native-reanimated';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * Reusable skeleton shimmer primitive.
@@ -15,7 +15,7 @@ import { useTheme } from "../context/ThemeContext";
  *
  * @param {{ width?: number|string, height?: number, borderRadius?: number, style?: object }} props
  */
-export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style }) {
+export function Skeleton({ width = '100%', height = 16, borderRadius = 8, style }) {
   const { colors } = useTheme();
   const opacity = useSharedValue(0.3);
 
@@ -23,7 +23,7 @@ export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style 
     opacity.value = withRepeat(
       withTiming(0.7, { duration: 900, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true,
+      true
     );
   }, [opacity]);
 
@@ -45,6 +45,6 @@ export function Skeleton({ width = "100%", height = 16, borderRadius = 8, style 
 
 const styles = StyleSheet.create({
   base: {
-    overflow: "hidden",
+    overflow: 'hidden',
   },
 });

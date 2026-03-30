@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
-import { Button } from "../../components/Button";
-import { ProgressBar } from "../../components/ProgressBar";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../context/ThemeContext';
+import { Button } from '../../components/Button';
+import { ProgressBar } from '../../components/ProgressBar';
 
 const OPTIONS = [
-  { id: "morning", label: "Morning", icon: "sunny-outline" },
-  { id: "afternoon", label: "Afternoon", icon: "partly-sunny-outline" },
-  { id: "evening", label: "Evening", icon: "moon-outline" },
-  { id: "none", label: "No preference", icon: "time-outline" },
+  { id: 'morning', label: 'Morning', icon: 'sunny-outline' },
+  { id: 'afternoon', label: 'Afternoon', icon: 'partly-sunny-outline' },
+  { id: 'evening', label: 'Evening', icon: 'moon-outline' },
+  { id: 'none', label: 'No preference', icon: 'time-outline' },
 ];
 
 export function TimeOfDayScreen({ navigation, route }) {
@@ -17,9 +17,9 @@ export function TimeOfDayScreen({ navigation, route }) {
   const [selected, setSelected] = useState(null);
 
   const handleContinue = () => {
-    navigation.navigate("FirstValue", {
+    navigation.navigate('FirstValue', {
       ...route.params,
-      preferredTime: selected || "",
+      preferredTime: selected || '',
     });
   };
 
@@ -31,12 +31,7 @@ export function TimeOfDayScreen({ navigation, route }) {
         <Text style={[fonts.heading2, { color: colors.text }]}>
           When do you feel most reflective?
         </Text>
-        <Text
-          style={[
-            fonts.body,
-            { color: colors.textSecondary, marginTop: 8, marginBottom: 28 },
-          ]}
-        >
+        <Text style={[fonts.body, { color: colors.textSecondary, marginTop: 8, marginBottom: 28 }]}>
           We'll tailor your experience to this time
         </Text>
 
@@ -49,9 +44,7 @@ export function TimeOfDayScreen({ navigation, route }) {
                 style={[
                   styles.card,
                   {
-                    backgroundColor: isSelected
-                      ? `${colors.primary}10`
-                      : colors.surface,
+                    backgroundColor: isSelected ? `${colors.primary}10` : colors.surface,
                     borderColor: isSelected ? colors.primary : colors.border,
                   },
                 ]}
@@ -62,9 +55,7 @@ export function TimeOfDayScreen({ navigation, route }) {
                   style={[
                     styles.iconWrap,
                     {
-                      backgroundColor: isSelected
-                        ? `${colors.primary}20`
-                        : `${colors.textLight}15`,
+                      backgroundColor: isSelected ? `${colors.primary}20` : `${colors.textLight}15`,
                     },
                   ]}
                 >
@@ -79,7 +70,7 @@ export function TimeOfDayScreen({ navigation, route }) {
                     fonts.body,
                     {
                       color: isSelected ? colors.primary : colors.text,
-                      fontWeight: isSelected ? "600" : "400",
+                      fontWeight: isSelected ? '600' : '400',
                       marginTop: 10,
                     },
                   ]}
@@ -97,7 +88,7 @@ export function TimeOfDayScreen({ navigation, route }) {
           title="Continue"
           onPress={handleContinue}
           disabled={!selected}
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
         />
       </View>
     </View>
@@ -118,13 +109,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
   },
   card: {
-    width: "47%",
-    alignItems: "center",
+    width: '47%',
+    alignItems: 'center',
     padding: 20,
     borderRadius: 16,
     borderWidth: 1.5,
@@ -133,11 +124,11 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   footer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingTop: 12,
   },
 });

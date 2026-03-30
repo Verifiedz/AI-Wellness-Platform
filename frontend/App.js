@@ -1,28 +1,28 @@
-import React, { useCallback, useEffect, useRef } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import * as SplashScreen from "expo-splash-screen";
+import React, { useCallback, useEffect, useRef } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
   DMSans_400Regular,
   DMSans_500Medium,
   DMSans_600SemiBold,
   DMSans_700Bold,
-} from "@expo-google-fonts/dm-sans";
+} from '@expo-google-fonts/dm-sans';
 
-import { AuthProvider, useAuth } from "./src/context/AuthContext";
-import { TipProvider, useTip } from "./src/context/TipContext";
-import { ThemeProvider, useTheme } from "./src/context/ThemeContext";
-import { OnboardingProvider } from "./src/context/OnboardingContext";
-import { AppNavigator, navigate } from "./src/navigation/AppNavigator";
-import { apiClient } from "./src/services/api";
-import { notificationApi } from "./src/services/notificationApi";
+import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { TipProvider, useTip } from './src/context/TipContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { OnboardingProvider } from './src/context/OnboardingContext';
+import { AppNavigator, navigate } from './src/navigation/AppNavigator';
+import { apiClient } from './src/services/api';
+import { notificationApi } from './src/services/notificationApi';
 import {
   registerForPushNotificationsAsync,
   addNotificationReceivedListener,
   addNotificationResponseReceivedListener,
   getLastNotificationResponse,
-} from "./src/services/pushNotifications";
+} from './src/services/pushNotifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -68,25 +68,21 @@ function AppContent() {
     const extractTip = (notification) => {
       const { title, body, data } = notification.request.content;
       return {
-        title: title || "Your Daily Wellness Tip",
-        body: body || "",
+        title: title || 'Your Daily Wellness Tip',
+        body: body || '',
         tipId: data?.tipId || null,
         category: data?.category || null,
       };
     };
 
-    notificationListener.current = addNotificationReceivedListener(
-      (notification) => {
-        setTip(extractTip(notification));
-      }
-    );
+    notificationListener.current = addNotificationReceivedListener((notification) => {
+      setTip(extractTip(notification));
+    });
 
-    responseListener.current = addNotificationResponseReceivedListener(
-      (response) => {
-        setTip(extractTip(response.notification));
-        navigate("Home");
-      }
-    );
+    responseListener.current = addNotificationResponseReceivedListener((response) => {
+      setTip(extractTip(response.notification));
+      navigate('Home');
+    });
 
     getLastNotificationResponse().then((response) => {
       if (response) {
@@ -102,7 +98,7 @@ function AppContent() {
 
   return (
     <>
-      <StatusBar style={isDarkMode ? "light" : "dark"} />
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       <AppNavigator />
     </>
   );

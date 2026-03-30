@@ -1,22 +1,12 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
-import { BreathingCircle } from "../components/BreathingCircle";
-import { Button } from "../components/Button";
-import { Card } from "../components/Card";
-import {
-  BREATHING_PATTERNS,
-  getCycleMs,
-  getDefaultPattern,
-} from "../constants/breathingPatterns";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
+import { BreathingCircle } from '../components/BreathingCircle';
+import { Button } from '../components/Button';
+import { Card } from '../components/Card';
+import { BREATHING_PATTERNS, getCycleMs, getDefaultPattern } from '../constants/breathingPatterns';
 
 const DEFAULT_CYCLES = 5;
 
@@ -38,7 +28,7 @@ function PatternChip({ pattern, isSelected, onPress, colors, fonts }) {
           fonts.bodySmall,
           {
             color: isSelected ? colors.primary : colors.textSecondary,
-            fontWeight: isSelected ? "600" : "400",
+            fontWeight: isSelected ? '600' : '400',
           },
         ]}
       >
@@ -52,7 +42,7 @@ function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 export function BreathingExerciseScreen({ navigation, route }) {
@@ -66,7 +56,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
     return getDefaultPattern();
   });
 
-  const [phase, setPhase] = useState("setup"); // setup | active | paused | complete
+  const [phase, setPhase] = useState('setup'); // setup | active | paused | complete
   const [completedCycles, setCompletedCycles] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const timerRef = useRef(null);
@@ -84,7 +74,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
 
   // Elapsed time counter
   useEffect(() => {
-    if (phase === "active") {
+    if (phase === 'active') {
       timerRef.current = setInterval(() => {
         setElapsedMs((prev) => prev + 1000);
       }, 1000);
@@ -104,27 +94,27 @@ export function BreathingExerciseScreen({ navigation, route }) {
   }, []);
 
   const handleSessionComplete = useCallback(() => {
-    setPhase("complete");
+    setPhase('complete');
   }, []);
 
   const startSession = useCallback(() => {
     setCompletedCycles(0);
     setElapsedMs(0);
-    setPhase("active");
+    setPhase('active');
   }, []);
 
   const pauseSession = useCallback(() => {
-    setPhase("paused");
+    setPhase('paused');
   }, []);
 
   const stopSession = useCallback(() => {
-    setPhase("complete");
+    setPhase('complete');
   }, []);
 
   const resetSession = useCallback(() => {
     setCompletedCycles(0);
     setElapsedMs(0);
-    setPhase("setup");
+    setPhase('setup');
   }, []);
 
   const selectPattern = useCallback((pattern) => {
@@ -132,18 +122,15 @@ export function BreathingExerciseScreen({ navigation, route }) {
   }, []);
 
   // === Setup view ===
-  if (phase === "setup") {
+  if (phase === 'setup') {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.setupContent}>
-          <Text style={[fonts.heading1, { color: colors.text, textAlign: "center" }]}>
+          <Text style={[fonts.heading1, { color: colors.text, textAlign: 'center' }]}>
             Breathing Exercise
           </Text>
           <Text
-            style={[
-              fonts.body,
-              { color: colors.textSecondary, textAlign: "center", marginTop: 8 },
-            ]}
+            style={[fonts.body, { color: colors.textSecondary, textAlign: 'center', marginTop: 8 }]}
           >
             Choose a pattern and find your calm
           </Text>
@@ -164,15 +151,8 @@ export function BreathingExerciseScreen({ navigation, route }) {
 
           {/* Selected pattern details */}
           <Card style={styles.detailCard}>
-            <Text style={[fonts.heading3, { color: colors.text }]}>
-              {selectedPattern.label}
-            </Text>
-            <Text
-              style={[
-                fonts.bodySmall,
-                { color: colors.textSecondary, marginTop: 4 },
-              ]}
-            >
+            <Text style={[fonts.heading3, { color: colors.text }]}>{selectedPattern.label}</Text>
+            <Text style={[fonts.bodySmall, { color: colors.textSecondary, marginTop: 4 }]}>
               {selectedPattern.description}
             </Text>
 
@@ -208,21 +188,21 @@ export function BreathingExerciseScreen({ navigation, route }) {
             <Text
               style={[
                 fonts.caption,
-                { color: colors.textLight, marginTop: 12, textAlign: "center" },
+                { color: colors.textLight, marginTop: 12, textAlign: 'center' },
               ]}
             >
               {DEFAULT_CYCLES} cycles ~ {estimateLabel}
             </Text>
           </Card>
 
-          <Button title="Begin" onPress={startSession} style={{ width: "100%", marginTop: 24 }} />
+          <Button title="Begin" onPress={startSession} style={{ width: '100%', marginTop: 24 }} />
         </View>
       </View>
     );
   }
 
   // === Complete view ===
-  if (phase === "complete") {
+  if (phase === 'complete') {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Animated.View entering={FadeIn.duration(600)} style={styles.completeContent}>
@@ -230,45 +210,43 @@ export function BreathingExerciseScreen({ navigation, route }) {
             <Ionicons name="checkmark-circle" size={56} color={colors.success} />
           </View>
 
-          <Text style={[fonts.heading1, { color: colors.text, textAlign: "center", marginTop: 24 }]}>
+          <Text
+            style={[fonts.heading1, { color: colors.text, textAlign: 'center', marginTop: 24 }]}
+          >
             Well done
           </Text>
           <Text
             style={[
               fonts.body,
-              { color: colors.textSecondary, textAlign: "center", marginTop: 8, lineHeight: 22 },
+              { color: colors.textSecondary, textAlign: 'center', marginTop: 8, lineHeight: 22 },
             ]}
           >
-            You completed {completedCycles} {completedCycles === 1 ? "cycle" : "cycles"} of{" "}
+            You completed {completedCycles} {completedCycles === 1 ? 'cycle' : 'cycles'} of{' '}
             {selectedPattern.label} breathing.
           </Text>
 
           <View style={styles.statRow}>
             <View style={styles.statItem}>
-              <Text style={[fonts.metric, { color: colors.primary }]}>
-                {completedCycles}
-              </Text>
-              <Text style={[fonts.caption, { color: colors.textSecondary }]}>
-                Cycles
-              </Text>
+              <Text style={[fonts.metric, { color: colors.primary }]}>{completedCycles}</Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary }]}>Cycles</Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statItem}>
-              <Text style={[fonts.metric, { color: colors.primary }]}>
-                {formatTime(elapsedMs)}
-              </Text>
-              <Text style={[fonts.caption, { color: colors.textSecondary }]}>
-                Duration
-              </Text>
+              <Text style={[fonts.metric, { color: colors.primary }]}>{formatTime(elapsedMs)}</Text>
+              <Text style={[fonts.caption, { color: colors.textSecondary }]}>Duration</Text>
             </View>
           </View>
 
-          <Button title="Done" onPress={() => navigation.goBack()} style={{ width: "100%", marginTop: 32 }} />
+          <Button
+            title="Done"
+            onPress={() => navigation.goBack()}
+            style={{ width: '100%', marginTop: 32 }}
+          />
           <Button
             variant="ghost"
             title="Try Another Pattern"
             onPress={resetSession}
-            style={{ width: "100%", marginTop: 8 }}
+            style={{ width: '100%', marginTop: 8 }}
           />
         </Animated.View>
       </View>
@@ -280,7 +258,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.activeContent}>
         {/* Cycle counter */}
-        <Text style={[fonts.caption, { color: colors.textSecondary, textAlign: "center" }]}>
+        <Text style={[fonts.caption, { color: colors.textSecondary, textAlign: 'center' }]}>
           Cycle {Math.min(completedCycles + 1, DEFAULT_CYCLES)} of {DEFAULT_CYCLES}
         </Text>
 
@@ -289,13 +267,13 @@ export function BreathingExerciseScreen({ navigation, route }) {
           <BreathingCircle
             key={`${selectedPattern.id}-${phase}`}
             size={220}
-            autoStart={phase === "active"}
+            autoStart={phase === 'active'}
             inhaleMs={selectedPattern.inhaleMs}
             holdMs={selectedPattern.holdMs}
             exhaleMs={selectedPattern.exhaleMs}
             hold2Ms={selectedPattern.hold2Ms}
             cycles={DEFAULT_CYCLES - completedCycles}
-            isPaused={phase === "paused"}
+            isPaused={phase === 'paused'}
             onCycleComplete={handleCycleComplete}
             onSessionComplete={handleSessionComplete}
           />
@@ -303,33 +281,39 @@ export function BreathingExerciseScreen({ navigation, route }) {
 
         {/* Elapsed time */}
         <Text
-          style={[
-            fonts.bodySmall,
-            { color: colors.textLight, textAlign: "center", marginTop: 16 },
-          ]}
+          style={[fonts.bodySmall, { color: colors.textLight, textAlign: 'center', marginTop: 16 }]}
         >
           {formatTime(elapsedMs)}
         </Text>
 
         {/* Controls */}
         <View style={styles.controlRow}>
-          {phase === "active" ? (
+          {phase === 'active' ? (
             <TouchableOpacity
-              style={[styles.controlBtn, { backgroundColor: `${colors.warning}20`, borderColor: colors.warning }]}
+              style={[
+                styles.controlBtn,
+                { backgroundColor: `${colors.warning}20`, borderColor: colors.warning },
+              ]}
               onPress={pauseSession}
             >
               <Ionicons name="pause" size={24} color={colors.warning} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
-              style={[styles.controlBtn, { backgroundColor: `${colors.primary}20`, borderColor: colors.primary }]}
-              onPress={() => setPhase("active")}
+              style={[
+                styles.controlBtn,
+                { backgroundColor: `${colors.primary}20`, borderColor: colors.primary },
+              ]}
+              onPress={() => setPhase('active')}
             >
               <Ionicons name="play" size={24} color={colors.primary} />
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            style={[styles.controlBtn, { backgroundColor: `${colors.error}15`, borderColor: colors.error }]}
+            style={[
+              styles.controlBtn,
+              { backgroundColor: `${colors.error}15`, borderColor: colors.error },
+            ]}
             onPress={stopSession}
           >
             <Ionicons name="stop" size={24} color={colors.error} />
@@ -357,11 +341,11 @@ const styles = StyleSheet.create({
   },
   setupContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   patternList: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 28,
   },
@@ -372,17 +356,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   detailCard: {
-    width: "100%",
+    width: '100%',
     marginTop: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   timingRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
     marginTop: 16,
   },
   timingBadge: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 12,
@@ -390,14 +374,14 @@ const styles = StyleSheet.create({
   },
   activeContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   circleWrap: {
     marginTop: 24,
   },
   controlRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 20,
     marginTop: 32,
   },
@@ -406,29 +390,29 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   completeContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   completeIcon: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   statRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 24,
     marginTop: 28,
   },
   statItem: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   statDivider: {
     width: 1,

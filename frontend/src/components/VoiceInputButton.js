@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from "react";
-import { TouchableOpacity, StyleSheet, Animated, Easing } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../context/ThemeContext";
+import React, { useEffect, useRef } from 'react';
+import { TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * Circular microphone button for voice input.
@@ -59,7 +59,7 @@ export function VoiceInputButton({ isListening, onPress, disabled, style }) {
         ]}
       >
         <Ionicons
-          name={isListening ? "mic" : "mic-outline"}
+          name={isListening ? 'mic' : 'mic-outline'}
           size={20}
           color={isListening ? colors.error : colors.primary}
         />
@@ -70,14 +70,14 @@ export function VoiceInputButton({ isListening, onPress, disabled, style }) {
 
 const styles = StyleSheet.create({
   button: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   iconWrap: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
