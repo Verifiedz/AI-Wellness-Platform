@@ -114,8 +114,15 @@ public class SessionService : ISessionService
     }
 
     await _sessionDatabaseProvider.setBookmarkAsync(sessionId, isBookmarked);
-    session.isBookmarked = isBookmarked;
-    await _cache.SetAsync($"session:{sessionId}", session);
+    var updated = new ChatSession
+    {
+      sessionID = session.sessionID,
+      UserId = session.UserId,
+      isBookmarked = isBookmarked,
+      createdDate = session.createdDate,
+      SessionName = session.SessionName
+    };
+    await _cache.SetAsync($"session:{sessionId}", updated);
   }
 
   public async Task DeleteSessionAsync(Guid sessionId, Guid userId)
@@ -153,8 +160,15 @@ public class SessionService : ISessionService
     var cachedSession = await _cache.GetAsync<ChatSession>(cacheKey);
     if (cachedSession != null)
     {
-      cachedSession.SessionName = sessionName;
-      await _cache.SetAsync(cacheKey, cachedSession);
+      var updated = new ChatSession
+      {
+        sessionID = cachedSession.sessionID,
+        UserId = cachedSession.UserId,
+        isBookmarked = cachedSession.isBookmarked,
+        createdDate = cachedSession.createdDate,
+        SessionName = sessionName
+      };
+      await _cache.SetAsync(cacheKey, updated);
     }
   }
 }

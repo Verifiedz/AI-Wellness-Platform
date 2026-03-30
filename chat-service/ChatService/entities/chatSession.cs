@@ -1,10 +1,10 @@
 namespace ChatService.entities;
 
-public class ChatSession{
- 
-  public required Guid sessionID {get;set;}
-  public Guid UserId {get;set;}
-  public bool isBookmarked {get; set;} 
-  public DateTime createdDate {get; set;}
-  public string? SessionName {get; set;}
+public class ChatSession
+{
+    public required Guid sessionID { get; init; }
+    public Guid UserId { get; init; }
+    public bool isBookmarked { get; init; }
+    public DateTime createdDate { get; init; }
+    public string? SessionName { get; init; }
 }
