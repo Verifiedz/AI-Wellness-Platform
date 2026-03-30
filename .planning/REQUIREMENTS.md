@@ -12,7 +12,7 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 - [x] **SEC-01**: 2FA codes are not logged in plaintext (remove log statement in auth-service AuthService.cs)
 - [x] **SEC-02**: Security codes use cryptographically secure random generation (replace `new Random()` with `RandomNumberGenerator`)
 - [x] **SEC-03**: Community service validates gateway shared-secret before processing requests
-- [ ] **SEC-04**: API key comparison in notification-service uses timing-safe equality (`CryptographicOperations.FixedTimeEquals`)
+- [x] **SEC-04**: API key comparison in notification-service uses timing-safe equality (`CryptographicOperations.FixedTimeEquals`)
 - [x] **SEC-05**: PII removed from log string interpolation in auth-service (convert to structured logging placeholders)
 - [x] **SEC-06**: User info endpoint enforces authorization (users can only query their own data)
 - [x] **SEC-07**: Exception messages are not exposed to API clients (return generic errors, log details server-side)
@@ -33,8 +33,8 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 
 ### Reliability
 
-- [ ] **REL-01**: Rate limiting middleware registered in correct order (after CORS and authentication)
-- [ ] **REL-02**: StoredProcedureExecutor validates function names against allowed character pattern
+- [x] **REL-01**: Rate limiting middleware registered in correct order (after CORS and authentication)
+- [x] **REL-02**: StoredProcedureExecutor validates function names against allowed character pattern
 - [ ] **REL-03**: Chat history queries have pagination support (limit/offset parameters)
 - [ ] **REL-04**: CancellationToken propagated through chat service controller-service-provider chain
 - [ ] **REL-05**: User-generated content (posts, journals, chat) has input sanitization at storage boundary
@@ -105,7 +105,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-01 | Phase 1 | Complete |
 | SEC-02 | Phase 1 | Complete |
 | SEC-03 | Phase 1 | Complete |
-| SEC-04 | Phase 2 | Pending |
+| SEC-04 | Phase 2 | Complete |
 | SEC-05 | Phase 1 | Complete |
 | SEC-06 | Phase 1 | Complete |
 | SEC-07 | Phase 1 | Complete |
@@ -120,8 +120,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-06 | Phase 3 | Pending |
 | TEST-07 | Phase 3 | Pending |
 | TEST-08 | Phase 3 | Pending |
-| REL-01 | Phase 2 | Pending |
-| REL-02 | Phase 2 | Pending |
+| REL-01 | Phase 2 | Complete |
+| REL-02 | Phase 2 | Complete |
 | REL-03 | Phase 4 | Pending |
 | REL-04 | Phase 4 | Pending |
 | REL-05 | Phase 4 | Pending |

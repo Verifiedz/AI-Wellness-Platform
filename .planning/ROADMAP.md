@@ -13,7 +13,7 @@ This roadmap hardens the Sakina platform from feature-complete to production-saf
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Perimeter Security** - Fix authentication at the gateway boundary (auth-service) and close the completely unauthenticated community-service (completed 2026-03-30)
-- [ ] **Phase 2: Internal Communication Security** - Fix timing-safe API key comparison, middleware pipeline order, and SQL injection surface on stored procedures
+- [x] **Phase 2: Internal Communication Security** - Fix timing-safe API key comparison, middleware pipeline order, and SQL injection surface on stored procedures (completed 2026-03-30)
 - [ ] **Phase 3: Test Infrastructure** - Establish test projects for all five untested services and the frontend; write tests proving every Phase 1 and 2 fix
 - [ ] **Phase 4: Reliability and Performance** - Fix pagination, CancellationToken propagation, session immutability, and input sanitization
 - [ ] **Phase 5: Tech Debt and Configuration** - Clean deployment config, remove dead code, document scaling limitations, consolidate naming conventions
@@ -45,7 +45,7 @@ Plans:
   1. Notification-service API key comparison uses constant-time equality and a timing measurement test confirms no measurable difference between valid and invalid key response times
   2. A CORS preflight request to auth-service receives a 200 response (not 429) confirming rate limiting executes after CORS handling
   3. Passing a function name containing SQL metacharacters to StoredProcedureExecutor causes immediate rejection before any database call
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 02-01-PLAN.md -- Timing-safe API key comparison and middleware pipeline reorder (SEC-04, REL-01)
 - [x] 02-02-PLAN.md -- StoredProcedureExecutor function name validation (REL-02)
@@ -91,7 +91,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
-| 2. Internal Communication Security | 0/2 | Not started | - |
+| 2. Internal Communication Security | 0/2 | Complete    | 2026-03-30 |
 | 3. Test Infrastructure | 0/TBD | Not started | - |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
