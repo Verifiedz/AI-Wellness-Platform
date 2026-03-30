@@ -8,6 +8,7 @@ public sealed class CommunityDbService : ICommunityDbService
 {
     private readonly string _connectionString;
     private readonly ILogger<CommunityDbService> _logger;
+    private readonly Ganss.Xss.HtmlSanitizer _sanitizer;
 
     private static readonly string[] AnimalNames =
     [
@@ -17,11 +18,12 @@ public sealed class CommunityDbService : ICommunityDbService
         "Cool Lynx", "Keen Raven", "True Osprey", "Clear Finch", "Safe Moose"
     ];
 
-    public CommunityDbService(IConfiguration config, ILogger<CommunityDbService> logger)
+    public CommunityDbService(IConfiguration config, ILogger<CommunityDbService> logger, Ganss.Xss.HtmlSanitizer sanitizer)
     {
         _connectionString = config.GetConnectionString("CommunityDatabase")
             ?? throw new InvalidOperationException("CommunityDatabase connection string is not configured");
         _logger = logger;
+        _sanitizer = sanitizer;
     }
 
     private async Task<NpgsqlConnection> OpenAsync()
@@ -147,6 +149,8 @@ public sealed class CommunityDbService : ICommunityDbService
 
     public async Task<PostResponse> CreatePostAsync(string slug, Guid userId, string content)
     {
+        var safeContent = _sanitizer.Sanitize(content);
+
         await using var conn = await OpenAsync();
 
         // Get or create anonymous identity
@@ -168,14 +172,14 @@ public sealed class CommunityDbService : ICommunityDbService
         cmd.Parameters.AddWithValue("groupId", groupId);
         cmd.Parameters.AddWithValue("userId", userId);
         cmd.Parameters.AddWithValue("anonName", anonName);
-        cmd.Parameters.AddWithValue("content", content);
+        cmd.Parameters.AddWithValue("content", safeContent);
 
         await using var reader = await cmd.ExecuteReaderAsync();
         await reader.ReadAsync();
 
         return new PostResponse(
             reader.GetGuid(0), groupId, anonName, avatarSeed,
-            content, null, 0, new Dictionary<string, int>(), [],
+            safeContent, null, 0, new Dictionary<string, int>(), [],
             reader.GetDateTime(1));
     }
 

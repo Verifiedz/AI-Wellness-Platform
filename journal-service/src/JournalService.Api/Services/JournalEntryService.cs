@@ -8,6 +8,7 @@ public class JournalEntryService
 {
     private readonly IDatabaseService _databaseService;
     private readonly ILogger<JournalEntryService> _logger;
+    private readonly Ganss.Xss.HtmlSanitizer _sanitizer;
 
     private static readonly HashSet<string> ValidEmotions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -18,10 +19,12 @@ public class JournalEntryService
 
     public JournalEntryService(
         IDatabaseService databaseService,
-        ILogger<JournalEntryService> logger)
+        ILogger<JournalEntryService> logger,
+        Ganss.Xss.HtmlSanitizer sanitizer)
     {
         _databaseService = databaseService;
         _logger = logger;
+        _sanitizer = sanitizer;
     }
 
     public async Task<JournalEntryResponse> CreateEntryAsync(Guid userId, CreateJournalEntryRequest request)
@@ -32,12 +35,14 @@ public class JournalEntryService
         if (existing != null)
             throw new ArgumentException($"A journal entry already exists for {request.EntryDate:yyyy-MM-dd}. Use PUT to update it.");
 
+        var safeContent = _sanitizer.Sanitize(request.Content);
+
         var entry = await _databaseService.CreateJournalEntryAsync(
             userId,
             request.Mood,
             request.Emotions,
             request.EnergyLevel,
-            request.Content,
+            safeContent,
             request.EntryDate);
 
         return MapToResponse(entry ?? throw new InvalidOperationException("Failed to create journal entry"));
@@ -70,13 +75,15 @@ public class JournalEntryService
     {
         ValidateEmotions(request.Emotions);
 
+        var safeContent = _sanitizer.Sanitize(request.Content);
+
         var entry = await _databaseService.UpdateJournalEntryAsync(
             entryId,
             userId,
             request.Mood,
             request.Emotions,
             request.EnergyLevel,
-            request.Content);
+            safeContent);
 
         if (entry == null)
             throw new KeyNotFoundException($"Journal entry {entryId} not found or does not belong to this user.");

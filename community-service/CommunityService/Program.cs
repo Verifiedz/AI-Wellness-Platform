@@ -7,6 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSingleton<DatabaseInitializer>();
 builder.Services.AddScoped<ICommunityDbService, CommunityDbService>();
+builder.Services.AddSingleton<Ganss.Xss.HtmlSanitizer>(_ =>
+{
+    var sanitizer = new Ganss.Xss.HtmlSanitizer();
+    sanitizer.AllowedTags.Clear();
+    sanitizer.AllowedAttributes.Clear();
+    return sanitizer;
+});
 
 builder.Services.AddCors(options =>
 {

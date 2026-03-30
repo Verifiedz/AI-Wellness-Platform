@@ -14,7 +14,15 @@ public static class DependencyInjectionContainer
         chatOptions.PostgreSqlConnectionString = configuration.GetConnectionString("PostgreSqlConnectionString");
 
         services.AddSingleton(chatOptions);
-        
+
+        services.AddSingleton<Ganss.Xss.HtmlSanitizer>(_ =>
+        {
+            var sanitizer = new Ganss.Xss.HtmlSanitizer();
+            sanitizer.AllowedTags.Clear();
+            sanitizer.AllowedAttributes.Clear();
+            return sanitizer;
+        });
+
         services.AddSingleton<IConfigurationService, ConfigurationService>();
         services.AddScoped<IChatService,chatService>();
         services.AddScoped<ISessionService, SessionService>();

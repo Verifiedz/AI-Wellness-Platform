@@ -20,6 +20,14 @@ builder.Services.AddScoped<EscalationService>();
 
 builder.Services.AddScoped<IUserContext, HttpUserContext>();
 
+builder.Services.AddSingleton<Ganss.Xss.HtmlSanitizer>(_ =>
+{
+    var sanitizer = new Ganss.Xss.HtmlSanitizer();
+    sanitizer.AllowedTags.Clear();
+    sanitizer.AllowedAttributes.Clear();
+    return sanitizer;
+});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("JournalCors", policy =>
