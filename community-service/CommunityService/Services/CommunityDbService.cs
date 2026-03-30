@@ -4,7 +4,7 @@ using Npgsql;
 using NpgsqlTypes;
 using CommunityService.Models.Responses;
 
-public sealed class CommunityDbService
+public sealed class CommunityDbService : ICommunityDbService
 {
     private readonly string _connectionString;
     private readonly ILogger<CommunityDbService> _logger;

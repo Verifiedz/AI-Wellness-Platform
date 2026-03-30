@@ -9,10 +9,10 @@ using CommunityService.Services;
 [Route("api/community")]
 public class CommunityController : ControllerBase
 {
-    private readonly CommunityDbService _db;
+    private readonly ICommunityDbService _db;
     private readonly ILogger<CommunityController> _logger;
 
-    public CommunityController(CommunityDbService db, ILogger<CommunityController> logger)
+    public CommunityController(ICommunityDbService db, ILogger<CommunityController> logger)
     {
         _db = db;
         _logger = logger;

@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<DatabaseInitializer>();
-builder.Services.AddScoped<CommunityDbService>();
+builder.Services.AddScoped<ICommunityDbService, CommunityDbService>();
 
 builder.Services.AddCors(options =>
 {
