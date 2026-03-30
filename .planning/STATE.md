@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-perimeter-security/01-04-PLAN.md
-last_updated: "2026-03-30T03:13:31.792Z"
+stopped_at: Completed 01-perimeter-security 01-01-PLAN.md
+last_updated: "2026-03-30T03:26:07.164Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 01 (perimeter-security) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-perimeter-security P04 | 4 | 2 tasks | 3 files |
+| Phase 01-perimeter-security P01 | 15m | 2 tasks | 13 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,7 @@ Recent decisions affecting current work:
 - [Init]: Fix all CONCERNS.md items (not just critical/high) -- capstone needs thorough hardening
 - [Init]: Security and test coverage weighted equally -- both critical for capstone and production use
 - [Phase 01-perimeter-security]: Empty string placeholder in appsettings.json preserves schema visibility while signaling env var override required
+- [Phase 01-perimeter-security]: Map AuthException subclasses to HTTP status codes in middleware switch expression; GetGenericMessage() provides safe user-facing strings
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T03:13:31.788Z
-Stopped at: Completed 01-perimeter-security/01-04-PLAN.md
+Last session: 2026-03-30T03:26:07.159Z
+Stopped at: Completed 01-perimeter-security 01-01-PLAN.md
 Resume file: None
