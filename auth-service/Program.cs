@@ -130,12 +130,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.UseRateLimiting();
-
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRateLimiting();
 
 app.MapReverseProxy();
 app.MapControllers();
