@@ -19,11 +19,11 @@ public class AuthServiceTests
   private readonly Mock<IJwtService> _jwtService = new();
   private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
   private readonly Mock<IConfiguration> _configuration = new();
-  private readonly Mock<ILogger<AuthService>> _logger = new();
+  private readonly Mock<ILogger<AIWellness.Auth.Services.AuthService>> _logger = new();
 
-  private AuthService CreateSut()
+  private AIWellness.Auth.Services.AuthService CreateSut()
   {
-    return new AuthService(
+    return new AIWellness.Auth.Services.AuthService(
       _userRepository.Object,
       _passwordValidator.Object,
       _notificationService.Object,
@@ -209,7 +209,7 @@ public class AuthServiceTests
   public void GenerateRandomCode_UsesCsprng()
   {
     // Use reflection to access private static GenerateRandomCode method.
-    var method = typeof(AuthService).GetMethod(
+    var method = typeof(AIWellness.Auth.Services.AuthService).GetMethod(
       "GenerateRandomCode",
       System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
 

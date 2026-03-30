@@ -23,7 +23,7 @@ public class StoredProcedureExecutor
     }
 
     private static readonly Regex ValidIdentifier =
-        new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+        new(@"^[a-zA-Z_][a-zA-Z0-9_]*\z", RegexOptions.Compiled);
 
     private static void ValidateFunctionName(string functionName)
     {
