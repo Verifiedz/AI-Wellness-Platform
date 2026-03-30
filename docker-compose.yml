@@ -168,7 +168,7 @@ services:
     environment:
       POSTGRES_DB: wellness_community
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${COMMUNITY_DB_PASSWORD:-communitypass}
+      POSTGRES_PASSWORD: ${COMMUNITY_DB_PASSWORD}
     ports:
       - '5337:5432'
     volumes:
@@ -191,7 +191,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
-      ConnectionStrings__CommunityDatabase: 'Host=community-db;Database=wellness_community;Username=postgres;Password=${COMMUNITY_DB_PASSWORD:-communitypass}'
+      ConnectionStrings__CommunityDatabase: 'Host=community-db;Database=wellness_community;Username=postgres;Password=${COMMUNITY_DB_PASSWORD}'
       Gateway__SharedSecret: '${COMMUNITY_INTERNAL_API_KEY}'
       Gateway__RequireSharedSecret: 'true'
     ports:
@@ -252,6 +252,12 @@ services:
       Cors__AllowedOrigins__0: '${CORS_ORIGIN_0:-}'
       ASPNETCORE_URLS: 'http://+:8080'
       ASPNETCORE_ENVIRONMENT: 'Production'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:8080/api/auth/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 # ---------------------------------------------------------------------------
 # VOLUMES
 # ---------------------------------------------------------------------------
