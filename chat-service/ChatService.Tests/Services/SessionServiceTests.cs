@@ -1,6 +1,6 @@
 namespace ChatService.Tests.Services;
 
-using ChatService.entities;
+using ChatService.Entities;
 using ChatService.Interfaces;
 using ChatService.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -43,14 +43,14 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
 
         _dbMock
-            .Setup(d => d.createSessionAsync(It.IsAny<ChatSession>()))
+            .Setup(d => d.CreateSessionAsync(It.IsAny<ChatSession>()))
             .Returns(Task.CompletedTask);
 
         var session = await _sut.CreateSessionAsync(userId);
 
-        Assert.NotEqual(Guid.Empty, session.sessionID);
+        Assert.NotEqual(Guid.Empty, session.SessionId);
         Assert.Equal(userId, session.UserId);
-        Assert.False(session.isBookmarked);
+        Assert.False(session.IsBookmarked);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class SessionServiceTests
         ChatSession? captured = null;
 
         _dbMock
-            .Setup(d => d.createSessionAsync(It.IsAny<ChatSession>()))
+            .Setup(d => d.CreateSessionAsync(It.IsAny<ChatSession>()))
             .Callback<ChatSession>(s => captured = s)
             .Returns(Task.CompletedTask);
 
@@ -87,12 +87,12 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
         var expected = new List<ChatSession>
         {
-            new() { sessionID = Guid.NewGuid(), UserId = userId },
-            new() { sessionID = Guid.NewGuid(), UserId = userId }
+            new() { SessionId = Guid.NewGuid(), UserId = userId },
+            new() { SessionId = Guid.NewGuid(), UserId = userId }
         };
 
         _dbMock
-            .Setup(d => d.getSessionsbyUserAsync(userId))
+            .Setup(d => d.GetSessionsByUserAsync(userId))
             .ReturnsAsync(expected);
 
         var result = await _sut.GetSessionsByUserAsync(userId);
@@ -118,12 +118,12 @@ public class SessionServiceTests
         const string newName = "My New Session Name";
 
         _dbMock
-            .Setup(d => d.updateSessionNameAsync(sessionId, newName))
+            .Setup(d => d.UpdateSessionNameAsync(sessionId, newName))
             .Returns(Task.CompletedTask);
 
         await _sut.UpdateSessionNameAsync(sessionId, newName);
 
-        _dbMock.Verify(d => d.updateSessionNameAsync(sessionId, newName), Times.Once);
+        _dbMock.Verify(d => d.UpdateSessionNameAsync(sessionId, newName), Times.Once);
     }
 
     [Fact]
@@ -132,7 +132,7 @@ public class SessionServiceTests
         var sessionId = Guid.NewGuid();
         var cachedSession = new ChatSession
         {
-            sessionID = sessionId,
+            SessionId = sessionId,
             UserId = Guid.NewGuid(),
             SessionName = "Old Name"
         };
@@ -142,7 +142,7 @@ public class SessionServiceTests
             .ReturnsAsync(cachedSession);
 
         _dbMock
-            .Setup(d => d.updateSessionNameAsync(sessionId, "New Name"))
+            .Setup(d => d.UpdateSessionNameAsync(sessionId, "New Name"))
             .Returns(Task.CompletedTask);
 
         await _sut.UpdateSessionNameAsync(sessionId, "New Name");
@@ -162,14 +162,14 @@ public class SessionServiceTests
     {
         var userId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
-        var session = new ChatSession { sessionID = sessionId, UserId = userId };
+        var session = new ChatSession { SessionId = sessionId, UserId = userId };
 
-        _dbMock.Setup(d => d.getSessionAsync(sessionId)).ReturnsAsync(session);
-        _dbMock.Setup(d => d.setBookmarkAsync(sessionId, true)).Returns(Task.CompletedTask);
+        _dbMock.Setup(d => d.GetSessionAsync(sessionId)).ReturnsAsync(session);
+        _dbMock.Setup(d => d.SetBookmarkAsync(sessionId, true)).Returns(Task.CompletedTask);
 
         await _sut.BookmarkSessionAsync(sessionId, userId, isBookmarked: true);
 
-        _dbMock.Verify(d => d.setBookmarkAsync(sessionId, true), Times.Once);
+        _dbMock.Verify(d => d.SetBookmarkAsync(sessionId, true), Times.Once);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class SessionServiceTests
     {
         var sessionId = Guid.NewGuid();
 
-        _dbMock.Setup(d => d.getSessionAsync(sessionId)).ReturnsAsync((ChatSession)null!);
+        _dbMock.Setup(d => d.GetSessionAsync(sessionId)).ReturnsAsync((ChatSession)null!);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(
             () => _sut.BookmarkSessionAsync(sessionId, Guid.NewGuid(), true));
@@ -189,9 +189,9 @@ public class SessionServiceTests
         var sessionId = Guid.NewGuid();
         var ownerUserId = Guid.NewGuid();
         var otherUserId = Guid.NewGuid();
-        var session = new ChatSession { sessionID = sessionId, UserId = ownerUserId };
+        var session = new ChatSession { SessionId = sessionId, UserId = ownerUserId };
 
-        _dbMock.Setup(d => d.getSessionAsync(sessionId)).ReturnsAsync(session);
+        _dbMock.Setup(d => d.GetSessionAsync(sessionId)).ReturnsAsync(session);
 
         await Assert.ThrowsAsync<KeyNotFoundException>(
             () => _sut.BookmarkSessionAsync(sessionId, otherUserId, true));
@@ -206,14 +206,14 @@ public class SessionServiceTests
     {
         var userId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
-        var session = new ChatSession { sessionID = sessionId, UserId = userId };
+        var session = new ChatSession { SessionId = sessionId, UserId = userId };
 
-        _dbMock.Setup(d => d.getSessionAsync(sessionId)).ReturnsAsync(session);
-        _dbMock.Setup(d => d.deleteSessionAsync(sessionId)).Returns(Task.CompletedTask);
+        _dbMock.Setup(d => d.GetSessionAsync(sessionId)).ReturnsAsync(session);
+        _dbMock.Setup(d => d.DeleteSessionAsync(sessionId)).Returns(Task.CompletedTask);
 
         await _sut.DeleteSessionAsync(sessionId, userId);
 
-        _dbMock.Verify(d => d.deleteSessionAsync(sessionId), Times.Once);
+        _dbMock.Verify(d => d.DeleteSessionAsync(sessionId), Times.Once);
         _cacheMock.Verify(c => c.RemoveAsync($"session:{sessionId}"), Times.Once);
     }
 
@@ -227,12 +227,12 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
 
         _dbMock
-            .Setup(d => d.createSessionAsync(It.IsAny<ChatSession>()))
+            .Setup(d => d.CreateSessionAsync(It.IsAny<ChatSession>()))
             .Returns(Task.CompletedTask);
 
         var session = await _sut.GetOrCreateSessionAsync(userId, specificSessionId: null);
 
-        Assert.NotEqual(Guid.Empty, session.sessionID);
+        Assert.NotEqual(Guid.Empty, session.SessionId);
         Assert.Equal(userId, session.UserId);
     }
 
@@ -241,7 +241,7 @@ public class SessionServiceTests
     {
         var userId = Guid.NewGuid();
         var sessionId = Guid.NewGuid();
-        var cachedSession = new ChatSession { sessionID = sessionId, UserId = userId };
+        var cachedSession = new ChatSession { SessionId = sessionId, UserId = userId };
 
         _cacheMock
             .Setup(c => c.GetAsync<ChatSession>($"session:{sessionId}"))
@@ -249,9 +249,9 @@ public class SessionServiceTests
 
         var result = await _sut.GetOrCreateSessionAsync(userId, sessionId);
 
-        Assert.Equal(sessionId, result.sessionID);
+        Assert.Equal(sessionId, result.SessionId);
         // Database should NOT be called when cache hits
-        _dbMock.Verify(d => d.getSessionAsync(It.IsAny<Guid>()), Times.Never);
+        _dbMock.Verify(d => d.GetSessionAsync(It.IsAny<Guid>()), Times.Never);
     }
 
     // ------------------------------------------------------------------ //
@@ -265,10 +265,10 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
         var originalSession = new ChatSession
         {
-            sessionID = sessionId,
+            SessionId = sessionId,
             UserId = userId,
-            isBookmarked = false,
-            createdDate = DateTime.UtcNow,
+            IsBookmarked = false,
+            CreatedDate = DateTime.UtcNow,
             SessionName = "Original Name"
         };
 
@@ -277,7 +277,7 @@ public class SessionServiceTests
             .ReturnsAsync(originalSession);
 
         _dbMock
-            .Setup(d => d.updateSessionNameAsync(sessionId, "New Name"))
+            .Setup(d => d.UpdateSessionNameAsync(sessionId, "New Name"))
             .Returns(Task.CompletedTask);
 
         await _sut.UpdateSessionNameAsync(sessionId, "New Name");
@@ -288,7 +288,7 @@ public class SessionServiceTests
         // Verify cache received a DIFFERENT object with the new name
         _cacheMock.Verify(c => c.SetAsync(
             $"session:{sessionId}",
-            It.Is<ChatSession>(s => s.SessionName == "New Name" && s.sessionID == sessionId),
+            It.Is<ChatSession>(s => s.SessionName == "New Name" && s.SessionId == sessionId),
             It.IsAny<TimeSpan?>()), Times.Once);
     }
 
@@ -299,29 +299,29 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
         var originalSession = new ChatSession
         {
-            sessionID = sessionId,
+            SessionId = sessionId,
             UserId = userId,
-            isBookmarked = false,
-            createdDate = DateTime.UtcNow
+            IsBookmarked = false,
+            CreatedDate = DateTime.UtcNow
         };
 
         _dbMock
-            .Setup(d => d.getSessionAsync(sessionId))
+            .Setup(d => d.GetSessionAsync(sessionId))
             .ReturnsAsync(originalSession);
 
         _dbMock
-            .Setup(d => d.setBookmarkAsync(sessionId, true))
+            .Setup(d => d.SetBookmarkAsync(sessionId, true))
             .Returns(Task.CompletedTask);
 
         await _sut.BookmarkSessionAsync(sessionId, userId, true);
 
         // Original object must NOT have been mutated
-        Assert.False(originalSession.isBookmarked);
+        Assert.False(originalSession.IsBookmarked);
 
-        // Verify cache received an object with isBookmarked == true
+        // Verify cache received an object with IsBookmarked == true
         _cacheMock.Verify(c => c.SetAsync(
             $"session:{sessionId}",
-            It.Is<ChatSession>(s => s.isBookmarked == true && s.sessionID == sessionId),
+            It.Is<ChatSession>(s => s.IsBookmarked == true && s.SessionId == sessionId),
             It.IsAny<TimeSpan?>()), Times.Once);
     }
 
@@ -332,17 +332,17 @@ public class SessionServiceTests
         var userId = Guid.NewGuid();
         var originalSession = new ChatSession
         {
-            sessionID = sessionId,
+            SessionId = sessionId,
             UserId = userId,
-            isBookmarked = false,
-            createdDate = DateTime.UtcNow
+            IsBookmarked = false,
+            CreatedDate = DateTime.UtcNow
         };
 
         _dbMock
-            .Setup(d => d.getSessionAsync(sessionId))
+            .Setup(d => d.GetSessionAsync(sessionId))
             .ReturnsAsync(originalSession);
         _dbMock
-            .Setup(d => d.setBookmarkAsync(sessionId, true))
+            .Setup(d => d.SetBookmarkAsync(sessionId, true))
             .Returns(Task.CompletedTask);
 
         ChatSession? cachedObject = null;

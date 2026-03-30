@@ -11,7 +11,7 @@ public class ChatWrapperClient : IChatWrapperClientInterface
         _HttpClient = httpClient;
     }
 
-    public async Task<ChatResponse> getChatResponseAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default)
+    public async Task<ChatResponse> GetChatResponseAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default)
     {
         HttpResponseMessage response = await _HttpClient.PostAsJsonAsync("chat/ChatResponse", chatRequest, cancellationToken);
 

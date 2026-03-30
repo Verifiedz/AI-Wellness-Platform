@@ -4,5 +4,5 @@ namespace ChatService.Interfaces;
 
 public interface IChatWrapperClientInterface
 {
-    public Task<ChatResponse> getChatResponseAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default);
+    public Task<ChatResponse> GetChatResponseAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default);
 }

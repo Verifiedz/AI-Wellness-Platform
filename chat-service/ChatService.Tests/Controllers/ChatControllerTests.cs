@@ -2,7 +2,7 @@ namespace ChatService.Tests.Controllers;
 
 using System.Security.Claims;
 using ChatService.DTOs;
-using ChatService.entities;
+using ChatService.Entities;
 using ChatService.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -138,8 +138,8 @@ public class ChatControllerTests
     {
         var sessions = new List<ChatSession>
         {
-            new() { sessionID = Guid.NewGuid(), UserId = _userId },
-            new() { sessionID = Guid.NewGuid(), UserId = _userId }
+            new() { SessionId = Guid.NewGuid(), UserId = _userId },
+            new() { SessionId = Guid.NewGuid(), UserId = _userId }
         };
 
         _sessionServiceMock
@@ -173,7 +173,7 @@ public class ChatControllerTests
         var sessionId = Guid.NewGuid();
         var chats = new List<Chat>
         {
-            new() { chatReferenceId = Guid.NewGuid(), message = "Hello", status = enums.Status.Active }
+            new() { ChatReferenceId = Guid.NewGuid(), Message = "Hello", Status = Enums.Status.Active }
         };
 
         _chatServiceMock
@@ -220,9 +220,9 @@ public class ChatControllerTests
         var sessionId = Guid.NewGuid();
         var chats = Enumerable.Range(0, 20).Select(_ => new Chat
         {
-            chatReferenceId = Guid.NewGuid(),
-            message = "msg",
-            status = enums.Status.Active
+            ChatReferenceId = Guid.NewGuid(),
+            Message = "msg",
+            Status = Enums.Status.Active
         }).ToList();
 
         _chatServiceMock

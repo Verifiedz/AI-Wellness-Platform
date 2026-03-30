@@ -1,12 +1,11 @@
-﻿
+
 namespace ChatService.Interfaces;
 
 public interface IConfigurationService
 {
+     public string GetApiKey();
 
-     public string getApiKey();
+     public string GetConnectionString();
 
-     public string getConnectionString();
-     
-     public string getBaseUrl();
+     public string GetBaseUrl();
 }

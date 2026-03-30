@@ -1,4 +1,4 @@
-namespace ChatService.enums;
+namespace ChatService.Enums;
 
 public enum Status
 {

@@ -2,6 +2,7 @@
 using System.Transactions;
 using ChatService.APIs.Providers;
 using ChatService.DTOs;
+using ChatService.Enums;
 using ChatService.Interfaces;
 using ChatService.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -30,25 +31,25 @@ public class ChatDatabaseProviderIntegrationTests
         //Arrange the data
         var chat = new Chat
         {
-            chatUserId = Guid.NewGuid(),
-            chatReferenceId = Guid.NewGuid(),
-            message = "how are you sir?",
-            status = enums.Status.Active,
-            isBookmarked = false,
+            ChatUserId = Guid.NewGuid(),
+            ChatReferenceId = Guid.NewGuid(),
+            Message = "how are you sir?",
+            Status = Status.Active,
+            IsBookmarked = false,
             CreatedDate = DateTime.UtcNow,
         };
 
         //Act
-         await _chatDatabaseProvider.createChatAsync(chat);
+         await _chatDatabaseProvider.CreateChatAsync(chat);
 
-        var result = await _chatDatabaseProvider.getChatAsync(chat.chatReferenceId);
+        var result = await _chatDatabaseProvider.GetChatAsync(chat.ChatReferenceId);
         //Assert
         Assert.NotNull(result);
-        Assert.Equal(chat.chatUserId, result.chatUserId);
-        Assert.Equal(chat.chatReferenceId, result.chatReferenceId);
-        Assert.Equal(chat.message, result.message);
-        Assert.Equal(chat.status, result.status);
-        Assert.Equal(chat.isBookmarked, result.isBookmarked);
+        Assert.Equal(chat.ChatUserId, result.ChatUserId);
+        Assert.Equal(chat.ChatReferenceId, result.ChatReferenceId);
+        Assert.Equal(chat.Message, result.Message);
+        Assert.Equal(chat.Status, result.Status);
+        Assert.Equal(chat.IsBookmarked, result.IsBookmarked);
     }
     [Fact]
     public async Task DeleteChatAsync()
@@ -57,22 +58,22 @@ public class ChatDatabaseProviderIntegrationTests
         var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
         var expected = new Chat
         {
-            chatUserId = Guid.NewGuid(),
-            chatReferenceId = Guid.NewGuid(),
-            message = "how are you sir?",
-            status = enums.Status.Active,
-            isBookmarked = false,
+            ChatUserId = Guid.NewGuid(),
+            ChatReferenceId = Guid.NewGuid(),
+            Message = "how are you sir?",
+            Status = Status.Active,
+            IsBookmarked = false,
             CreatedDate = DateTime.UtcNow,
         };
 
         // create a new entry chat
-       await _chatDatabaseProvider.createChatAsync(expected);
+       await _chatDatabaseProvider.CreateChatAsync(expected);
 
         //delete the existence of the entry.
-       await _chatDatabaseProvider.deleteChatAsync(expected.chatReferenceId);
+       await _chatDatabaseProvider.DeleteChatAsync(expected.ChatReferenceId);
 
         //attemp to recieve the entry
-        var result =  await _chatDatabaseProvider.getChatAsync(expected.chatReferenceId);
+        var result =  await _chatDatabaseProvider.GetChatAsync(expected.ChatReferenceId);
         Assert.Null(result);
     }
 
@@ -86,13 +87,13 @@ public class StubConfigurationService : IConfigurationService
             PostgreSqlConnectionString = "Server=localhost;Port=5432;Database=chatservicedb;User Id=wasim;Password=Wasim1921;Pooling=true;"
         };
     }
-    public string getApiKey() => _stubchatServiceOptions.ApiKey;
+    public string GetApiKey() => _stubchatServiceOptions.ApiKey;
 
-    public string getConnectionString() =>
+    public string GetConnectionString() =>
         _stubchatServiceOptions.PostgreSqlConnectionString;
 
-    public string getBaseUrl(){
+    public string GetBaseUrl()
+    {
       return _stubchatServiceOptions.BaseUrl;
-
     }
 }

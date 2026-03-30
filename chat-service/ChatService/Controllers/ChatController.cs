@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ChatService.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using ChatService.DTOs;
-using ChatService.entities;
+using ChatService.Entities;
 using System.Security.Claims;
 
 [Route("chatService/api")]

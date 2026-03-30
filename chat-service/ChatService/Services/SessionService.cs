@@ -1,7 +1,9 @@
-namespace ChatService.Services;
-using ChatService.entities;
+using ChatService.Entities;
 using ChatService.Interfaces;
 using Microsoft.Extensions.Logging;
+
+namespace ChatService.Services;
+
 public class SessionService : ISessionService
 {
   private readonly ISessionDatabaseProvider _sessionDatabaseProvider;
@@ -14,14 +16,14 @@ public class SessionService : ISessionService
     _cache = cache;
     _logger = logger;
   }
-    
+
   public async Task<ChatSession> GetOrCreateSessionAsync(Guid userId, Guid? specificSessionId = null)
   {
     if (specificSessionId.HasValue && specificSessionId != Guid.Empty)
     {
       string cacheKey = $"session:{specificSessionId.Value}";
       var cachedSession = await _cache.GetAsync<ChatSession>(cacheKey);
-        
+
       if (cachedSession != null && cachedSession.UserId == userId)
       {
         _logger.LogDebug("Cache hit for session {SessionId}", specificSessionId);
@@ -29,8 +31,8 @@ public class SessionService : ISessionService
       }
 
       _logger.LogDebug("Cache miss for session {SessionId}, fetching from DB", specificSessionId);
-      var existingSession = await _sessionDatabaseProvider.getSessionAsync(specificSessionId.Value);
-        
+      var existingSession = await _sessionDatabaseProvider.GetSessionAsync(specificSessionId.Value);
+
       if (existingSession != null && existingSession.UserId == userId)
       {
         await _cache.SetAsync(cacheKey, existingSession);
@@ -38,20 +40,20 @@ public class SessionService : ISessionService
       }
 
       throw new KeyNotFoundException($"Session {specificSessionId} does not exist or access is denied.");
-    }        
+    }
 
     var newSession = new ChatSession
     {
-      sessionID = Guid.NewGuid(),
+      SessionId = Guid.NewGuid(),
       UserId = userId,
-      isBookmarked = false,
-      createdDate = DateTime.UtcNow
+      IsBookmarked = false,
+      CreatedDate = DateTime.UtcNow
     };
 
-    await _sessionDatabaseProvider.createSessionAsync(newSession);
-    await _cache.SetAsync($"session:{newSession.sessionID}", newSession);
+    await _sessionDatabaseProvider.CreateSessionAsync(newSession);
+    await _cache.SetAsync($"session:{newSession.SessionId}", newSession);
 
-    return newSession;        
+    return newSession;
   }
 
   public async Task<ChatSession> CreateSessionAsync(Guid userId)
@@ -63,14 +65,14 @@ public class SessionService : ISessionService
 
     var newSession = new ChatSession
     {
-      sessionID = Guid.NewGuid(),
+      SessionId = Guid.NewGuid(),
       UserId = userId,
-      isBookmarked = false,
-      createdDate = DateTime.UtcNow
+      IsBookmarked = false,
+      CreatedDate = DateTime.UtcNow
     };
 
-    await _sessionDatabaseProvider.createSessionAsync(newSession);
-    await _cache.SetAsync($"session:{newSession.sessionID}", newSession);
+    await _sessionDatabaseProvider.CreateSessionAsync(newSession);
+    await _cache.SetAsync($"session:{newSession.SessionId}", newSession);
     return newSession;
   }
 
@@ -92,7 +94,7 @@ public class SessionService : ISessionService
       throw new ArgumentException("userId was not provided");
     }
 
-    return await _sessionDatabaseProvider.getSessionsbyUserAsync(userId);
+    return await _sessionDatabaseProvider.GetSessionsByUserAsync(userId);
   }
 
   public async Task BookmarkSessionAsync(Guid sessionId, Guid userId, bool isBookmarked)
@@ -102,7 +104,7 @@ public class SessionService : ISessionService
       throw new ArgumentException("sessionId was not provided");
     }
 
-    var session = await _sessionDatabaseProvider.getSessionAsync(sessionId);
+    var session = await _sessionDatabaseProvider.GetSessionAsync(sessionId);
     if (session == null)
     {
       throw new KeyNotFoundException($"Session {sessionId} was not found.");
@@ -113,13 +115,13 @@ public class SessionService : ISessionService
       throw new KeyNotFoundException($"Session {sessionId} does not exist or access is denied.");
     }
 
-    await _sessionDatabaseProvider.setBookmarkAsync(sessionId, isBookmarked);
+    await _sessionDatabaseProvider.SetBookmarkAsync(sessionId, isBookmarked);
     var updated = new ChatSession
     {
-      sessionID = session.sessionID,
+      SessionId = session.SessionId,
       UserId = session.UserId,
-      isBookmarked = isBookmarked,
-      createdDate = session.createdDate,
+      IsBookmarked = isBookmarked,
+      CreatedDate = session.CreatedDate,
       SessionName = session.SessionName
     };
     await _cache.SetAsync($"session:{sessionId}", updated);
@@ -132,7 +134,7 @@ public class SessionService : ISessionService
       throw new ArgumentException("sessionId was not provided");
     }
 
-    var session = await _sessionDatabaseProvider.getSessionAsync(sessionId);
+    var session = await _sessionDatabaseProvider.GetSessionAsync(sessionId);
     if (session == null)
     {
       throw new KeyNotFoundException($"Session {sessionId} was not found.");
@@ -143,7 +145,7 @@ public class SessionService : ISessionService
       throw new KeyNotFoundException($"Session {sessionId} does not exist or access is denied.");
     }
 
-    await _sessionDatabaseProvider.deleteSessionAsync(sessionId);
+    await _sessionDatabaseProvider.DeleteSessionAsync(sessionId);
     await _cache.RemoveAsync($"session:{sessionId}");
   }
 
@@ -154,7 +156,7 @@ public class SessionService : ISessionService
       throw new ArgumentException("sessionId was not provided");
     }
 
-    await _sessionDatabaseProvider.updateSessionNameAsync(sessionId, sessionName);
+    await _sessionDatabaseProvider.UpdateSessionNameAsync(sessionId, sessionName);
 
     string cacheKey = $"session:{sessionId}";
     var cachedSession = await _cache.GetAsync<ChatSession>(cacheKey);
@@ -162,14 +164,13 @@ public class SessionService : ISessionService
     {
       var updated = new ChatSession
       {
-        sessionID = cachedSession.sessionID,
+        SessionId = cachedSession.SessionId,
         UserId = cachedSession.UserId,
-        isBookmarked = cachedSession.isBookmarked,
-        createdDate = cachedSession.createdDate,
+        IsBookmarked = cachedSession.IsBookmarked,
+        CreatedDate = cachedSession.CreatedDate,
         SessionName = sessionName
       };
       await _cache.SetAsync(cacheKey, updated);
     }
   }
 }
-

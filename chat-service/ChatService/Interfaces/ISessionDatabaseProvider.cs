@@ -1,17 +1,16 @@
 namespace ChatService.Interfaces;
-using ChatService.entities;
-public interface ISessionDatabaseProvider {
+using ChatService.Entities;
+public interface ISessionDatabaseProvider
+{
+    Task CreateSessionAsync(ChatSession chatSession);
 
- Task createSessionAsync(ChatSession chatSession);
+    Task<ChatSession> GetSessionAsync(Guid sessionId);
 
- Task<ChatSession> getSessionAsync(Guid sessionID);
- 
- Task setBookmarkAsync(Guid sessionID, bool isBookmarked);
+    Task SetBookmarkAsync(Guid sessionId, bool isBookmarked);
 
- Task<IReadOnlyList<ChatSession>> getSessionsbyUserAsync(Guid UserID);
+    Task<IReadOnlyList<ChatSession>> GetSessionsByUserAsync(Guid userId);
 
- Task deleteSessionAsync(Guid sessionId);
+    Task DeleteSessionAsync(Guid sessionId);
 
- Task updateSessionNameAsync(Guid sessionId, string sessionName);
-
+    Task UpdateSessionNameAsync(Guid sessionId, string sessionName);
 }

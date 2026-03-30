@@ -1,16 +1,19 @@
-namespace ChatService.Services;
 using System.Text.Json;
 using ChatService.Interfaces;
 using ChatService.DTOs;
-using ChatService.entities;
-public class chatService : IChatService
+using ChatService.Entities;
+using ChatService.Enums;
+
+namespace ChatService.Services;
+
+public class ChatService : IChatService
 {
   private readonly ISessionService _sessionService;
   private readonly IChatWrapperClientInterface _chatWrapperClient;
   private readonly IChatDatabaseProvider _chatdatbaseProvider;
   private readonly Ganss.Xss.HtmlSanitizer _sanitizer;
 
-  public chatService(
+  public ChatService(
       IChatWrapperClientInterface chatWrapperClient,
       ISessionService sessionService,
       IChatDatabaseProvider chatDatabaseProvider,
@@ -43,31 +46,31 @@ public class chatService : IChatService
     if (isNewSession)
     {
       var sessionName = ExtractSessionName(sanitizedRequest.messageRequest);
-      await _sessionService.UpdateSessionNameAsync(session.sessionID, sessionName);
+      await _sessionService.UpdateSessionNameAsync(session.SessionId, sessionName);
     }
 
-    var previousMessages = await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID, 200, 0, cancellationToken);
+    var previousMessages = await _chatdatbaseProvider.GetChatsBySessionAsync(session.SessionId, 200, 0, cancellationToken);
     var history = previousMessages.Select((m, index) => new
     {
       role = index % 2 == 0 ? "user" : "assistant",
-      content = m.message
+      content = m.Message
     });
     var contextJson = JsonSerializer.Serialize(history);
 
-    var updatedChatRequest = sanitizedRequest with { sessionId = session.sessionID, Context = contextJson };
+    var updatedChatRequest = sanitizedRequest with { sessionId = session.SessionId, Context = contextJson };
 
-    var requestChatObject = CreateChatFromRequest(updatedChatRequest, session.sessionID);
-    await _chatdatbaseProvider.createChatAsync(requestChatObject, cancellationToken);
+    var requestChatObject = CreateChatFromRequest(updatedChatRequest, session.SessionId);
+    await _chatdatbaseProvider.CreateChatAsync(requestChatObject, cancellationToken);
 
-    var chatResponse = await _chatWrapperClient.getChatResponseAsync(updatedChatRequest, cancellationToken);
+    var chatResponse = await _chatWrapperClient.GetChatResponseAsync(updatedChatRequest, cancellationToken);
     var normalizedChatResponse = chatResponse with
     {
-      sessionId = session.sessionID,
+      sessionId = session.SessionId,
       chatUserId = sanitizedRequest.chatUserId
     };
 
-    var responseChatObject = CreateChatFromResponse(normalizedChatResponse, session.sessionID);
-    await _chatdatbaseProvider.createChatAsync(responseChatObject, cancellationToken);
+    var responseChatObject = CreateChatFromResponse(normalizedChatResponse, session.SessionId);
+    await _chatdatbaseProvider.CreateChatAsync(responseChatObject, cancellationToken);
 
     return normalizedChatResponse;
   }
@@ -80,7 +83,7 @@ public class chatService : IChatService
     }
 
     var session = await _sessionService.GetOrCreateSessionAsync(userId, sessionId);
-    return await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID, limit, offset, cancellationToken);
+    return await _chatdatbaseProvider.GetChatsBySessionAsync(session.SessionId, limit, offset, cancellationToken);
   }
 
   private Chat CreateChatFromRequest(ChatRequest chatRequest, Guid sessionId)
@@ -92,12 +95,12 @@ public class chatService : IChatService
 
     return new Chat
     {
-      chatUserId = chatRequest.chatUserId,
-      chatReferenceId = Guid.NewGuid(),
-      message = chatRequest.messageRequest,
-      sessionId = sessionId,
-      status = enums.Status.Active,
-      isBookmarked = false,
+      ChatUserId = chatRequest.chatUserId,
+      ChatReferenceId = Guid.NewGuid(),
+      Message = chatRequest.messageRequest,
+      SessionId = sessionId,
+      Status = Status.Active,
+      IsBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };
   }
@@ -125,12 +128,12 @@ public class chatService : IChatService
 
     return new Chat
     {
-      chatUserId = chatResponse.chatUserId,
-      chatReferenceId = Guid.NewGuid(),
-      message = chatResponse.message,
-      sessionId = sessionId,
-      status = enums.Status.Active,
-      isBookmarked = false,
+      ChatUserId = chatResponse.chatUserId,
+      ChatReferenceId = Guid.NewGuid(),
+      Message = chatResponse.message,
+      SessionId = sessionId,
+      Status = Status.Active,
+      IsBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };
   }
