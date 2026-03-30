@@ -55,17 +55,17 @@ Security first -- fix vulnerabilities and protect user data before anything else
 - [x] StoredProcedureExecutor validates function names against injection — Validated in Phase 2: Internal Communication Security (REL-02)
 
 **Tech Debt (MEDIUM)**
-- [ ] Session entity mutations replaced with immutable patterns
+- [x] Session entity mutations replaced with immutable patterns — Validated in Phase 4: Reliability and Performance (REL-06)
 - [ ] Chat service naming conventions standardized to PascalCase
-- [ ] User-generated content (posts, journals, chat) has input sanitization
+- [x] User-generated content (posts, journals, chat) has input sanitization — Validated in Phase 4: Reliability and Performance (REL-05)
 - [x] Auth service uses domain exception types instead of generic Exception — Validated in Phase 1: Perimeter Security (SEC-08)
 - [ ] Duplicated StoredProcedureExecutor extracted to shared pattern
 - [ ] Wearable service stub either implemented or removed from UI
 
 **Performance (MEDIUM)**
-- [ ] Chat history queries have pagination (limit/offset)
+- [x] Chat history queries have pagination (limit/offset) — Validated in Phase 4: Reliability and Performance (REL-03)
 - [ ] Community posts use fewer database round-trips
-- [ ] Chat service propagates CancellationToken through the chain
+- [x] Chat service propagates CancellationToken through the chain — Validated in Phase 4: Reliability and Performance (REL-04)
 - [ ] Rate limiting documented as in-memory (scaling limitation noted)
 
 **Test Coverage (HIGH)**
@@ -145,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 — Phase 3 (Test Infrastructure) complete*
+*Last updated: 2026-03-30 — Phase 4 (Reliability and Performance) complete*
