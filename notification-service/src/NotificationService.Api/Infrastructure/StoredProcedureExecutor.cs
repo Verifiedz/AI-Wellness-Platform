@@ -2,6 +2,7 @@ namespace NotificationService.Api.Infrastructure;
 
 using Npgsql;
 using System.Data;
+using System.Text.RegularExpressions;
 
 /// <summary>
 /// Utility class for executing PostgreSQL stored procedures
@@ -19,6 +20,19 @@ public class StoredProcedureExecutor
         _connectionString = configuration.GetConnectionString("NotificationDatabase")
             ?? throw new InvalidOperationException("NotificationDatabase connection string is not configured");
         _logger = logger;
+    }
+
+    private static readonly Regex ValidIdentifier =
+        new(@"^[a-zA-Z_][a-zA-Z0-9_]*$", RegexOptions.Compiled);
+
+    private static void ValidateFunctionName(string functionName)
+    {
+        if (string.IsNullOrWhiteSpace(functionName))
+            throw new ArgumentException("Function name cannot be null or empty.", nameof(functionName));
+        if (!ValidIdentifier.IsMatch(functionName))
+            throw new ArgumentException(
+                $"Function name '{functionName}' contains invalid characters. Only letters, digits, and underscores are permitted.",
+                nameof(functionName));
     }
 
     /// <summary>
@@ -44,6 +58,7 @@ public class StoredProcedureExecutor
     {
         try
         {
+            ValidateFunctionName(procedureName);
             _logger.LogDebug("Executing scalar procedure: {ProcedureName}", procedureName);
 
             await using var connection = new NpgsqlConnection(_connectionString);
@@ -92,6 +107,7 @@ public class StoredProcedureExecutor
     {
         try
         {
+            ValidateFunctionName(procedureName);
             _logger.LogDebug("Executing reader procedure: {ProcedureName}", procedureName);
 
             var results = new List<T>();
@@ -136,6 +152,7 @@ public class StoredProcedureExecutor
     {
         try
         {
+            ValidateFunctionName(procedureName);
             _logger.LogDebug("Executing non-query procedure: {ProcedureName}", procedureName);
 
             await using var connection = new NpgsqlConnection(_connectionString);
@@ -181,6 +198,7 @@ public class StoredProcedureExecutor
     {
         try
         {
+            ValidateFunctionName(procedureName);
             _logger.LogDebug("Executing single-row procedure: {ProcedureName}", procedureName);
 
             await using var connection = new NpgsqlConnection(_connectionString);
