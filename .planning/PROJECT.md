@@ -40,15 +40,15 @@ Security first -- fix vulnerabilities and protect user data before anything else
 <!-- Current scope: hardening. Fix all concerns from codebase audit. -->
 
 **Security (CRITICAL)**
-- [ ] 2FA codes are not logged in plaintext
-- [ ] Security codes use cryptographically secure random generation
-- [ ] Community service validates gateway shared-secret (not unauthenticated)
+- [x] 2FA codes are not logged in plaintext — Validated in Phase 1: Perimeter Security (SEC-01)
+- [x] Security codes use cryptographically secure random generation — Validated in Phase 1: Perimeter Security (SEC-02)
+- [x] Community service validates gateway shared-secret (not unauthenticated) — Validated in Phase 1: Perimeter Security (SEC-03)
 - [ ] API key comparisons use timing-safe equality
-- [ ] PII is not logged via string interpolation (use structured logging)
-- [ ] User info endpoint enforces authorization (users can only query their own data)
-- [ ] Exception messages are not exposed to API clients
-- [ ] Hardcoded credentials removed from committed config files
-- [ ] Hardcoded RunPod proxy URL removed from committed config
+- [x] PII is not logged via string interpolation (use structured logging) — Validated in Phase 1: Perimeter Security (SEC-05)
+- [x] User info endpoint enforces authorization (users can only query their own data) — Validated in Phase 1: Perimeter Security (SEC-06)
+- [x] Exception messages are not exposed to API clients — Validated in Phase 1: Perimeter Security (SEC-07, SEC-08)
+- [x] Hardcoded credentials removed from committed config files — Validated in Phase 1: Perimeter Security (SEC-09)
+- [x] Hardcoded RunPod proxy URL removed from committed config — Validated in Phase 1: Perimeter Security (SEC-10)
 
 **Bugs / Error-Prone Areas (HIGH)**
 - [ ] Rate limiting middleware registered in correct order (after CORS and auth)
@@ -58,7 +58,7 @@ Security first -- fix vulnerabilities and protect user data before anything else
 - [ ] Session entity mutations replaced with immutable patterns
 - [ ] Chat service naming conventions standardized to PascalCase
 - [ ] User-generated content (posts, journals, chat) has input sanitization
-- [ ] Auth service uses domain exception types instead of generic Exception
+- [x] Auth service uses domain exception types instead of generic Exception — Validated in Phase 1: Perimeter Security (SEC-08)
 - [ ] Duplicated StoredProcedureExecutor extracted to shared pattern
 - [ ] Wearable service stub either implemented or removed from UI
 
@@ -82,7 +82,7 @@ Security first -- fix vulnerabilities and protect user data before anything else
 - [ ] Auth service container has health check in docker-compose
 - [ ] Firebase service account path validated at startup
 - [ ] Docker Compose default passwords removed (fail fast if env var missing)
-- [ ] .env.example enumerates all required environment variables
+- [x] .env.example enumerates all required environment variables — Validated in Phase 1: Perimeter Security (SEC-09, SEC-10)
 
 ### Out of Scope
 
@@ -145,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-29 after initialization*
+*Last updated: 2026-03-30 — Phase 1 (Perimeter Security) complete*
