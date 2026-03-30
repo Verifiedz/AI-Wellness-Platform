@@ -6,7 +6,7 @@ using JournalService.Api.Models.Responses;
 
 public class JournalEntryService
 {
-    private readonly DatabaseService _databaseService;
+    private readonly IDatabaseService _databaseService;
     private readonly ILogger<JournalEntryService> _logger;
 
     private static readonly HashSet<string> ValidEmotions = new(StringComparer.OrdinalIgnoreCase)
@@ -17,7 +17,7 @@ public class JournalEntryService
     };
 
     public JournalEntryService(
-        DatabaseService databaseService,
+        IDatabaseService databaseService,
         ILogger<JournalEntryService> logger)
     {
         _databaseService = databaseService;

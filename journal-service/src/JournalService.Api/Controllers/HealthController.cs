@@ -9,11 +9,11 @@ using System.Reflection;
 [Route("api")]
 public class HealthController : ControllerBase
 {
-    private readonly DatabaseService _databaseService;
+    private readonly IDatabaseService _databaseService;
     private readonly ILogger<HealthController> _logger;
 
     public HealthController(
-        DatabaseService databaseService,
+        IDatabaseService databaseService,
         ILogger<HealthController> logger)
     {
         _databaseService = databaseService;

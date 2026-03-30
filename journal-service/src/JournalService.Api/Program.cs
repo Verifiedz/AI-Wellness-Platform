@@ -11,7 +11,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<StoredProcedureExecutor>();
 builder.Services.AddSingleton<DatabaseInitializer>();
 
-builder.Services.AddScoped<DatabaseService>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 builder.Services.AddScoped<JournalEntryService>();
 builder.Services.AddScoped<PatternAnalysisService>();
 builder.Services.AddScoped<AssessmentService>();

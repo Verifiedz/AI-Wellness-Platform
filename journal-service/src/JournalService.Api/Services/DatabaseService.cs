@@ -5,7 +5,7 @@ using JournalService.Api.Models.Entities;
 using Npgsql;
 using NpgsqlTypes;
 
-public class DatabaseService
+public class DatabaseService : IDatabaseService
 {
     private readonly StoredProcedureExecutor _executor;
     private readonly ILogger<DatabaseService> _logger;
