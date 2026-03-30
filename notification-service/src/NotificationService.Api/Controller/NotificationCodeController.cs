@@ -1,5 +1,7 @@
 namespace NotificationService.Api.Controllers;
 
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using NotificationService.Api.Models.Requests;
 using NotificationService.Api.Models.Responses;
@@ -98,6 +100,12 @@ public class NotificationCodeController : ControllerBase
         var expectedKey = _configuration["Gateway:SharedSecret"] ?? "";
         var providedKey = Request.Headers["X-Internal-Api-Key"].ToString();
 
-        return !string.IsNullOrEmpty(expectedKey) && expectedKey == providedKey;
+        if (string.IsNullOrEmpty(expectedKey) || string.IsNullOrEmpty(providedKey))
+            return false;
+
+        var expectedBytes = Encoding.UTF8.GetBytes(expectedKey);
+        var providedBytes = Encoding.UTF8.GetBytes(providedKey);
+
+        return CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes);
     }
 }
