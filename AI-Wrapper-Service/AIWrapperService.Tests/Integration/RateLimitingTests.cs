@@ -80,6 +80,41 @@ public class RateLimitingTests
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
+    [Fact]
+    public async Task ChatComplete_ExceedsRateLimit_Returns429()
+    {
+        // Arrange - set limit to 2 so the 3rd request triggers 429
+        var mockHandler = CreateMockOpenAIHandler();
+        using var factory = new IsolatedWebApplicationFactory<Program>
+        {
+            MockHttpHandler = mockHandler.Object,
+            ConfigurationOverrides = new Dictionary<string, string?>
+            {
+                ["AiService:RateLimitPerMinute"] = "2"
+            }
+        };
+        using var client = factory.CreateClient();
+
+        // Act - send 3 requests; the 3rd should be rate limited
+        var responses = new List<HttpResponseMessage>();
+        for (int i = 0; i < 3; i++)
+        {
+            var request = CreateAuthenticatedRequest(new
+            {
+                chatUserId = Guid.NewGuid(),
+                messageRequest = "Hello",
+                Context = "",
+                sessionId = Guid.NewGuid()
+            });
+            responses.Add(await client.SendAsync(request));
+        }
+
+        // Assert - first two succeed, third is rate limited
+        responses[0].StatusCode.Should().Be(HttpStatusCode.OK);
+        responses[1].StatusCode.Should().Be(HttpStatusCode.OK);
+        responses[2].StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
+    }
+
     private static HttpRequestMessage CreateAuthenticatedRequest(object body)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, "/chat/ChatResponse")

@@ -2,6 +2,8 @@ using AIWrapperService.APIs;
 using AIWrapperService.Middleware;
 using AIWrapperService.Services;
 using DotNetEnv;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 // Load .env file if it exists (for local development)
 if (File.Exists(".env"))
@@ -38,6 +40,59 @@ builder.Services.AddHealthChecks();
 
 // Add ProblemDetails support
 builder.Services.AddProblemDetails();
+
+// Add built-in rate limiting (replaces custom RateLimitingMiddleware).
+// Configuration is resolved from IConfiguration at host-build time so that
+// WebApplicationFactory test overrides applied via ConfigureAppConfiguration are respected.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Named policy for /chat/ routes: per-IP fixed window.
+    // PermitLimit is read from IConfiguration per-request so that test overrides
+    // applied via WebApplicationFactory.ConfigureAppConfiguration take effect.
+    options.AddPolicy("chat", httpContext =>
+    {
+        var config = httpContext.RequestServices.GetRequiredService<IConfiguration>();
+        var rateLimitPerMinute = config.GetValue("AiService:RateLimitPerMinute", 60);
+        var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: clientIp,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimitPerMinute,
+                Window = TimeSpan.FromMinutes(1),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        var clientIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        logger.LogWarning("Rate limit exceeded for IP {ClientIp}", clientIp);
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = StatusCodes.Status429TooManyRequests,
+            Title = "Rate Limit Exceeded",
+            Detail = "Too many requests. Please try again later.",
+            Instance = context.HttpContext.Request.Path,
+            Extensions =
+            {
+                ["traceId"] = Activity.Current?.Id ?? context.HttpContext.TraceIdentifier,
+                ["retryAfter"] = "60"
+            }
+        };
+
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/problem+json";
+        context.HttpContext.Response.Headers["Retry-After"] = "60";
+        await context.HttpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+    };
+});
 
 // Register typed HttpClient for OpenAI service
 builder.Services.AddHttpClient<IOpenAIChatService, OpenAIChatService>()
@@ -91,8 +146,8 @@ app.UseExceptionHandler(exceptionHandlerApp =>
     });
 });
 
-// Security: Rate limiting middleware (before API key check to prevent brute force)
-app.UseMiddleware<RateLimitingMiddleware>();
+// Security: Rate limiting (before API key check to prevent brute force)
+app.UseRateLimiter();
 
 // Security: API key authentication middleware
 app.UseMiddleware<InternalApiKeyMiddleware>();

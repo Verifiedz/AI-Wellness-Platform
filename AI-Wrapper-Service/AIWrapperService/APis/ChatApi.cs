@@ -14,7 +14,8 @@ public static class ChatApi
     public static IEndpointRouteBuilder MapChatApi(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/chat")
-            .WithTags("Chat");
+            .WithTags("Chat")
+            .RequireRateLimiting("chat");
 
         group.MapPost("/ChatResponse", CompleteChatAsync)
             .WithName("ChatComplete")
