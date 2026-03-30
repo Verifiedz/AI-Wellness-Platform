@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: auth-service
+            path: auth-service/AuthService.Tests/AuthService.Tests.csproj
+          - name: chat-service
+            path: chat-service/ChatService.Tests/ChatService.Tests.csproj
+          - name: ai-wrapper-service
+            path: AI-Wrapper-Service/AIWrapperService.Tests/AIWrapperService.Tests.csproj
+          - name: notification-service
+            path: notification-service/src/NotificationService.Tests/NotificationService.Tests.csproj
+          - name: journal-service
+            path: journal-service/src/JournalService.Tests/JournalService.Tests.csproj
+          - name: community-service
+            path: community-service/CommunityService.Tests/CommunityService.Tests.csproj
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+            9.x
+
+      - name: Restore ${{ matrix.name }}
+        run: dotnet restore "${{ matrix.path }}"
+
+      - name: Test ${{ matrix.name }}
+        run: dotnet test "${{ matrix.path }}" --no-restore --verbosity normal
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build all services
+        run: docker compose build
+        env:
+          DOCKER_BUILDKIT: 1
