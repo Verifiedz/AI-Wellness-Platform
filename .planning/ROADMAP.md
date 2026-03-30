@@ -45,7 +45,10 @@ Plans:
   1. Notification-service API key comparison uses constant-time equality and a timing measurement test confirms no measurable difference between valid and invalid key response times
   2. A CORS preflight request to auth-service receives a 200 response (not 429) confirming rate limiting executes after CORS handling
   3. Passing a function name containing SQL metacharacters to StoredProcedureExecutor causes immediate rejection before any database call
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 02-01-PLAN.md -- Timing-safe API key comparison and middleware pipeline reorder (SEC-04, REL-01)
+- [x] 02-02-PLAN.md -- StoredProcedureExecutor function name validation (REL-02)
 
 ### Phase 3: Test Infrastructure
 **Goal**: Every previously untested service (auth, community, journal, notification, chat) has a test project, the frontend has Jest configured, and tests exist that verify each Phase 1 and 2 security fix cannot silently regress
@@ -83,12 +86,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
-| 2. Internal Communication Security | 0/TBD | Not started | - |
+| 2. Internal Communication Security | 0/2 | Not started | - |
 | 3. Test Infrastructure | 0/TBD | Not started | - |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
