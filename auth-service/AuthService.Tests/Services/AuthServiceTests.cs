@@ -232,6 +232,107 @@ public class AuthServiceTests
       $"Only {codes.Count} unique codes from 100 calls -- likely not using CSPRNG");
   }
 
+  // TEST-01: Duplicate-email error shape asserts EMAIL_EXISTS code and message
+  [Fact]
+  public async Task RegisterAsync_DuplicateEmail_ThrowsAuthConflictException_WithEmailExistsCode()
+  {
+    // Arrange
+    _passwordValidator
+      .Setup(v => v.ValidatePassword(It.IsAny<string>()))
+      .Returns((true, (string?)null));
+
+    _userRepository
+      .Setup(r => r.GetByEmailAsync("dupe@test.com"))
+      .ReturnsAsync(new User { Id = Guid.NewGuid(), Email = "dupe@test.com", Username = "user", PasswordHash = "$2a$11$fake" });
+
+    _passwordHasher
+      .Setup(p => p.HashPassword(It.IsAny<string>()))
+      .Returns("$2a$11$fakehashfortesting");
+
+    var sut = CreateSut();
+    var request = new RegisterRequest
+    {
+      Email = "dupe@test.com",
+      Username = "newuser",
+      Password = "ValidPass1!"
+    };
+
+    // Act & Assert
+    var ex = await Assert.ThrowsAsync<AuthConflictException>(
+      () => sut.RegisterAsync(request));
+
+    Assert.Equal("EMAIL_EXISTS", ex.ErrorCode);
+  }
+
+  [Fact]
+  public async Task RegisterAsync_DuplicateEmail_ErrorShape_HasErrorCode()
+  {
+    // Arrange
+    _passwordValidator
+      .Setup(v => v.ValidatePassword(It.IsAny<string>()))
+      .Returns((true, (string?)null));
+
+    _userRepository
+      .Setup(r => r.GetByEmailAsync("dupe@test.com"))
+      .ReturnsAsync(new User { Id = Guid.NewGuid(), Email = "dupe@test.com", Username = "user", PasswordHash = "$2a$11$fake" });
+
+    _passwordHasher
+      .Setup(p => p.HashPassword(It.IsAny<string>()))
+      .Returns("$2a$11$fakehashfortesting");
+
+    var sut = CreateSut();
+    var request = new RegisterRequest
+    {
+      Email = "dupe@test.com",
+      Username = "newuser",
+      Password = "ValidPass1!"
+    };
+
+    // Act & Assert
+    var ex = await Assert.ThrowsAsync<AuthConflictException>(
+      () => sut.RegisterAsync(request));
+
+    Assert.Equal("EMAIL_EXISTS", ex.ErrorCode);
+    Assert.Contains("Email already registered", ex.Message);
+  }
+
+  // TEST-01: GetUserInfo returns data for authenticated user (via service layer)
+  [Fact]
+  public async Task GetUserInfoAsync_ReturnsUserData_ForAuthenticatedUser()
+  {
+    // Arrange
+    var userId = Guid.NewGuid();
+    var user = new User
+    {
+      Id = userId,
+      Email = "auth@test.com",
+      Username = "authuser",
+      PasswordHash = "$2a$11$fakehashfortesting",
+      IsActive = true,
+      IsEmailVerified = true,
+      CreatedAt = DateTime.UtcNow,
+      FailedLoginAttempts = 0
+    };
+
+    _userRepository
+      .Setup(r => r.GetByEmailAsync("auth@test.com"))
+      .ReturnsAsync(user);
+
+    _userRepository
+      .Setup(r => r.IsAccountLockedAsync(userId))
+      .ReturnsAsync(false);
+
+    var sut = CreateSut();
+
+    // Act
+    var result = await sut.GetUserInfoAsync("auth@test.com");
+
+    // Assert: returned user data matches authenticated user's ID and email
+    Assert.Equal(userId, result.UserId);
+    Assert.Equal("auth@test.com", result.Email);
+    Assert.Equal("authuser", result.Username);
+  }
+
   // SEC-02: 2FA code value is never logged
   [Fact]
   public async Task TwoFactor_CodeNotLogged()
