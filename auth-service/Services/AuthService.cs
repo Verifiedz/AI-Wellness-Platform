@@ -5,6 +5,7 @@ using AIWellness.Auth.Models;
 using AIWellness.Auth.Repositories;
 using AIWellness.Auth.Services.Abstractions;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace AIWellness.Auth.Services;
 
@@ -123,7 +124,6 @@ public class AuthService : IAuthService
     var twoFactorCode = GenerateRandomCode();
     await _userRepository.CreateTwoFactorCodeAsync(user.Id, twoFactorCode, ipAddress);
 
-    _logger.LogInformation($"2FA Code for {user.Email}: {twoFactorCode}");
     await _notificationService.SendVerificationCodeAsync(user.Id, user.Email, twoFactorCode, "2fa", user.Phone);
 
     await _userRepository.UpdateLastLoginAsync(user.Id);
@@ -207,7 +207,7 @@ public class AuthService : IAuthService
 
     if (user == null)
     {
-      _logger.LogWarning($"Password reset requested for non-existent user/email");
+      _logger.LogWarning("Password reset requested for non-existent user/email");
       return;
     }
 
@@ -288,10 +288,9 @@ public class AuthService : IAuthService
     };
   }
 
-  private string GenerateRandomCode()
+  private static string GenerateRandomCode()
   {
-    var random = new Random();
-    return random.Next(100000, 999999).ToString();
+    return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
   }
 
   private async Task LogSuccessfulLoginAttempt(Guid userId, string ipAddress, string userAgent)

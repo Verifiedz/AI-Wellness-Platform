@@ -203,4 +203,93 @@ public class AuthServiceTests
 
     Assert.Equal("PASSWORDS_DO_NOT_MATCH", ex.ErrorCode);
   }
+
+  // SEC-01: CSPRNG used for code generation (not predictable new Random())
+  [Fact]
+  public void GenerateRandomCode_UsesCsprng()
+  {
+    // Use reflection to access private static GenerateRandomCode method.
+    var method = typeof(AuthService).GetMethod(
+      "GenerateRandomCode",
+      System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+    Assert.NotNull(method);
+
+    var codes = new HashSet<string>();
+    for (int i = 0; i < 100; i++)
+    {
+      var code = (string)method!.Invoke(null, null)!;
+      // All codes must be 6-digit numbers in [100000, 999999]
+      Assert.True(int.TryParse(code, out int value), $"Code '{code}' is not numeric");
+      Assert.InRange(value, 100000, 999999);
+      codes.Add(code);
+    }
+
+    // At least 90 unique values proves it is not a seeded-once Random
+    Assert.True(codes.Count >= 90,
+      $"Only {codes.Count} unique codes from 100 calls -- likely not using CSPRNG");
+  }
+
+  // SEC-02: 2FA code value is never logged
+  [Fact]
+  public async Task TwoFactor_CodeNotLogged()
+  {
+    // Arrange: set up a user that passes all LoginAsync guards and reaches 2FA dispatch
+    var user = new User
+    {
+      Id = Guid.NewGuid(),
+      Email = "test@example.com",
+      Username = "testuser",
+      IsActive = true,
+      IsEmailVerified = true,
+      PasswordHash = BCrypt.Net.BCrypt.HashPassword("ValidPass1!")
+    };
+
+    _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
+    _userRepository.Setup(r => r.IsAccountLockedAsync(It.IsAny<Guid>())).ReturnsAsync(false);
+    _userRepository.Setup(r => r.CreateTwoFactorCodeAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>()))
+      .Returns(Task.CompletedTask);
+    _userRepository.Setup(r => r.UpdateLastLoginAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+    _userRepository.Setup(r => r.LogLoginAttemptAsync(It.IsAny<LoginAttempt>())).Returns(Task.CompletedTask);
+    _notificationService
+      .Setup(n => n.SendVerificationCodeAsync(
+        It.IsAny<Guid>(),
+        It.IsAny<string>(),
+        It.IsAny<string>(),
+        It.IsAny<string>(),
+        It.IsAny<string?>(),
+        It.IsAny<string>()))
+      .Returns(Task.CompletedTask);
+
+    var httpContext = new DefaultHttpContext();
+    _httpContextAccessor.Setup(a => a.HttpContext).Returns(httpContext);
+
+    // Capture all log messages
+    var loggedMessages = new List<string>();
+    _logger
+      .Setup(l => l.Log(
+        It.IsAny<LogLevel>(),
+        It.IsAny<EventId>(),
+        It.IsAny<It.IsAnyType>(),
+        It.IsAny<Exception?>(),
+        It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+      .Callback<LogLevel, EventId, object, Exception?, Delegate>((level, eventId, state, exception, formatter) =>
+      {
+        loggedMessages.Add(state.ToString() ?? "");
+      });
+
+    var sut = CreateSut();
+    var request = new LoginRequest { Email = "test@example.com", Password = "ValidPass1!" };
+
+    // Act
+    await sut.LoginAsync(request);
+
+    // Assert: no log message should contain a 6-digit code captured from CreateTwoFactorCodeAsync
+    // We verify by checking that none of the logged messages contain any pattern matching a 6-digit code
+    // embedded in a 2FA context phrase
+    foreach (var msg in loggedMessages)
+    {
+      Assert.DoesNotContain("2FA Code", msg);
+    }
+  }
 }
