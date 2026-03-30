@@ -61,10 +61,10 @@ Plans:
   4. All tests were written to fail against the pre-fix code and pass only after the fix (no characterization tests encoding broken behavior)
 **Plans:** 4 plans
 Plans:
-- [ ] 03-01-PLAN.md -- IPasswordHasher abstraction and auth-service test expansion (TEST-08, TEST-01)
+- [x] 03-01-PLAN.md -- IPasswordHasher abstraction and auth-service test expansion (TEST-08, TEST-01)
 - [ ] 03-02-PLAN.md -- Community-service controller tests and journal-service test project (TEST-02, TEST-03)
 - [ ] 03-03-PLAN.md -- Notification-service test project and chat-service test expansion (TEST-04, TEST-05)
-- [ ] 03-04-PLAN.md -- Frontend Jest configuration and AuthContext/api/chatApi tests (TEST-06, TEST-07)
+- [x] 03-04-PLAN.md -- Frontend Jest configuration and AuthContext/api/chatApi tests (TEST-06, TEST-07)
 
 ### Phase 4: Reliability and Performance
 **Goal**: Chat history queries are bounded by pagination, abandoned AI requests are cancelled promptly, session state is never mutated in place, and user-generated content is sanitized before storage

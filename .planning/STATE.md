@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 02-internal-communication-security 02-01-PLAN.md
-last_updated: "2026-03-30T05:53:37.301Z"
+status: executing
+stopped_at: Completed 03-test-infrastructure 03-04-PLAN.md
+last_updated: "2026-03-30T06:36:09.462Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 11
+  completed_plans: 9
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Security first -- fix vulnerabilities and protect user data before anything else. Every fix must include tests proving the concern is resolved.
-**Current focus:** Phase 02 — internal-communication-security
+**Current focus:** Phase 03 — test-infrastructure
 
 ## Current Position
 
-Phase: 3
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 03 (test-infrastructure) — EXECUTING
+Plan: 3 of 4
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -59,6 +59,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-perimeter-security P02 | 8 | 2 tasks | 4 files |
 | Phase 02-internal-communication-security P02 | 10m | 2 tasks | 4 files |
 | Phase 02-internal-communication-security P01 | 4m | 2 tasks | 3 files |
+| Phase 03-test-infrastructure P04 | 25m | 2 tasks | 7 files |
+| Phase 03-test-infrastructure P01 | 7m | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -81,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 02-internal-communication-security]: StoredProcedure regex tests placed in auth-service.Tests: notification/journal have no test projects until Phase 3
 - [Phase 02-internal-communication-security]: Per-request config read in NotificationCodeController.ValidateApiKey is acceptable (controllers are transient) — no constructor field needed, diff stays minimal
 - [Phase 02-internal-communication-security]: Middleware order test reads Program.cs source as static analysis — integration testing CORS+rate-limiting with running server is Phase 3 scope
+- [Phase 03-test-infrastructure]: jest-expo@~54.0.0 for SDK 54 compatibility, --legacy-peer-deps for react 19.1.0 conflict
+- [Phase 03-test-infrastructure]: waitFor() from @testing-library/react-native for async useEffect assertions in AuthContext tests
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T05:45:48.511Z
-Stopped at: Completed 02-internal-communication-security 02-01-PLAN.md
+Last session: 2026-03-30T06:35:35.616Z
+Stopped at: Completed 03-test-infrastructure 03-04-PLAN.md
 Resume file: None
