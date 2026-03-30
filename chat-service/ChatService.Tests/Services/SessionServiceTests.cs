@@ -253,4 +253,107 @@ public class SessionServiceTests
         // Database should NOT be called when cache hits
         _dbMock.Verify(d => d.getSessionAsync(It.IsAny<Guid>()), Times.Never);
     }
+
+    // ------------------------------------------------------------------ //
+    // Immutability — session objects must not be mutated in place
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task UpdateSessionNameAsync_DoesNotMutateOriginal()
+    {
+        var sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var originalSession = new ChatSession
+        {
+            sessionID = sessionId,
+            UserId = userId,
+            isBookmarked = false,
+            createdDate = DateTime.UtcNow,
+            SessionName = "Original Name"
+        };
+
+        _cacheMock
+            .Setup(c => c.GetAsync<ChatSession>($"session:{sessionId}"))
+            .ReturnsAsync(originalSession);
+
+        _dbMock
+            .Setup(d => d.updateSessionNameAsync(sessionId, "New Name"))
+            .Returns(Task.CompletedTask);
+
+        await _sut.UpdateSessionNameAsync(sessionId, "New Name");
+
+        // Original object must NOT have been mutated
+        Assert.Equal("Original Name", originalSession.SessionName);
+
+        // Verify cache received a DIFFERENT object with the new name
+        _cacheMock.Verify(c => c.SetAsync(
+            $"session:{sessionId}",
+            It.Is<ChatSession>(s => s.SessionName == "New Name" && s.sessionID == sessionId),
+            It.IsAny<TimeSpan?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BookmarkSessionAsync_DoesNotMutateOriginal()
+    {
+        var sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var originalSession = new ChatSession
+        {
+            sessionID = sessionId,
+            UserId = userId,
+            isBookmarked = false,
+            createdDate = DateTime.UtcNow
+        };
+
+        _dbMock
+            .Setup(d => d.getSessionAsync(sessionId))
+            .ReturnsAsync(originalSession);
+
+        _dbMock
+            .Setup(d => d.setBookmarkAsync(sessionId, true))
+            .Returns(Task.CompletedTask);
+
+        await _sut.BookmarkSessionAsync(sessionId, userId, true);
+
+        // Original object must NOT have been mutated
+        Assert.False(originalSession.isBookmarked);
+
+        // Verify cache received an object with isBookmarked == true
+        _cacheMock.Verify(c => c.SetAsync(
+            $"session:{sessionId}",
+            It.Is<ChatSession>(s => s.isBookmarked == true && s.sessionID == sessionId),
+            It.IsAny<TimeSpan?>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task BookmarkSessionAsync_CachesNewObjectReference()
+    {
+        var sessionId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var originalSession = new ChatSession
+        {
+            sessionID = sessionId,
+            UserId = userId,
+            isBookmarked = false,
+            createdDate = DateTime.UtcNow
+        };
+
+        _dbMock
+            .Setup(d => d.getSessionAsync(sessionId))
+            .ReturnsAsync(originalSession);
+        _dbMock
+            .Setup(d => d.setBookmarkAsync(sessionId, true))
+            .Returns(Task.CompletedTask);
+
+        ChatSession? cachedObject = null;
+        _cacheMock
+            .Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<ChatSession>(), It.IsAny<TimeSpan?>()))
+            .Callback<string, ChatSession, TimeSpan?>((_, session, _) => cachedObject = session)
+            .Returns(Task.CompletedTask);
+
+        await _sut.BookmarkSessionAsync(sessionId, userId, true);
+
+        Assert.NotNull(cachedObject);
+        Assert.NotSame(originalSession, cachedObject);
+    }
 }
