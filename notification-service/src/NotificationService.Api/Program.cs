@@ -113,3 +113,6 @@ app.Logger.LogInformation("Environment: {Environment}", app.Environment.Environm
 app.Logger.LogInformation("Development mode (no gateway): {AllowTesting}", allowTestingWithoutGateway);
 
 app.Run();
+
+// Expose Program class so WebApplicationFactory<Program> can reference it from test projects.
+public partial class Program { }
