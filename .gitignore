@@ -26,3 +26,5 @@ journal-service-demo/
 docs/
 
 .planning/
+.claude/
+CLAUDE.md
