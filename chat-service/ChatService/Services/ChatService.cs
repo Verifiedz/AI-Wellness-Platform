@@ -32,20 +32,20 @@ public class ChatService : IChatService
       throw new NullReferenceException("chatRequest returned null response");
     }
 
-    if (string.IsNullOrWhiteSpace(chatRequest.messageRequest))
+    if (string.IsNullOrWhiteSpace(chatRequest.MessageRequest))
     {
       throw new ArgumentException("Message cannot be empty");
     }
 
-    var safeMessage = _sanitizer.Sanitize(chatRequest.messageRequest);
-    var sanitizedRequest = chatRequest with { messageRequest = safeMessage };
+    var safeMessage = _sanitizer.Sanitize(chatRequest.MessageRequest);
+    var sanitizedRequest = chatRequest with { MessageRequest = safeMessage };
 
-    bool isNewSession = !sanitizedRequest.sessionId.HasValue || sanitizedRequest.sessionId == Guid.Empty;
-    var session = await _sessionService.GetOrCreateSessionAsync(sanitizedRequest.chatUserId, sanitizedRequest.sessionId);
+    bool isNewSession = !sanitizedRequest.SessionId.HasValue || sanitizedRequest.SessionId == Guid.Empty;
+    var session = await _sessionService.GetOrCreateSessionAsync(sanitizedRequest.ChatUserId, sanitizedRequest.SessionId);
 
     if (isNewSession)
     {
-      var sessionName = ExtractSessionName(sanitizedRequest.messageRequest);
+      var sessionName = ExtractSessionName(sanitizedRequest.MessageRequest);
       await _sessionService.UpdateSessionNameAsync(session.SessionId, sessionName);
     }
 
@@ -57,7 +57,7 @@ public class ChatService : IChatService
     });
     var contextJson = JsonSerializer.Serialize(history);
 
-    var updatedChatRequest = sanitizedRequest with { sessionId = session.SessionId, Context = contextJson };
+    var updatedChatRequest = sanitizedRequest with { SessionId = session.SessionId, Context = contextJson };
 
     var requestChatObject = CreateChatFromRequest(updatedChatRequest, session.SessionId);
     await _chatdatbaseProvider.CreateChatAsync(requestChatObject, cancellationToken);
@@ -65,8 +65,8 @@ public class ChatService : IChatService
     var chatResponse = await _chatWrapperClient.GetChatResponseAsync(updatedChatRequest, cancellationToken);
     var normalizedChatResponse = chatResponse with
     {
-      sessionId = session.SessionId,
-      chatUserId = sanitizedRequest.chatUserId
+      SessionId = session.SessionId,
+      ChatUserId = sanitizedRequest.ChatUserId
     };
 
     var responseChatObject = CreateChatFromResponse(normalizedChatResponse, session.SessionId);
@@ -95,9 +95,9 @@ public class ChatService : IChatService
 
     return new Chat
     {
-      ChatUserId = chatRequest.chatUserId,
+      ChatUserId = chatRequest.ChatUserId,
       ChatReferenceId = Guid.NewGuid(),
-      Message = chatRequest.messageRequest,
+      Message = chatRequest.MessageRequest,
       SessionId = sessionId,
       Status = Status.Active,
       IsBookmarked = false,
@@ -128,9 +128,9 @@ public class ChatService : IChatService
 
     return new Chat
     {
-      ChatUserId = chatResponse.chatUserId,
+      ChatUserId = chatResponse.ChatUserId,
       ChatReferenceId = Guid.NewGuid(),
-      Message = chatResponse.message,
+      Message = chatResponse.Message,
       SessionId = sessionId,
       Status = Status.Active,
       IsBookmarked = false,

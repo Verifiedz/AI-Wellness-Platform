@@ -67,9 +67,9 @@ public class ChatServiceTests
 
         var response = await _sut.SendChatMessageAsync(request);
 
-        Assert.Equal("Hi there!", response.message);
-        Assert.Equal(sessionId, response.sessionId);
-        Assert.Equal(userId, response.chatUserId);
+        Assert.Equal("Hi there!", response.Message);
+        Assert.Equal(sessionId, response.SessionId);
+        Assert.Equal(userId, response.ChatUserId);
     }
 
     [Fact]

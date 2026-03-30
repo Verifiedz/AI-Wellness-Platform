@@ -74,7 +74,7 @@ public class ChatControllerTests
 
         var ok = Assert.IsType<OkObjectResult>(result);
         var chatResponse = Assert.IsType<ChatResponse>(ok.Value);
-        Assert.Equal("Hi!", chatResponse.message);
+        Assert.Equal("Hi!", chatResponse.Message);
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public class ChatControllerTests
     public async Task BookmarkSession_Returns204_WhenSuccessful()
     {
         var sessionId = Guid.NewGuid();
-        var bookmarkRequest = new BookmarkRequest(isBookmarked: true);
+        var bookmarkRequest = new BookmarkRequest(IsBookmarked: true);
 
         _sessionServiceMock
             .Setup(s => s.BookmarkSessionAsync(sessionId, _userId, true))
@@ -291,7 +291,7 @@ public class ChatControllerTests
     public async Task BookmarkSession_Returns404_WhenSessionNotFound()
     {
         var sessionId = Guid.NewGuid();
-        var bookmarkRequest = new BookmarkRequest(isBookmarked: true);
+        var bookmarkRequest = new BookmarkRequest(IsBookmarked: true);
 
         _sessionServiceMock
             .Setup(s => s.BookmarkSessionAsync(sessionId, _userId, true))

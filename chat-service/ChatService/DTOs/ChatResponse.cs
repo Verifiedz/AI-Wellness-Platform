@@ -1,7 +1,9 @@
-﻿namespace ChatService.DTOs;
+using System.Text.Json.Serialization;
 
-public sealed record ChatResponse
-    (Guid chatUserId, 
-    string message, 
-    string Context,
-    Guid sessionId);
+namespace ChatService.DTOs;
+
+public sealed record ChatResponse(
+    [property: JsonPropertyName("chatUserId")] Guid ChatUserId,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("context")] string Context,
+    [property: JsonPropertyName("sessionId")] Guid SessionId);

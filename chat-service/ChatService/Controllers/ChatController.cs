@@ -36,7 +36,7 @@ public class ChatController : ControllerBase
 
         try
         {
-            var normalizedRequest = chatRequest with { chatUserId = currentUserId };
+            var normalizedRequest = chatRequest with { ChatUserId = currentUserId };
             var chatResponse = await _chatService.SendChatMessageAsync(normalizedRequest, cancellationToken);
             return Ok(chatResponse);
         }
@@ -141,7 +141,7 @@ public class ChatController : ControllerBase
 
         try
         {
-            await _sessionService.BookmarkSessionAsync(sessionId, currentUserId, request.isBookmarked);
+            await _sessionService.BookmarkSessionAsync(sessionId, currentUserId, request.IsBookmarked);
             return NoContent();
         }
         catch (KeyNotFoundException ex)
