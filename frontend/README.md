@@ -1,7 +1,7 @@
-# Wellness App – React Native (Expo) Frontend
+# Sakina – React Native (Expo) Frontend
 
-A full wellness app for students, built with **Expo SDK 54** targeting **iOS and Android**.  
-This first slice implements the **app shell** (navigation, placeholder auth, placeholder screens) and the **notification feature** (push setup, preferences, daily-tip display).
+A mental wellness app for students built with **Expo SDK 54** targeting **iOS and Android**.
+Provides AI-powered chat therapy, journaling with pattern analysis, community support, breathing exercises, and mood tracking.
 
 ---
 
@@ -11,12 +11,11 @@ This first slice implements the **app shell** (navigation, placeholder auth, pla
 2. [Getting Started](#getting-started)
 3. [Configuration](#configuration)
 4. [Project Structure](#project-structure)
-5. [Authentication (Placeholder)](#authentication-placeholder)
+5. [Authentication](#authentication)
 6. [Notification Feature](#notification-feature)
 7. [API Contract](#api-contract)
 8. [Testing Without the Gateway](#testing-without-the-gateway)
 9. [Firebase Setup](#firebase-setup)
-10. [Swapping to Real Auth](#swapping-to-real-auth)
 
 ---
 
@@ -53,22 +52,22 @@ npx expo start
 
 ### API Base URL
 
-The app reads `EXPO_PUBLIC_API_URL` from the environment. If unset it defaults to `http://localhost:5085`.
+The app reads `EXPO_PUBLIC_API_URL` from the environment. If unset it defaults to `http://localhost:5051` (the auth-service gateway port).
 
-| Environment | Value                                                           |
-| ----------- | --------------------------------------------------------------- |
-| Local dev   | `http://<your-local-ip>:5085`                                   |
-| Production  | `https://<yarp-gateway-url>` (set when the gateway is deployed) |
+| Environment | Value                                           |
+| ----------- | ----------------------------------------------- |
+| Local dev   | `http://<your-local-ip>:5051`                   |
+| Production  | `https://<your-domain>` (nginx TLS termination) |
 
 **Setting the variable:**
 
 ```bash
 # Option A – inline
-EXPO_PUBLIC_API_URL=http://192.168.1.42:5085 npx expo start
+EXPO_PUBLIC_API_URL=http://192.168.1.42:5051 npx expo start
 
 # Option B – .env file (Expo SDK 54+ reads these automatically)
-# Create a .env file in the project root:
-EXPO_PUBLIC_API_URL=http://192.168.1.42:5085
+# Create a .env file in the frontend/ directory:
+EXPO_PUBLIC_API_URL=http://192.168.1.42:5051
 EXPO_PUBLIC_DEV_MODE=true
 ```
 
@@ -83,46 +82,62 @@ When `EXPO_PUBLIC_DEV_MODE=true` (or when running via `npx expo start` which set
 ```
 frontend/
 ├── App.js                          # Root component (providers + notification setup)
-├── app.config.js                   # Expo config (replaces app.json)
+├── app.config.js                   # Expo config (bundle ID: com.sakina.app)
 ├── src/
 │   ├── config/
-│   │   └── index.js                # API_BASE_URL, DEV_MODE, API_TIMEOUT
+│   │   └── index.js                # API_BASE_URL, DEV_MODE, API_TIMEOUT (15s)
+│   ├── constants/
+│   │   ├── journal.js              # Shared MOODS, EMOTIONS, MOOD_COLORS
+│   │   ├── breathingPatterns.js    # Breathing exercise patterns
+│   │   └── assessments.js         # PHQ-9 / GAD-7 question definitions
 │   ├── context/
-│   │   ├── AuthContext.js           # Placeholder auth (SecureStore-backed)
-│   │   └── TipContext.js            # Global daily-tip state
+│   │   ├── AuthContext.js          # JWT auth (SecureStore-backed, real login flow)
+│   │   ├── ThemeContext.js         # Colors, dark mode, accent color
+│   │   ├── OnboardingContext.js    # Tracks first-run onboarding flow
+│   │   └── TipContext.js           # Global daily-tip state
 │   ├── navigation/
-│   │   ├── AppNavigator.js          # Root: auth check → AuthStack | MainTabs
-│   │   ├── AuthStack.js             # Login screen
-│   │   ├── MainTabs.js              # Bottom tabs: Home, Journal, AI Chat, Settings
-│   │   └── SettingsStack.js         # Settings → NotificationSettings
+│   │   ├── AppNavigator.js         # Root: auth check → AuthStack | MainTabs
+│   │   ├── AuthStack.js            # Login, Register, ForgotPassword
+│   │   ├── MainTabs.js             # Bottom tabs: Home, Journal, AI Chat, Community, Settings
+│   │   └── SettingsStack.js        # Settings → NotificationSettings
 │   ├── screens/
-│   │   ├── LoginScreen.js           # Dev login (User ID + optional email)
-│   │   ├── HomeScreen.js            # Home with "Tip of the Day" section
-│   │   ├── JournalScreen.js         # Placeholder
-│   │   ├── AIChatScreen.js          # Placeholder
-│   │   ├── SettingsScreen.js        # Settings menu
-│   │   └── NotificationSettingsScreen.js  # Load/save notification preferences
+│   │   ├── LoginScreen.js          # Email + password login with error mapping
+│   │   ├── RegisterScreen.js       # User registration
+│   │   ├── HomeScreen.js           # Home with "Tip of the Day" section
+│   │   ├── JournalScreen.js        # Journal entry with mood/emotion selection
+│   │   ├── MoodCalendarScreen.js   # Monthly mood history calendar
+│   │   ├── AIChatScreen.js         # AI chat with session management
+│   │   ├── BreathingExerciseScreen.js  # Guided breathing exercises
+│   │   ├── CommunityScreen.js      # Community groups and posts
+│   │   ├── SettingsScreen.js       # Settings menu
+│   │   └── NotificationSettingsScreen.js  # Push notification preferences
 │   ├── services/
-│   │   ├── api.js                   # Generic HTTP client (auth headers, timeout)
-│   │   ├── notificationApi.js       # Notification REST endpoints
-│   │   └── pushNotifications.js     # Expo push-notification setup + listeners
+│   │   ├── api.js                  # ApiClient: auth headers, 401 refresh, 15s timeout
+│   │   ├── authApi.js              # Auth endpoints (login, register, refresh)
+│   │   ├── chatApi.js              # Chat endpoints (sessions, messages)
+│   │   ├── journalApi.js           # Journal CRUD + insights
+│   │   ├── notificationApi.js      # Notification preferences + device registration
+│   │   └── pushNotifications.js    # Expo push-notification setup + listeners
 │   ├── theme/
-│   │   └── colors.js                # Colour palette
+│   │   └── colors.js               # Color palette
 │   └── utils/
-│       └── time.js                  # Timezone & time conversion helpers
-└── assets/                          # App icons, splash screen
+│       └── time.js                 # Timezone & time conversion helpers
+└── assets/                         # App icons, splash screen
 ```
 
 ---
 
-## Authentication (Placeholder)
+## Authentication
 
-The `AuthContext` provides a **dev-only login** that accepts a User ID (and optional email), generates a mock JWT, and stores it in **SecureStore**.
+The `AuthContext` manages real JWT authentication backed by the auth-service.
 
-- All API calls send `Authorization: Bearer <token>` (the mock token for now).
-- In dev mode, `?userId=<id>` is also appended as a fallback.
+- Login calls `POST /api/auth/login` with email and password.
+- The JWT is stored in **SecureStore** (encrypted device storage).
+- All API calls send `Authorization: Bearer <token>`.
+- On 401 responses, the API client automatically attempts a token refresh via `POST /api/auth/refresh`, then retries the original request.
+- If refresh fails, the session is cleared and the user is redirected to login.
 
-**To log in during development**, enter any string as the User ID on the login screen (e.g. `user-1`).
+In **dev mode** (`EXPO_PUBLIC_DEV_MODE=true`), `?userId=<id>` is appended to requests as a fallback for testing internal services without the gateway.
 
 ---
 
@@ -165,19 +180,16 @@ Base path: `${EXPO_PUBLIC_API_URL}/api/notifications`
 
 ## Testing Without the Gateway
 
-When the YARP API gateway is not yet deployed:
+When running services directly without Docker Compose:
 
-1. Run the Notification Service locally (e.g. on port 5085).
-2. Set `EXPO_PUBLIC_API_URL` to `http://<your-local-ip>:5085`.
-3. Ensure `EXPO_PUBLIC_DEV_MODE=true` (auto-enabled in dev builds).
-4. The API client will append `?userId=<id>` on every request, bypassing JWT validation.
-5. Configure the Notification Service to run in "dev mode" and accept the `userId` query parameter.
+1. Run the individual service locally (auth-service on `:5051`, etc.).
+2. Set `EXPO_PUBLIC_API_URL` to `http://<your-local-ip>:5051`.
+3. Set `EXPO_PUBLIC_DEV_MODE=true` — the API client appends `?userId=<id>` on every request, enabling `DevelopmentUserContextMiddleware` on each internal service.
 
-When the gateway is ready:
+For production / staging:
 
-- Set `EXPO_PUBLIC_API_URL` to the gateway URL.
-- Set `EXPO_PUBLIC_DEV_MODE=false` (or remove it).
-- Replace the placeholder login with the real Auth Service call (see below).
+- Set `EXPO_PUBLIC_API_URL` to the HTTPS gateway URL (nginx TLS endpoint).
+- Set `EXPO_PUBLIC_DEV_MODE=false`.
 
 ---
 
@@ -192,37 +204,19 @@ The app uses **expo-notifications** which integrates with FCM (Android) and APNs
 
 ---
 
-## Swapping to Real Auth
-
-When the Authentication Service is ready, only **two changes** are needed:
-
-1. **`src/context/AuthContext.js`** – Replace the `login` method body:
-
-   ```js
-   // Before (placeholder):
-   const mockToken = `dev-jwt-${userId}-${Date.now()}`;
-
-   // After (real):
-   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-     method: 'POST',
-     headers: { 'Content-Type': 'application/json' },
-     body: JSON.stringify({ email, password }),
-   });
-   const { token, userId } = await response.json();
-   ```
-
-2. **`src/screens/LoginScreen.js`** – Replace the User ID field with email/password fields and call `login(userId, email)` with the real credentials.
-
-Everything else (token storage, `Authorization` header, navigation, notification flows) stays the same.
-
----
-
 ## Scripts
 
-| Command                    | Description                      |
-| -------------------------- | -------------------------------- |
-| `npx expo start`           | Start the dev server             |
-| `npx expo start --android` | Start and open on Android        |
-| `npx expo start --ios`     | Start and open on iOS            |
-| `npx expo run:android`     | Build and run Android dev client |
-| `npx expo run:ios`         | Build and run iOS dev client     |
+<!-- AUTO-GENERATED from frontend/package.json scripts -->
+
+| Command                    | Description                                      |
+| -------------------------- | ------------------------------------------------ |
+| `npx expo start`           | Start the Expo dev server (QR code)              |
+| `npx expo start --android` | Start and open on Android emulator               |
+| `npx expo start --ios`     | Start and open on iOS simulator                  |
+| `npx expo run:android`     | Build and run Android dev client (push support)  |
+| `npx expo run:ios`         | Build and run iOS dev client (push support)      |
+| `npm test`                 | Run Jest unit tests                              |
+| `npm run lint`             | Lint with ESLint                                 |
+| `npm run format`           | Format with Prettier                             |
+
+<!-- END AUTO-GENERATED -->

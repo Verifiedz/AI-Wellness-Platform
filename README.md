@@ -261,7 +261,7 @@ EXPO_PUBLIC_DEV_MODE=true
   - The app will load on your phone
 6. **On an emulator:** Press `a` for Android emulator or `i` for iOS simulator (if you have them installed).
 
-**To log in:** On the login screen, enter any User ID (e.g. `user-1`) and optionally an email. This is a placeholder—real authentication will be added later.
+**To log in:** On the login screen, enter your email address and password. Register a new account first if you don't have one.
 
 ---
 
@@ -358,13 +358,14 @@ Then restart the Expo dev server (`Ctrl+C` and run `npx expo start` again).
 ## Verifying Everything Works
 
 
-| Check                | How to Verify                                                                                                                    |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Backend is running   | `docker compose ps` shows all containers as "Up"                                                                                 |
-| Gateway is reachable | Open a browser and go to `http://localhost:5051` — you may see a 404 or auth error; that's OK, it means the server is responding |
-| App loads            | The app opens on your phone/emulator and shows the login screen                                                                  |
-| Login works          | Enter `user-1` and tap Login — you should see the main app with tabs (Home, Journal, AI Chat, Settings)                          |
-| API connection       | After login, go to Home — if "Tip of the Day" loads (or shows a message), the app is talking to the backend                      |
+| Check                | How to Verify                                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Backend is running   | `docker compose ps` shows all containers as "Up"                                                                                  |
+| Gateway is reachable | Open a browser and go to `http://localhost:5051/api/auth/health` — should return `200 OK`                                         |
+| App loads            | The app opens on your phone/emulator and shows the login screen                                                                   |
+| Login works          | Register an account, then sign in — you should see the main tabs (Home, Journal, AI Chat, Community, Settings)                    |
+| API connection       | After login, go to Home — if "Tip of the Day" loads (or shows a message), the app is talking to the backend                       |
+| AI chat works        | Navigate to AI Chat, start a new session, send a message — the AI should respond (requires a valid `OPENAI_API_KEY` in `.env`)    |
 
 
 ---
@@ -451,16 +452,23 @@ For more details on the frontend (navigation, notification feature, API contract
 
 ## Quick Reference Commands
 
+<!-- AUTO-GENERATED from docker-compose.yml and package.json -->
 
-| Task                 | Command                                                      |
-| -------------------- | ------------------------------------------------------------ |
-| Start backend        | `docker compose up -d` (from project root)                   |
-| Stop backend         | `docker compose down`                                        |
-| Check backend status | `docker compose ps`                                          |
-| Start mobile app     | `cd frontend` then `npx expo start`                          |
-| View backend logs    | `docker compose logs -f`                                     |
-| Start ngrok tunnel   | `ngrok http 5051 --domain your-static-domain.ngrok-free.app` |
-| ngrok request viewer | Open `http://localhost:4040` in your browser                 |
+| Task                    | Command                                                        |
+| ----------------------- | -------------------------------------------------------------- |
+| Start backend           | `docker compose up -d` (from project root)                     |
+| Stop backend            | `docker compose down`                                          |
+| Check backend status    | `docker compose ps`                                            |
+| View backend logs       | `docker compose logs -f`                                       |
+| Rebuild a service       | `docker compose up -d --build <service-name>`                  |
+| Start mobile app        | `cd frontend && npx expo start`                                |
+| Run E2E tests           | `npm test:e2e` (from project root, requires backend running)   |
+| Run E2E tests (UI mode) | `npm run test:e2e:ui`                                          |
+| View E2E report         | `npm run test:e2e:report`                                      |
+| Start ngrok tunnel      | `ngrok http 5051 --domain your-static-domain.ngrok-free.app`   |
+| ngrok request viewer    | Open `http://localhost:4040` in your browser                   |
+
+<!-- END AUTO-GENERATED -->
 
 
 ---
