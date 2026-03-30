@@ -88,6 +88,15 @@ builder.Services.AddReverseProxy()
           if (email is not null)
             transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-User-Email", email);
         }
+
+        // Inject community-service API key for gateway auth (SEC-03)
+        var config = transformContext.HttpContext.RequestServices
+            .GetRequiredService<IConfiguration>();
+        var communityApiKey = config["CommunityService:ApiKey"];
+        if (!string.IsNullOrEmpty(communityApiKey))
+            transformContext.ProxyRequest.Headers.TryAddWithoutValidation(
+                "X-Internal-Api-Key", communityApiKey);
+
         return ValueTask.CompletedTask;
       });
     });

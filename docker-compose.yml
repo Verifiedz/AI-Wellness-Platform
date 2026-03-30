@@ -192,6 +192,8 @@ services:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
       ConnectionStrings__CommunityDatabase: 'Host=community-db;Database=wellness_community;Username=postgres;Password=${COMMUNITY_DB_PASSWORD:-communitypass}'
+      Gateway__SharedSecret: '${COMMUNITY_INTERNAL_API_KEY}'
+      Gateway__RequireSharedSecret: 'true'
     ports:
       - '8084:8080'
 
@@ -246,6 +248,7 @@ services:
       ReverseProxy__Clusters__community-cluster__Destinations__community-service__Address: 'http://community-service:8080/'
       NotificationService__BaseUrl: 'http://notification-service:8080'
       NotificationService__ApiKey: '${NOTIFICATION_INTERNAL_API_KEY}'
+      CommunityService__ApiKey: '${COMMUNITY_INTERNAL_API_KEY}'
       Cors__AllowedOrigins__0: '${CORS_ORIGIN_0:-}'
       ASPNETCORE_URLS: 'http://+:8080'
       ASPNETCORE_ENVIRONMENT: 'Production'
