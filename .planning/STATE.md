@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready
-stopped_at: Phase 03-test-infrastructure complete — verification passed
-last_updated: "2026-03-30T08:00:00.000Z"
+status: executing
+stopped_at: Completed 04-reliability-and-performance 04-01-PLAN.md
+last_updated: "2026-03-30T09:38:55.061Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Security first -- fix vulnerabilities and protect user data before anything else. Every fix must include tests proving the concern is resolved.
-**Current focus:** Phase 03 — test-infrastructure
+**Current focus:** Phase 4 — reliability-and-performance
 
 ## Current Position
 
-Phase: 03 (test-infrastructure) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
+Phase: 4 (reliability-and-performance) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -63,6 +63,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-test-infrastructure P01 | 7m | 2 tasks | 7 files |
 | Phase 03-test-infrastructure P02 | 25m | 2 tasks | 13 files |
 | Phase 03-test-infrastructure P03 | 12m | 2 tasks | 10 files |
+| Phase 04-reliability-and-performance P01 | 6m | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 03-test-infrastructure]: StoredProcedureExecutor.ValidateFunctionName tested via BindingFlags.NonPublic reflection to validate SQL injection guard without modifying production code
 - [Phase 03-test-infrastructure]: Use WebApplicationFactory<Program> for notification-service controller tests — tests real middleware stack including CryptographicOperations.FixedTimeEquals
 - [Phase 03-test-infrastructure]: ChatControllerTests use ClaimsPrincipal on ControllerContext.HttpContext.User to avoid full web stack for identity-dependent unit tests
+- [Phase 04-reliability-and-performance]: Use limit=200 for internal context retrieval in SendChatMessageAsync (not display limit) — history fetch is for AI context building
+- [Phase 04-reliability-and-performance]: Return HTTP 499 for OperationCanceledException — non-standard but conventional for client-closed-request signal
 
 ### Pending Todos
 
@@ -107,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T06:39:51.482Z
-Stopped at: Completed 03-test-infrastructure 03-03-PLAN.md
+Last session: 2026-03-30T09:38:55.056Z
+Stopped at: Completed 04-reliability-and-performance 04-01-PLAN.md
 Resume file: None
