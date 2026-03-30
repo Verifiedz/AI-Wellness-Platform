@@ -3,6 +3,7 @@ using AIWellness.Auth.DTOs.Responses;
 using AIWellness.Auth.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace AIWellness.Auth.Controllers;
@@ -29,6 +30,7 @@ public class AuthController : ControllerBase
   }
 
   [HttpPost("login")]
+  [EnableRateLimiting("login")]
   public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
     var result = await _authService.LoginAsync(request);
