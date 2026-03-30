@@ -17,7 +17,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         {"update", "CALL public.chat_update_storeprocedure($1,$2,$3,$4,$5,$6,$7)"},
         {"delete", "CALL public.chat_delete_storeprocedure($1)"}, 
         {"select", "SELECT * FROM public.chat_select_function($1)"},
-        {"select_by_session", "SELECT * FROM public.chat_select_by_session_function($1)"}
+        {"select_by_session", "SELECT * FROM public.chat_select_by_session_function($1,$2,$3)"}
     };
 
     public ChatDatabaseProvider(IConfigurationService configuration, ILogger<ChatDatabaseProvider> logger) {
@@ -26,11 +26,11 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         var connectionString = _configuration.getConnectionString();
         _dataSource = NpgsqlDataSource.Create(connectionString);
     }
-    public  async Task createChatAsync(Chat chat)
+    public async Task createChatAsync(Chat chat, CancellationToken cancellationToken = default)
     {
         var connectionString = _configuration.getConnectionString();
         using var conn = new NpgsqlConnection(connectionString);
-        await conn.OpenAsync();
+        await conn.OpenAsync(cancellationToken);
 
         _logger.LogDebug("Executing stored procedure: {Procedure}", selectStoreProcedure("create"));
         using var command = new NpgsqlCommand(selectStoreProcedure("create"), conn);
@@ -43,7 +43,7 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         command.Parameters.AddWithValue(chat.isBookmarked);
         command.Parameters.AddWithValue(chat.CreatedDate);
 
-        await command.ExecuteNonQueryAsync();
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public async Task deleteChatAsync(Guid chatReferenceId)
@@ -59,17 +59,17 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
 
     }
 
-    public async Task<Chat?> getChatAsync(Guid chatReferenceId)
+    public async Task<Chat?> getChatAsync(Guid chatReferenceId, CancellationToken cancellationToken = default)
     {
         using var conn = new NpgsqlConnection(_configuration.getConnectionString());
-        await conn.OpenAsync();
+        await conn.OpenAsync(cancellationToken);
 
         using var cmd = new NpgsqlCommand(selectStoreProcedure("select"), conn);
         cmd.Parameters.AddWithValue(chatReferenceId);
 
-        using var reader = await cmd.ExecuteReaderAsync();
+        using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
-        if (!await reader.ReadAsync())
+        if (!await reader.ReadAsync(cancellationToken))
             return null;
 
         return new Chat
@@ -84,33 +84,35 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         };
     }
 
-    public async Task<IReadOnlyList<Chat>> getChatsBySessionAsync(Guid sessionId)
-{
-    var chats = new List<Chat>();
-
-    using var conn = await _dataSource.OpenConnectionAsync();
-    using var cmd = new NpgsqlCommand(selectStoreProcedure("select_by_session"), conn);
-    
-    cmd.Parameters.AddWithValue(sessionId);
-
-    using var reader = await cmd.ExecuteReaderAsync();
-
-    while (await reader.ReadAsync())
+    public async Task<IReadOnlyList<Chat>> getChatsBySessionAsync(Guid sessionId, int limit, int offset, CancellationToken cancellationToken = default)
     {
-        chats.Add(new Chat
-        {
-            chatReferenceId = reader.GetGuid(0),
-            chatUserId = reader.GetGuid(1),
-            message = reader.GetString(2),
-            sessionId = reader.GetGuid(3),
-            status = Enum.Parse<Status>(reader.GetString(4)),
-            isBookmarked = reader.GetBoolean(5),
-            CreatedDate = reader.GetDateTime(6)
-        });
-    }
+        var chats = new List<Chat>();
 
-    return chats;
-}
+        using var conn = await _dataSource.OpenConnectionAsync(cancellationToken);
+        using var cmd = new NpgsqlCommand(selectStoreProcedure("select_by_session"), conn);
+
+        cmd.Parameters.AddWithValue(sessionId);
+        cmd.Parameters.AddWithValue(limit);
+        cmd.Parameters.AddWithValue(offset);
+
+        using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            chats.Add(new Chat
+            {
+                chatReferenceId = reader.GetGuid(0),
+                chatUserId = reader.GetGuid(1),
+                message = reader.GetString(2),
+                sessionId = reader.GetGuid(3),
+                status = Enum.Parse<Status>(reader.GetString(4)),
+                isBookmarked = reader.GetBoolean(5),
+                CreatedDate = reader.GetDateTime(6)
+            });
+        }
+
+        return chats;
+    }
 
     public async Task updateChatAsync(Chat chat)
     {

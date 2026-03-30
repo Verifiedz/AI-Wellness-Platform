@@ -2,12 +2,12 @@ namespace ChatService.Services;
 using System.Text.Json;
 using ChatService.Interfaces;
 using ChatService.DTOs;
-using ChatService.entities; 
+using ChatService.entities;
 public class chatService : IChatService
 {
   private readonly ISessionService _sessionService;
   private readonly IChatWrapperClientInterface _chatWrapperClient;
-  private readonly IChatDatabaseProvider _chatdatbaseProvider; 
+  private readonly IChatDatabaseProvider _chatdatbaseProvider;
 
   public chatService(
       IChatWrapperClientInterface chatWrapperClient,
@@ -19,7 +19,7 @@ public class chatService : IChatService
     _chatdatbaseProvider = chatDatabaseProvider;
   }
 
-  public async Task<ChatResponse> SendChatMessageAsync(ChatRequest chatRequest)
+  public async Task<ChatResponse> SendChatMessageAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default)
   {
     if (chatRequest == null)
     {
@@ -40,7 +40,7 @@ public class chatService : IChatService
       await _sessionService.UpdateSessionNameAsync(session.sessionID, sessionName);
     }
 
-    var previousMessages = await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID);
+    var previousMessages = await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID, 200, 0, cancellationToken);
     var history = previousMessages.Select((m, index) => new
     {
       role = index % 2 == 0 ? "user" : "assistant",
@@ -51,22 +51,22 @@ public class chatService : IChatService
     var updatedChatRequest = chatRequest with { sessionId = session.sessionID, Context = contextJson };
 
     var requestChatObject = CreateChatFromRequest(updatedChatRequest, session.sessionID);
-    await _chatdatbaseProvider.createChatAsync(requestChatObject); 
+    await _chatdatbaseProvider.createChatAsync(requestChatObject, cancellationToken);
 
-    var chatResponse = await _chatWrapperClient.getChatResponseAsync(updatedChatRequest);
+    var chatResponse = await _chatWrapperClient.getChatResponseAsync(updatedChatRequest, cancellationToken);
     var normalizedChatResponse = chatResponse with
     {
       sessionId = session.sessionID,
       chatUserId = chatRequest.chatUserId
     };
 
-    var responseChatObject = CreateChatFromResponse(normalizedChatResponse, session.sessionID); 
-    await _chatdatbaseProvider.createChatAsync(responseChatObject); 
-   
+    var responseChatObject = CreateChatFromResponse(normalizedChatResponse, session.sessionID);
+    await _chatdatbaseProvider.createChatAsync(responseChatObject, cancellationToken);
+
     return normalizedChatResponse;
   }
 
-  public async Task<IReadOnlyList<Chat>> GetChatsbySessionAsync(Guid sessionId, Guid userId)
+  public async Task<IReadOnlyList<Chat>> GetChatsbySessionAsync(Guid sessionId, Guid userId, int limit = 50, int offset = 0, CancellationToken cancellationToken = default)
   {
     if (sessionId == Guid.Empty)
     {
@@ -74,7 +74,7 @@ public class chatService : IChatService
     }
 
     var session = await _sessionService.GetOrCreateSessionAsync(userId, sessionId);
-    return await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID);
+    return await _chatdatbaseProvider.getChatsBySessionAsync(session.sessionID, limit, offset, cancellationToken);
   }
 
   private Chat CreateChatFromRequest(ChatRequest chatRequest, Guid sessionId)
@@ -90,7 +90,7 @@ public class chatService : IChatService
       chatReferenceId = Guid.NewGuid(),
       message = chatRequest.messageRequest,
       sessionId = sessionId,
-      status = enums.Status.Active, 
+      status = enums.Status.Active,
       isBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };
@@ -123,7 +123,7 @@ public class chatService : IChatService
       chatReferenceId = Guid.NewGuid(),
       message = chatResponse.message,
       sessionId = sessionId,
-      status = enums.Status.Active, 
+      status = enums.Status.Active,
       isBookmarked = false,
       CreatedDate = DateTime.UtcNow
     };

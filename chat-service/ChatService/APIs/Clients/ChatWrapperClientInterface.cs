@@ -1,30 +1,29 @@
-﻿using ChatService.DTOs;
+using ChatService.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using ChatService.Interfaces;
 namespace ChatService.APIs.Clients;
 
-public class ChatWrapperClient:IChatWrapperClientInterface 
+public class ChatWrapperClient : IChatWrapperClientInterface
 {
-  private readonly HttpClient _HttpClient;
-  public ChatWrapperClient(HttpClient httpClient){
-
-    _HttpClient = httpClient;
-
-  }
-    public async Task<ChatResponse> getChatResponseAsync(ChatRequest chatRequest)
+    private readonly HttpClient _HttpClient;
+    public ChatWrapperClient(HttpClient httpClient)
     {
-      HttpResponseMessage response = await _HttpClient.PostAsJsonAsync("chat/ChatResponse",chatRequest);
+        _HttpClient = httpClient;
+    }
 
-      response.EnsureSuccessStatusCode();
+    public async Task<ChatResponse> getChatResponseAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default)
+    {
+        HttpResponseMessage response = await _HttpClient.PostAsJsonAsync("chat/ChatResponse", chatRequest, cancellationToken);
 
+        response.EnsureSuccessStatusCode();
 
-      ChatResponse? chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>();
+        ChatResponse? chatResponse = await response.Content.ReadFromJsonAsync<ChatResponse>(cancellationToken: cancellationToken);
 
-      if(chatResponse == null){
-        throw new NullReferenceException("No ChatResponse was Found");
-      }
+        if (chatResponse == null)
+        {
+            throw new NullReferenceException("No ChatResponse was Found");
+        }
 
-      return chatResponse;
+        return chatResponse;
     }
 }
-
