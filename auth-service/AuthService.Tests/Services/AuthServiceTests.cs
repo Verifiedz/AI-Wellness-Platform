@@ -15,6 +15,7 @@ public class AuthServiceTests
 {
   private readonly Mock<IUserRepository> _userRepository = new();
   private readonly Mock<IPasswordValidator> _passwordValidator = new();
+  private readonly Mock<AIWellness.Auth.Services.Abstractions.IPasswordHasher> _passwordHasher = new();
   private readonly Mock<INotificationService> _notificationService = new();
   private readonly Mock<IJwtService> _jwtService = new();
   private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
@@ -26,6 +27,7 @@ public class AuthServiceTests
     return new AIWellness.Auth.Services.AuthService(
       _userRepository.Object,
       _passwordValidator.Object,
+      _passwordHasher.Object,
       _notificationService.Object,
       _jwtService.Object,
       _httpContextAccessor.Object,
@@ -150,7 +152,7 @@ public class AuthServiceTests
       Email = "test@example.com",
       Username = "testuser",
       IsActive = true,
-      PasswordHash = BCrypt.Net.BCrypt.HashPassword("ValidPass1!")
+      PasswordHash = "$2a$11$fakehashfortesting"
     };
 
     _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
@@ -242,8 +244,12 @@ public class AuthServiceTests
       Username = "testuser",
       IsActive = true,
       IsEmailVerified = true,
-      PasswordHash = BCrypt.Net.BCrypt.HashPassword("ValidPass1!")
+      PasswordHash = "$2a$11$fakehashfortesting"
     };
+
+    _passwordHasher
+      .Setup(p => p.VerifyHashedPassword(It.IsAny<string>(), "ValidPass1!"))
+      .Returns(true);
 
     _userRepository.Setup(r => r.GetByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
     _userRepository.Setup(r => r.IsAccountLockedAsync(It.IsAny<Guid>())).ReturnsAsync(false);

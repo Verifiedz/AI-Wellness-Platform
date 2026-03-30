@@ -115,6 +115,7 @@ builder.Services.AddHttpClient<INotificationService, NotificationService>((servi
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<AIWellness.Auth.Services.Abstractions.IPasswordHasher, AIWellness.Auth.Services.BcryptPasswordHasher>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordValidator, PasswordValidator>();
 

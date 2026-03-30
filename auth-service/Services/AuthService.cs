@@ -13,6 +13,7 @@ public class AuthService : IAuthService
 {
   private readonly IUserRepository _userRepository;
   private readonly IPasswordValidator _passwordValidator;
+  private readonly IPasswordHasher _passwordHasher;
   private readonly INotificationService _notificationService;
   private readonly IJwtService _jwtService;
   private readonly IHttpContextAccessor _httpContextAccessor;
@@ -22,6 +23,7 @@ public class AuthService : IAuthService
   public AuthService(
       IUserRepository userRepository,
       IPasswordValidator passwordValidator,
+      IPasswordHasher passwordHasher,
       INotificationService notificationService,
       IJwtService jwtService,
       IHttpContextAccessor httpContextAccessor,
@@ -30,6 +32,7 @@ public class AuthService : IAuthService
   {
     _userRepository = userRepository;
     _passwordValidator = passwordValidator;
+    _passwordHasher = passwordHasher;
     _notificationService = notificationService;
     _jwtService = jwtService;
     _httpContextAccessor = httpContextAccessor;
@@ -64,7 +67,7 @@ public class AuthService : IAuthService
       Username = request.Username,
       Email = request.Email,
       Phone = request.Phone,
-      PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+      PasswordHash = _passwordHasher.HashPassword(request.Password),
       IsActive = true,
       IsEmailVerified = false,
       CreatedAt = DateTime.UtcNow,
@@ -106,7 +109,7 @@ public class AuthService : IAuthService
     if (isLocked)
       throw new AuthSecurityException("ACCOUNT_LOCKED", "Account temporarily locked due to failed attempts");
 
-    var passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+    var passwordValid = _passwordHasher.VerifyHashedPassword(user.PasswordHash, request.Password);
 
     var ipAddress = GetClientIpAddress();
     var userAgent = _httpContextAccessor.HttpContext?.Request.Headers.UserAgent.ToString() ?? "";
@@ -231,14 +234,14 @@ public class AuthService : IAuthService
     if (user == null)
       throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for password reset");
 
-    if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+    if (_passwordHasher.VerifyHashedPassword(user.PasswordHash, request.NewPassword))
       throw new AuthValidationException("SAME_PASSWORD", "New password must differ from current");
 
     var isValidCode = await _userRepository.VerifyCodeAsync(user.Id, request.Code, "password_reset");
     if (!isValidCode)
       throw new AuthSecurityException("INVALID_RESET_CODE", "Invalid or expired reset code");
 
-    var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+    var newPasswordHash = _passwordHasher.HashPassword(request.NewPassword);
     await _userRepository.UpdatePasswordAsync(user.Id, newPasswordHash);
   }
 
@@ -255,13 +258,13 @@ public class AuthService : IAuthService
     if (user == null)
       throw new AuthNotFoundException("USER_NOT_FOUND", "User not found for password change");
 
-    if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
+    if (!_passwordHasher.VerifyHashedPassword(user.PasswordHash, request.CurrentPassword))
       throw new AuthSecurityException("WRONG_CURRENT_PASSWORD", "Current password is incorrect");
 
-    if (BCrypt.Net.BCrypt.Verify(request.NewPassword, user.PasswordHash))
+    if (_passwordHasher.VerifyHashedPassword(user.PasswordHash, request.NewPassword))
       throw new AuthValidationException("SAME_PASSWORD", "New password must differ from current");
 
-    var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+    var newPasswordHash = _passwordHasher.HashPassword(request.NewPassword);
     await _userRepository.UpdatePasswordAsync(user.Id, newPasswordHash);
   }
 
