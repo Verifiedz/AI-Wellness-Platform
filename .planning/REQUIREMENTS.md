@@ -23,8 +23,8 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 ### Testing
 
 - [x] **TEST-01**: Auth service has unit and integration test project with tests covering auth flows, JWT, and password validation
-- [ ] **TEST-02**: Community service has test project with tests covering post CRUD, reactions, and authentication middleware
-- [ ] **TEST-03**: Journal service has test project with tests covering journal CRUD and pattern analysis
+- [x] **TEST-02**: Community service has test project with tests covering post CRUD, reactions, and authentication middleware
+- [x] **TEST-03**: Journal service has test project with tests covering journal CRUD and pattern analysis
 - [ ] **TEST-04**: Notification service has test project with tests covering code delivery, push notifications, and scheduling
 - [ ] **TEST-05**: Chat service test coverage expanded to include SessionService, ChatController, and wrapper client
 - [x] **TEST-06**: Frontend test framework configured (Jest + React Native Testing Library)
@@ -113,8 +113,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SEC-09 | Phase 1 | Complete |
 | SEC-10 | Phase 1 | Complete |
 | TEST-01 | Phase 3 | Complete |
-| TEST-02 | Phase 3 | Pending |
-| TEST-03 | Phase 3 | Pending |
+| TEST-02 | Phase 3 | Complete |
+| TEST-03 | Phase 3 | Complete |
 | TEST-04 | Phase 3 | Pending |
 | TEST-05 | Phase 3 | Pending |
 | TEST-06 | Phase 3 | Complete |
