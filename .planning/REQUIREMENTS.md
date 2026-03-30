@@ -35,10 +35,10 @@ Requirements for hardening milestone. Each maps to roadmap phases.
 
 - [x] **REL-01**: Rate limiting middleware registered in correct order (after CORS and authentication)
 - [x] **REL-02**: StoredProcedureExecutor validates function names against allowed character pattern
-- [ ] **REL-03**: Chat history queries have pagination support (limit/offset parameters)
-- [ ] **REL-04**: CancellationToken propagated through chat service controller-service-provider chain
+- [x] **REL-03**: Chat history queries have pagination support (limit/offset parameters)
+- [x] **REL-04**: CancellationToken propagated through chat service controller-service-provider chain
 - [ ] **REL-05**: User-generated content (posts, journals, chat) has input sanitization at storage boundary
-- [ ] **REL-06**: Session entity mutations replaced with immutable patterns (use `with` expressions or new objects)
+- [x] **REL-06**: Session entity mutations replaced with immutable patterns (use `with` expressions or new objects)
 
 ### Configuration
 
@@ -122,10 +122,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-08 | Phase 3 | Complete |
 | REL-01 | Phase 2 | Complete |
 | REL-02 | Phase 2 | Complete |
-| REL-03 | Phase 4 | Pending |
-| REL-04 | Phase 4 | Pending |
+| REL-03 | Phase 4 | Complete |
+| REL-04 | Phase 4 | Complete |
 | REL-05 | Phase 4 | Pending |
-| REL-06 | Phase 4 | Pending |
+| REL-06 | Phase 4 | Complete |
 | CFG-01 | Phase 5 | Pending |
 | CFG-02 | Phase 5 | Pending |
 | CFG-03 | Phase 5 | Pending |

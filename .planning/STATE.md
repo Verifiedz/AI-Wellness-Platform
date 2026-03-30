@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-reliability-and-performance 04-01-PLAN.md
-last_updated: "2026-03-30T09:38:55.061Z"
+stopped_at: Completed 04-reliability-and-performance 04-02-PLAN.md
+last_updated: "2026-03-30T09:44:34.820Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 14
-  completed_plans: 12
+  completed_plans: 13
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 4 (reliability-and-performance) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-30
 
@@ -64,6 +64,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-test-infrastructure P02 | 25m | 2 tasks | 13 files |
 | Phase 03-test-infrastructure P03 | 12m | 2 tasks | 10 files |
 | Phase 04-reliability-and-performance P01 | 6m | 2 tasks | 10 files |
+| Phase 04-reliability-and-performance P02 | 3m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,7 @@ Recent decisions affecting current work:
 - [Phase 03-test-infrastructure]: ChatControllerTests use ClaimsPrincipal on ControllerContext.HttpContext.User to avoid full web stack for identity-dependent unit tests
 - [Phase 04-reliability-and-performance]: Use limit=200 for internal context retrieval in SendChatMessageAsync (not display limit) — history fetch is for AI context building
 - [Phase 04-reliability-and-performance]: Return HTTP 499 for OperationCanceledException — non-standard but conventional for client-closed-request signal
+- [Phase 04-reliability-and-performance]: Keep class (not record) for ChatSession to avoid Redis deserialization risk; init-only setters provide immutability without changing the type
 
 ### Pending Todos
 
@@ -110,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:38:55.056Z
-Stopped at: Completed 04-reliability-and-performance 04-01-PLAN.md
+Last session: 2026-03-30T09:44:34.815Z
+Stopped at: Completed 04-reliability-and-performance 04-02-PLAN.md
 Resume file: None
