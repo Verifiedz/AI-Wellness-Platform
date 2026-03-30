@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-internal-communication-security 02-02-PLAN.md
-last_updated: "2026-03-30T05:39:23.539Z"
+status: verifying
+stopped_at: Completed 02-internal-communication-security 02-01-PLAN.md
+last_updated: "2026-03-30T05:45:48.517Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 Phase: 02 (internal-communication-security) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-03-30
 
 Progress: [░░░░░░░░░░] 0%
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-perimeter-security P03 | 10m | 3 tasks | 5 files |
 | Phase 01-perimeter-security P02 | 8 | 2 tasks | 4 files |
 | Phase 02-internal-communication-security P02 | 10m | 2 tasks | 4 files |
+| Phase 02-internal-communication-security P01 | 4m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 01-perimeter-security]: ILogger named placeholders enforced across all auth-service log calls (zero interpolation)
 - [Phase 02-internal-communication-security]: Use \z end anchor in ValidateFunctionName regex: $ matches before trailing newline in .NET, \z is absolute string end
 - [Phase 02-internal-communication-security]: StoredProcedure regex tests placed in auth-service.Tests: notification/journal have no test projects until Phase 3
+- [Phase 02-internal-communication-security]: Per-request config read in NotificationCodeController.ValidateApiKey is acceptable (controllers are transient) — no constructor field needed, diff stays minimal
+- [Phase 02-internal-communication-security]: Middleware order test reads Program.cs source as static analysis — integration testing CORS+rate-limiting with running server is Phase 3 scope
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T05:39:23.534Z
-Stopped at: Completed 02-internal-communication-security 02-02-PLAN.md
+Last session: 2026-03-30T05:45:48.511Z
+Stopped at: Completed 02-internal-communication-security 02-01-PLAN.md
 Resume file: None

@@ -47,7 +47,7 @@ Plans:
   3. Passing a function name containing SQL metacharacters to StoredProcedureExecutor causes immediate rejection before any database call
 **Plans:** 2 plans
 Plans:
-- [ ] 02-01-PLAN.md -- Timing-safe API key comparison and middleware pipeline reorder (SEC-04, REL-01)
+- [x] 02-01-PLAN.md -- Timing-safe API key comparison and middleware pipeline reorder (SEC-04, REL-01)
 - [x] 02-02-PLAN.md -- StoredProcedureExecutor function name validation (REL-02)
 
 ### Phase 3: Test Infrastructure
