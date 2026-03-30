@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-test-infrastructure 03-04-PLAN.md
-last_updated: "2026-03-30T06:36:09.462Z"
+stopped_at: Completed 03-test-infrastructure 03-01-PLAN.md
+last_updated: "2026-03-30T06:36:21.195Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 5
@@ -85,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 02-internal-communication-security]: Middleware order test reads Program.cs source as static analysis — integration testing CORS+rate-limiting with running server is Phase 3 scope
 - [Phase 03-test-infrastructure]: jest-expo@~54.0.0 for SDK 54 compatibility, --legacy-peer-deps for react 19.1.0 conflict
 - [Phase 03-test-infrastructure]: waitFor() from @testing-library/react-native for async useEffect assertions in AuthContext tests
+- [Phase 03-test-infrastructure]: IPasswordHasher interface placed in Abstraction folder (no s) matching existing codebase inconsistency -- namespace uses Abstractions (with s) for consistency
+- [Phase 03-test-infrastructure]: JWT NameIdentifier serializes as nameid short name in JwtSecurityTokenHandler round-trip -- tests check both full URI and short name
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T06:35:35.616Z
-Stopped at: Completed 03-test-infrastructure 03-04-PLAN.md
+Last session: 2026-03-30T06:36:21.189Z
+Stopped at: Completed 03-test-infrastructure 03-01-PLAN.md
 Resume file: None

@@ -59,7 +59,7 @@ Plans:
   2. Community-service tests include a test that sends a request without the gateway shared secret and asserts 401
   3. Frontend `npm test` runs without configuration errors and AuthContext login, logout, and token-restore flows have passing tests
   4. All tests were written to fail against the pre-fix code and pass only after the fix (no characterization tests encoding broken behavior)
-**Plans:** 4 plans
+**Plans:** 2/4 plans executed
 Plans:
 - [x] 03-01-PLAN.md -- IPasswordHasher abstraction and auth-service test expansion (TEST-08, TEST-01)
 - [ ] 03-02-PLAN.md -- Community-service controller tests and journal-service test project (TEST-02, TEST-03)
@@ -97,6 +97,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
 | 2. Internal Communication Security | 2/2 | Complete    | 2026-03-30 |
-| 3. Test Infrastructure | 0/4 | Not started | - |
+| 3. Test Infrastructure | 2/4 | In Progress|  |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
