@@ -24,7 +24,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> Register([FromBody] RegisterRequest request)
   {
     var result = await _authService.RegisterAsync(request);
-    _logger.LogInformation($"User registered successfully: {request.Email}");
+    _logger.LogInformation("User registered successfully: {Email}", request.Email);
     return Ok(result);
   }
 
@@ -32,7 +32,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> Login([FromBody] LoginRequest request)
   {
     var result = await _authService.LoginAsync(request);
-    _logger.LogInformation($"Login initiated for: {request.Email}");
+    _logger.LogInformation("Login initiated for: {Email}", request.Email);
     return Ok(result);
   }
 
@@ -40,7 +40,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> VerifyTwoFactor([FromBody] TwoFactorRequest request)
   {
     var result = await _authService.VerifyTwoFactorAsync(request);
-    _logger.LogInformation($"2FA verified successfully for: {request.Email}");
+    _logger.LogInformation("2FA verified successfully for: {Email}", request.Email);
     return Ok(result);
   }
 
@@ -48,7 +48,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
   {
     await _authService.VerifyEmailAsync(request.Email, request.Code);
-    _logger.LogInformation($"Email verified successfully: {request.Email}");
+    _logger.LogInformation("Email verified successfully: {Email}", request.Email);
     return Ok(new { message = "Email verified successfully" });
   }
 
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> ResendVerification([FromBody] ResendVerificationRequest request)
   {
     await _authService.ResendVerificationEmailAsync(request);
-    _logger.LogInformation($"Verification email resent: {request.Email ?? request.Username}");
+    _logger.LogInformation("Verification email resent: {Identifier}", request.Email ?? request.Username);
     return Ok(new { message = "Verification email sent if account exists" });
   }
 
@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
   {
     await _authService.InitiatePasswordResetAsync(request);
-    _logger.LogInformation($"Password reset initiated: {request.Email ?? request.Username}");
+    _logger.LogInformation("Password reset initiated: {Identifier}", request.Email ?? request.Username);
     return Ok(new { message = "If account exists, reset instructions sent" });
   }
 
@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
   public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
   {
     await _authService.ResetPasswordAsync(request);
-    _logger.LogInformation($"Password reset successful: {request.Email}");
+    _logger.LogInformation("Password reset successful: {Email}", request.Email);
     return Ok(new { message = "Password reset successful" });
   }
 
@@ -88,7 +88,7 @@ public class AuthController : ControllerBase
       return BadRequest(new { message = "Email mismatch with authenticated user" });
 
     await _authService.ChangePasswordAsync(request);
-    _logger.LogInformation($"Password changed successfully for: {request.Email}");
+    _logger.LogInformation("Password changed successfully for: {Email}", request.Email);
     return Ok(new { message = "Password changed successfully" });
   }
 
@@ -101,14 +101,6 @@ public class AuthController : ControllerBase
       return Unauthorized(new { message = "Invalid token" });
 
     var userInfo = await _authService.GetUserInfoAsync(userEmail);
-    return Ok(userInfo);
-  }
-
-  [Authorize]
-  [HttpGet("user-info/{email}")]
-  public async Task<IActionResult> GetUserInfoByEmail(string email)
-  {
-    var userInfo = await _authService.GetUserInfoAsync(email);
     return Ok(userInfo);
   }
 
