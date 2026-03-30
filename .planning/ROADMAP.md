@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Perimeter Security** - Fix authentication at the gateway boundary (auth-service) and close the completely unauthenticated community-service (completed 2026-03-30)
 - [x] **Phase 2: Internal Communication Security** - Fix timing-safe API key comparison, middleware pipeline order, and SQL injection surface on stored procedures (completed 2026-03-30)
 - [x] **Phase 3: Test Infrastructure** - Establish test projects for all five untested services and the frontend; write tests proving every Phase 1 and 2 fix (completed 2026-03-30)
-- [ ] **Phase 4: Reliability and Performance** - Fix pagination, CancellationToken propagation, session immutability, and input sanitization
+- [x] **Phase 4: Reliability and Performance** - Fix pagination, CancellationToken propagation, session immutability, and input sanitization (completed 2026-03-30)
 - [ ] **Phase 5: Tech Debt and Configuration** - Clean deployment config, remove dead code, document scaling limitations, consolidate naming conventions
 
 ## Phase Details
@@ -75,11 +75,11 @@ Plans:
   2. Disconnecting a client mid-request causes the chat-service to cancel the in-flight OpenAI API call within one second (observable via cancellation log entry)
   3. Session rename and bookmark operations return new session objects without mutating the original entity in memory
   4. Submitting a community post or journal entry with an HTML script tag stores the sanitized text, not the raw HTML
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 04-01-PLAN.md -- Chat pagination and CancellationToken propagation (REL-03, REL-04)
 - [x] 04-02-PLAN.md -- Session entity immutability (REL-06)
-- [ ] 04-03-PLAN.md -- HTML sanitization for user-generated content (REL-05)
+- [x] 04-03-PLAN.md -- HTML sanitization for user-generated content (REL-05)
 
 ### Phase 5: Tech Debt and Configuration
 **Goal**: Docker Compose fails fast on missing credentials, all required environment variables are documented, dead code is removed, and naming conventions and scaling limitations are accurately reflected in the codebase
@@ -102,5 +102,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
 | 2. Internal Communication Security | 2/2 | Complete    | 2026-03-30 |
 | 3. Test Infrastructure | 4/4 | Complete   | 2026-03-30 |
-| 4. Reliability and Performance | 2/3 | In Progress|  |
+| 4. Reliability and Performance | 3/3 | Complete   | 2026-03-30 |
 | 5. Tech Debt and Configuration | 0/TBD | Not started | - |
