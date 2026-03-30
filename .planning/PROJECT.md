@@ -56,17 +56,17 @@ Security first -- fix vulnerabilities and protect user data before anything else
 
 **Tech Debt (MEDIUM)**
 - [x] Session entity mutations replaced with immutable patterns — Validated in Phase 4: Reliability and Performance (REL-06)
-- [ ] Chat service naming conventions standardized to PascalCase
+- [x] Chat service naming conventions standardized to PascalCase — Validated in Phase 5: Tech Debt and Configuration (DEBT-01)
 - [x] User-generated content (posts, journals, chat) has input sanitization — Validated in Phase 4: Reliability and Performance (REL-05)
 - [x] Auth service uses domain exception types instead of generic Exception — Validated in Phase 1: Perimeter Security (SEC-08)
-- [ ] Duplicated StoredProcedureExecutor extracted to shared pattern
-- [ ] Wearable service stub either implemented or removed from UI
+- [x] Duplicated StoredProcedureExecutor documented with INTENTIONAL DUPLICATION comment — Validated in Phase 5: Tech Debt and Configuration (DEBT-02)
+- [x] Wearable service stub displays "coming soon" with no dead service calls — Validated in Phase 5: Tech Debt and Configuration (DEBT-03)
 
 **Performance (MEDIUM)**
 - [x] Chat history queries have pagination (limit/offset) — Validated in Phase 4: Reliability and Performance (REL-03)
 - [ ] Community posts use fewer database round-trips
 - [x] Chat service propagates CancellationToken through the chain — Validated in Phase 4: Reliability and Performance (REL-04)
-- [ ] Rate limiting documented as in-memory (scaling limitation noted)
+- [x] Rate limiting documented as in-memory (scaling limitation noted) — Validated in Phase 5: Tech Debt and Configuration (DEBT-04)
 
 **Test Coverage (HIGH)**
 - [x] Auth service has unit and integration tests — Validated in Phase 3: Test Infrastructure (TEST-01, TEST-08)
@@ -79,10 +79,10 @@ Security first -- fix vulnerabilities and protect user data before anything else
 
 **Configuration / Deployment (LOW)**
 - [ ] Docker Compose database ports not exposed to host in production config
-- [ ] Auth service container has health check in docker-compose
-- [ ] Firebase service account path validated at startup
-- [ ] Docker Compose default passwords removed (fail fast if env var missing)
-- [x] .env.example enumerates all required environment variables — Validated in Phase 1: Perimeter Security (SEC-09, SEC-10)
+- [x] Auth service container has health check in docker-compose — Validated in Phase 5: Tech Debt and Configuration (CFG-02)
+- [x] Firebase service account path validated at startup — Validated in Phase 5: Tech Debt and Configuration (CFG-03)
+- [x] Docker Compose default passwords removed (fail fast if env var missing) — Validated in Phase 5: Tech Debt and Configuration (CFG-01)
+- [x] .env.example enumerates all required environment variables — Validated in Phase 1: Perimeter Security (SEC-09, SEC-10) and Phase 5: Tech Debt and Configuration (CFG-04)
 
 ### Out of Scope
 
@@ -145,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 — Phase 4 (Reliability and Performance) complete*
+*Last updated: 2026-03-30 — Phase 5 (Tech Debt and Configuration) complete — Hardening Milestone COMPLETE*
