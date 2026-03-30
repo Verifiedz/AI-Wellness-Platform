@@ -1,6 +1,7 @@
 namespace JournalService.Tests.Services;
 
 using FluentAssertions;
+using Ganss.Xss;
 using JournalService.Api.Models.Entities;
 using JournalService.Api.Models.Requests;
 using JournalService.Api.Services;
@@ -11,13 +12,17 @@ public class JournalEntryServiceTests
 {
     private readonly Mock<IDatabaseService> _dbMock;
     private readonly Mock<ILogger<JournalEntryService>> _loggerMock;
+    private readonly HtmlSanitizer _sanitizer;
     private readonly JournalEntryService _sut;
 
     public JournalEntryServiceTests()
     {
         _dbMock = new Mock<IDatabaseService>();
         _loggerMock = new Mock<ILogger<JournalEntryService>>();
-        _sut = new JournalEntryService(_dbMock.Object, _loggerMock.Object);
+        _sanitizer = new HtmlSanitizer();
+        _sanitizer.AllowedTags.Clear();
+        _sanitizer.AllowedAttributes.Clear();
+        _sut = new JournalEntryService(_dbMock.Object, _loggerMock.Object, _sanitizer);
     }
 
     // ------------------------------------------------------------------ //
@@ -258,5 +263,84 @@ public class JournalEntryServiceTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    // ------------------------------------------------------------------ //
+    // HTML Sanitization
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task CreateEntryAsync_SanitizesHtmlContent()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new CreateJournalEntryRequest
+        {
+            Mood = "okay",
+            Emotions = ["Happy"],
+            EnergyLevel = 5,
+            Content = "<script>alert('xss')</script>Safe text",
+            EntryDate = DateOnly.FromDateTime(DateTime.Today)
+        };
+
+        _dbMock.Setup(db => db.GetJournalEntryByDateAsync(userId, request.EntryDate))
+               .ReturnsAsync((JournalEntry?)null);
+
+        string? capturedContent = null;
+        _dbMock.Setup(db => db.CreateJournalEntryAsync(
+                userId, request.Mood, request.Emotions, request.EnergyLevel,
+                It.IsAny<string>(), request.EntryDate))
+               .Callback<Guid, string, string[], int, string, DateOnly>(
+                   (_, _, _, _, content, _) => capturedContent = content)
+               .ReturnsAsync(new JournalEntry
+               {
+                   Id = Guid.NewGuid(), UserId = userId, Mood = "okay",
+                   Emotions = ["Happy"], EnergyLevel = 5, Content = "Safe text",
+                   EntryDate = request.EntryDate, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+               });
+
+        // Act
+        await _sut.CreateEntryAsync(userId, request);
+
+        // Assert
+        capturedContent.Should().NotBeNull();
+        capturedContent!.Should().NotContain("<script>");
+        capturedContent.Should().Contain("Safe text");
+    }
+
+    [Fact]
+    public async Task UpdateEntryAsync_SanitizesHtmlContent()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var entryId = Guid.NewGuid();
+        var request = new UpdateJournalEntryRequest
+        {
+            Mood = "good",
+            Emotions = ["Peaceful"],
+            EnergyLevel = 6,
+            Content = "<img src=x onerror=alert(1)>Safe update"
+        };
+
+        string? capturedContent = null;
+        _dbMock.Setup(db => db.UpdateJournalEntryAsync(
+                entryId, userId, request.Mood, request.Emotions, request.EnergyLevel,
+                It.IsAny<string>()))
+               .Callback<Guid, Guid, string, string[], int, string>(
+                   (_, _, _, _, _, content) => capturedContent = content)
+               .ReturnsAsync(new JournalEntry
+               {
+                   Id = entryId, UserId = userId, Mood = "good",
+                   Emotions = ["Peaceful"], EnergyLevel = 6, Content = "Safe update",
+                   EntryDate = new DateOnly(2025, 1, 1), CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+               });
+
+        // Act
+        await _sut.UpdateEntryAsync(entryId, userId, request);
+
+        // Assert
+        capturedContent.Should().NotBeNull();
+        capturedContent!.Should().NotContain("<img");
+        capturedContent.Should().Contain("Safe update");
     }
 }

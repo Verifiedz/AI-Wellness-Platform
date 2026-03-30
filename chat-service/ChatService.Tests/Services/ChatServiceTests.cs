@@ -4,6 +4,7 @@ using ChatService.DTOs;
 using ChatService.entities;
 using ChatService.Interfaces;
 using ChatService.Services;
+using Ganss.Xss;
 using Moq;
 
 /// <summary>
@@ -15,6 +16,7 @@ public class ChatServiceTests
     private readonly Mock<IChatWrapperClientInterface> _wrapperMock;
     private readonly Mock<ISessionService> _sessionMock;
     private readonly Mock<IChatDatabaseProvider> _dbMock;
+    private readonly HtmlSanitizer _sanitizer;
     private readonly chatService _sut;
 
     public ChatServiceTests()
@@ -23,10 +25,15 @@ public class ChatServiceTests
         _sessionMock = new Mock<ISessionService>();
         _dbMock = new Mock<IChatDatabaseProvider>();
 
+        _sanitizer = new HtmlSanitizer();
+        _sanitizer.AllowedTags.Clear();
+        _sanitizer.AllowedAttributes.Clear();
+
         _sut = new chatService(
             _wrapperMock.Object,
             _sessionMock.Object,
-            _dbMock.Object);
+            _dbMock.Object,
+            _sanitizer);
     }
 
     // ------------------------------------------------------------------ //
@@ -185,6 +192,48 @@ public class ChatServiceTests
     {
         await Assert.ThrowsAsync<ArgumentException>(
             () => _sut.GetChatsbySessionAsync(Guid.Empty, Guid.NewGuid()));
+    }
+
+    // ------------------------------------------------------------------ //
+    // HTML Sanitization
+    // ------------------------------------------------------------------ //
+
+    [Fact]
+    public async Task SendChatMessageAsync_SanitizesUserMessage()
+    {
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var session = new ChatSession { sessionID = sessionId, UserId = userId };
+        var request = new ChatRequest(userId, "<script>steal()</script>Hello", string.Empty, sessionId);
+
+        _sessionMock
+            .Setup(s => s.GetOrCreateSessionAsync(userId, sessionId))
+            .ReturnsAsync(session);
+
+        _dbMock
+            .Setup(d => d.getChatsBySessionAsync(sessionId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Chat>());
+
+        Chat? capturedUserMessage = null;
+        var callCount = 0;
+        _dbMock
+            .Setup(d => d.createChatAsync(It.IsAny<Chat>(), It.IsAny<CancellationToken>()))
+            .Callback<Chat, CancellationToken>((chat, _) =>
+            {
+                callCount++;
+                if (callCount == 1) capturedUserMessage = chat; // First call is user message
+            })
+            .Returns(Task.CompletedTask);
+
+        _wrapperMock
+            .Setup(w => w.getChatResponseAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse(userId, "AI reply", string.Empty, sessionId));
+
+        await _sut.SendChatMessageAsync(request);
+
+        Assert.NotNull(capturedUserMessage);
+        Assert.DoesNotContain("<script>", capturedUserMessage!.message);
+        Assert.Contains("Hello", capturedUserMessage.message);
     }
 
     // ------------------------------------------------------------------ //
