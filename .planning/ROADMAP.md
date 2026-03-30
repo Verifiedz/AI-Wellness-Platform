@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A user authenticated as user A cannot retrieve profile data for user B via the user-info endpoint (receives 403)
   4. Exception messages from auth-service failures return a generic error to the API client while full details appear in server logs only
   5. No plaintext credentials or environment-specific URLs appear in committed config files
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 Plans:
 - [x] 01-01-PLAN.md -- Domain exception hierarchy and exception exposure fix (SEC-08, SEC-07)
 - [ ] 01-02-PLAN.md -- CSPRNG for 2FA, structured logging, endpoint removal (SEC-01, SEC-02, SEC-05, SEC-06)
@@ -87,7 +87,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Perimeter Security | 2/5 | In Progress|  |
+| 1. Perimeter Security | 3/5 | In Progress|  |
 | 2. Internal Communication Security | 0/TBD | Not started | - |
 | 3. Test Infrastructure | 0/TBD | Not started | - |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
