@@ -15,7 +15,6 @@ public class AuthServiceTests
 {
   private readonly Mock<IUserRepository> _userRepository = new();
   private readonly Mock<IPasswordValidator> _passwordValidator = new();
-  private readonly Mock<IEmailService> _emailService = new();
   private readonly Mock<INotificationService> _notificationService = new();
   private readonly Mock<IJwtService> _jwtService = new();
   private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
@@ -27,7 +26,6 @@ public class AuthServiceTests
     return new AuthService(
       _userRepository.Object,
       _passwordValidator.Object,
-      _emailService.Object,
       _notificationService.Object,
       _jwtService.Object,
       _httpContextAccessor.Object,
