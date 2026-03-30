@@ -43,7 +43,7 @@ Security first -- fix vulnerabilities and protect user data before anything else
 - [x] 2FA codes are not logged in plaintext — Validated in Phase 1: Perimeter Security (SEC-01)
 - [x] Security codes use cryptographically secure random generation — Validated in Phase 1: Perimeter Security (SEC-02)
 - [x] Community service validates gateway shared-secret (not unauthenticated) — Validated in Phase 1: Perimeter Security (SEC-03)
-- [ ] API key comparisons use timing-safe equality
+- [x] API key comparisons use timing-safe equality — Validated in Phase 2: Internal Communication Security (SEC-04)
 - [x] PII is not logged via string interpolation (use structured logging) — Validated in Phase 1: Perimeter Security (SEC-05)
 - [x] User info endpoint enforces authorization (users can only query their own data) — Validated in Phase 1: Perimeter Security (SEC-06)
 - [x] Exception messages are not exposed to API clients — Validated in Phase 1: Perimeter Security (SEC-07, SEC-08)
@@ -51,8 +51,8 @@ Security first -- fix vulnerabilities and protect user data before anything else
 - [x] Hardcoded RunPod proxy URL removed from committed config — Validated in Phase 1: Perimeter Security (SEC-10)
 
 **Bugs / Error-Prone Areas (HIGH)**
-- [ ] Rate limiting middleware registered in correct order (after CORS and auth)
-- [ ] StoredProcedureExecutor validates function names against injection
+- [x] Rate limiting middleware registered in correct order (after CORS and auth) — Validated in Phase 2: Internal Communication Security (REL-01)
+- [x] StoredProcedureExecutor validates function names against injection — Validated in Phase 2: Internal Communication Security (REL-02)
 
 **Tech Debt (MEDIUM)**
 - [ ] Session entity mutations replaced with immutable patterns
@@ -145,4 +145,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 — Phase 1 (Perimeter Security) complete*
+*Last updated: 2026-03-30 — Phase 2 (Internal Communication Security) complete*
