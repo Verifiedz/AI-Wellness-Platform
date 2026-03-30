@@ -124,7 +124,7 @@ export function SettingsScreen({ navigation }) {
         { icon: "person-outline", label: "Profile", color: colors.secondary, screen: "ProfileSettings" },
         { icon: "notifications-outline", label: "Notifications", color: colors.primary, screen: "NotificationSettings" },
         { icon: "document-text-outline", label: "Export for Therapist", sublabel: "Download wellness report", color: colors.success, screen: "ExportData" },
-        { icon: "fitness-outline", label: "Health Data", sublabel: "Wearable device integration", color: colors.error, screen: "WearableSettings" },
+        { icon: "fitness-outline", label: "Health Data", sublabel: "Coming soon — requires native build", color: colors.error, screen: "WearableSettings" },
         { icon: "refresh-outline", label: "Retake Setup Quiz", sublabel: "Redo the onboarding questions", color: colors.accent, onPress: handleResetOnboarding },
       ],
     },

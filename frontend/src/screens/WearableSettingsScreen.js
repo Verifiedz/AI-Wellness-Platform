@@ -17,8 +17,9 @@ import { useWearableData } from "../hooks/useWearableData";
 import { isWearableAvailable, requestPermissions } from "../services/wearableService";
 
 /**
- * Wearable device settings screen.
- * Allows the user to enable/disable health data, manage permissions.
+ * Wearable device settings screen (Coming Soon).
+ * Health data / wearable integration is not yet available — requires a native Expo build
+ * with native health modules installed. The screen is kept as a skeleton for future implementation.
  */
 export function WearableSettingsScreen() {
   const { colors, fonts } = useTheme();
@@ -57,13 +58,11 @@ export function WearableSettingsScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
     >
-      {!isAvailable && (
-        <Banner
-          type="warning"
-          message="Wearable integration requires a custom Expo dev build with native health modules installed. It is not available in Expo Go or on web."
-          icon="warning-outline"
-        />
-      )}
+      <Banner
+        type="warning"
+        message="Coming Soon — Wearable integration requires a native Expo build with health modules installed. It is not available in Expo Go or on web."
+        icon="warning-outline"
+      />
 
       <Banner
         type="info"
