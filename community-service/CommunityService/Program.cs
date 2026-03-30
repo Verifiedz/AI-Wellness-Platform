@@ -1,4 +1,5 @@
 using CommunityService.Infrastructure;
+using CommunityService.Middleware;
 using CommunityService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,7 @@ await dbInitializer.InitializeAsync();
 
 app.UseHttpsRedirection();
 app.UseCors("CommunityCors");
+app.UseMiddleware<GatewayAuthMiddleware>();
 app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
