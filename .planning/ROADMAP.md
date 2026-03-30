@@ -12,7 +12,7 @@ This roadmap hardens the Sakina platform from feature-complete to production-saf
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Perimeter Security** - Fix authentication at the gateway boundary (auth-service) and close the completely unauthenticated community-service
+- [x] **Phase 1: Perimeter Security** - Fix authentication at the gateway boundary (auth-service) and close the completely unauthenticated community-service (completed 2026-03-30)
 - [ ] **Phase 2: Internal Communication Security** - Fix timing-safe API key comparison, middleware pipeline order, and SQL injection surface on stored procedures
 - [ ] **Phase 3: Test Infrastructure** - Establish test projects for all five untested services and the frontend; write tests proving every Phase 1 and 2 fix
 - [ ] **Phase 4: Reliability and Performance** - Fix pagination, CancellationToken propagation, session immutability, and input sanitization
@@ -30,10 +30,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. A user authenticated as user A cannot retrieve profile data for user B via the user-info endpoint (receives 403)
   4. Exception messages from auth-service failures return a generic error to the API client while full details appear in server logs only
   5. No plaintext credentials or environment-specific URLs appear in committed config files
-**Plans:** 4/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 01-01-PLAN.md -- Domain exception hierarchy and exception exposure fix (SEC-08, SEC-07)
-- [ ] 01-02-PLAN.md -- CSPRNG for 2FA, structured logging, endpoint removal (SEC-01, SEC-02, SEC-05, SEC-06)
+- [x] 01-02-PLAN.md -- CSPRNG for 2FA, structured logging, endpoint removal (SEC-01, SEC-02, SEC-05, SEC-06)
 - [x] 01-03-PLAN.md -- Community service gateway authentication middleware (SEC-03)
 - [x] 01-04-PLAN.md -- Credential scrubbing and .env.example (SEC-09, SEC-10)
 
@@ -87,7 +87,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Perimeter Security | 4/5 | In Progress|  |
+| 1. Perimeter Security | 5/5 | Complete   | 2026-03-30 |
 | 2. Internal Communication Security | 0/TBD | Not started | - |
 | 3. Test Infrastructure | 0/TBD | Not started | - |
 | 4. Reliability and Performance | 0/TBD | Not started | - |
