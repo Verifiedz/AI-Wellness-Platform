@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useHaptic } from '../hooks/useHaptic';
 
 /**
  * Circular microphone button for voice input.
@@ -15,6 +16,7 @@ import { useTheme } from '../context/ThemeContext';
  */
 export function VoiceInputButton({ isListening, onPress, disabled, style }) {
   const { colors } = useTheme();
+  const haptic = useHaptic();
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -42,12 +44,20 @@ export function VoiceInputButton({ isListening, onPress, disabled, style }) {
     }
   }, [isListening, pulseAnim]);
 
+  const handlePress = () => {
+    haptic.triggerSelection();
+    onPress?.();
+  };
+
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
       style={[styles.button, style]}
+      accessibilityRole="button"
+      accessibilityLabel={isListening ? 'Stop recording' : 'Start voice input'}
+      accessibilityState={{ disabled: disabled }}
     >
       <Animated.View
         style={[

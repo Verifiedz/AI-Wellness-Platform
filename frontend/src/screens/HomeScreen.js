@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -28,6 +28,8 @@ import { useAssessmentReminder } from '../hooks/useAssessmentReminder';
 import { ASSESSMENTS } from '../constants/assessments';
 import { useWearableData } from '../hooks/useWearableData';
 import { WearableMetricsCard } from '../components/WearableMetricsCard';
+import { Banner } from '../components/Banner';
+import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 function getDisplayName(user) {
   if (user?.username?.trim()) return user.username.trim();
@@ -57,11 +59,13 @@ export function HomeScreen({ navigation }) {
   const { colors, fonts, isDynamicTheme, timePeriod } = useTheme();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [todayEntry, setTodayEntry] = useState(null);
   const [quickPrompt, setQuickPrompt] = useState(null);
   const { insights, load: loadInsights, refresh: refreshInsights } = usePatternInsights(30);
   const assessmentReminder = useAssessmentReminder();
   const wearable = useWearableData();
+  const hasLoadedRef = useRef(false);
 
   const loadDashboard = useCallback(async (isSoftRefresh = false) => {
     if (isSoftRefresh) setIsRefreshing(true);
@@ -75,10 +79,22 @@ export function HomeScreen({ navigation }) {
         journalApi.getRandomPrompt(),
       ]);
 
-      setTodayEntry(todayEntryResult.error ? null : todayEntryResult.data || null);
-      setQuickPrompt(promptResult.error ? null : promptResult.data || null);
-    } catch {
-      // Dashboard load failed silently
+      // A 404 for today's entry just means the user hasn't journaled yet — not an error.
+      const entryError = todayEntryResult.error && todayEntryResult.status !== 404
+        ? todayEntryResult.error
+        : null;
+      const promptError = promptResult.error && promptResult.status !== 404
+        ? promptResult.error
+        : null;
+      const firstError = entryError || promptError;
+
+      setError(firstError || null);
+      setTodayEntry(todayEntryResult.data || null);
+      setQuickPrompt(promptResult.data || null);
+    } catch (err) {
+      const isNetwork =
+        err instanceof TypeError || (err.message && err.message.toLowerCase().includes('network'));
+      setError(isNetwork ? 'No internet connection' : 'Failed to load dashboard');
     } finally {
       if (isSoftRefresh) setIsRefreshing(false);
       else setIsInitialLoading(false);
@@ -87,9 +103,12 @@ export function HomeScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      loadDashboard(false);
-      loadInsights();
-    }, [loadDashboard, loadInsights])
+      const soft = hasLoadedRef.current;
+      hasLoadedRef.current = true;
+      loadDashboard(soft);
+      if (soft) refreshInsights();
+      else loadInsights();
+    }, [loadDashboard, loadInsights, refreshInsights])
   );
 
   const displayName = useMemo(() => getDisplayName(user), [user]);
@@ -100,7 +119,7 @@ export function HomeScreen({ navigation }) {
     (mood) => {
       navigation.navigate('Journal', {
         screen: 'JournalHome',
-        params: mood ? { preselectedMood: mood } : undefined,
+        params: mood ? { preselectedMood: mood, _ts: Date.now() } : undefined,
       });
     },
     [navigation]
@@ -145,6 +164,7 @@ export function HomeScreen({ navigation }) {
         />
       }
     >
+      <ResponsiveContainer>
       {/* Greeting */}
       <View style={styles.greetingSection}>
         <View style={styles.greetingRow}>
@@ -164,6 +184,19 @@ export function HomeScreen({ navigation }) {
           </View>
         </View>
       </View>
+
+      {error && (
+        <Banner
+          variant="error"
+          message={error}
+          action="Retry"
+          onAction={() => {
+            loadDashboard(true);
+            refreshInsights();
+          }}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {isInitialLoading ? (
         <HomeSkeleton />
@@ -436,6 +469,7 @@ export function HomeScreen({ navigation }) {
           </AnimatedCard>
         </>
       )}
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

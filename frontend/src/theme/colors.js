@@ -18,9 +18,9 @@ export const LightColors = {
 
   text: '#2C2C2C',
   textSecondary: '#7A7A7A',
-  textLight: '#ABABAB',
+  textLight: '#808080',
 
-  border: '#EDEBE8',
+  border: '#D5D0CB',
 
   error: '#D4726A',
   success: '#6BAF7D',
@@ -43,8 +43,8 @@ export const DarkColors = {
   surfaceElevated: '#2C3038',
 
   text: '#F0EDE8',
-  textSecondary: '#A0A0A0',
-  textLight: '#6B6B6B',
+  textSecondary: '#B0B0B0',
+  textLight: '#8A8A8A',
 
   border: '#363A42',
 

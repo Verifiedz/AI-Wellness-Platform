@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { format } from 'date-fns';
@@ -19,6 +19,8 @@ import { assessmentApi } from '../services/assessmentApi';
  * Route params:
  *   - assessmentType: "PHQ9" | "GAD7" (default: "PHQ9")
  */
+const PAGE_LIMIT = 50;
+
 export function AssessmentHistoryScreen({ navigation, route }) {
   const initialType = route.params?.assessmentType || 'PHQ9';
   const { colors, fonts } = useTheme();
@@ -28,6 +30,10 @@ export function AssessmentHistoryScreen({ navigation, route }) {
   const [comparison, setComparison] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(null);
 
   const assessment = ASSESSMENTS[activeType];
 
@@ -38,14 +44,28 @@ export function AssessmentHistoryScreen({ navigation, route }) {
 
       try {
         const [historyResult, compResult] = await Promise.all([
-          assessmentApi.getHistory({ type: activeType, limit: 50 }),
+          assessmentApi.getHistory({ type: activeType, limit: PAGE_LIMIT, offset: 0 }),
           assessmentApi.getComparison(activeType),
         ]);
 
-        if (!historyResult.error) setHistory(historyResult.data || []);
+        const firstError = historyResult.error || compResult.error;
+        if (firstError) {
+          setError(firstError);
+        } else {
+          setError(null);
+        }
+
+        if (!historyResult.error) {
+          const items = historyResult.data || [];
+          setHistory(items);
+          setOffset(items.length);
+          setHasMore(items.length === PAGE_LIMIT);
+        }
         if (!compResult.error) setComparison(compResult.data || null);
-      } catch {
-        // Load failed silently
+      } catch (err) {
+        const isNetwork =
+          err instanceof TypeError || (err.message && err.message.toLowerCase().includes('network'));
+        setError(isNetwork ? 'No internet connection' : 'Failed to load assessment history');
       } finally {
         if (soft) setIsRefreshing(false);
         else setIsLoading(false);
@@ -53,6 +73,25 @@ export function AssessmentHistoryScreen({ navigation, route }) {
     },
     [activeType]
   );
+
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || isLoading || isRefreshing || !hasMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const result = await assessmentApi.getHistory({ type: activeType, limit: PAGE_LIMIT, offset });
+      if (!result.error) {
+        const items = result.data || [];
+        setHistory((prev) => [...prev, ...items]);
+        setOffset((prev) => prev + items.length);
+        setHasMore(items.length === PAGE_LIMIT);
+      }
+    } catch {
+      // silently ignore load-more errors; user can refresh to retry
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [activeType, hasMore, isLoading, isLoadingMore, isRefreshing, offset]);
 
   useFocusEffect(
     useCallback(() => {
@@ -79,13 +118,46 @@ export function AssessmentHistoryScreen({ navigation, route }) {
         ? colors.error
         : colors.textSecondary;
 
-  return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadData(true)} />}
-    >
-      <ChipGroup options={typeChips} selected={activeType} onSelect={setActiveType} />
+  const renderHistoryItem = useCallback(
+    ({ item, index }) => {
+      const band = getSeverityBand(assessment, item.totalScore);
+      return (
+        <AnimatedCard key={item.id} index={index + 1}>
+          <Card style={styles.historyItem}>
+            <View style={styles.historyRow}>
+              <View style={[styles.severityDot, { backgroundColor: band.color }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
+                  Score: {item.totalScore}/{assessment.maxScore}
+                </Text>
+                <Text style={[fonts.bodySmall, { color: band.color }]}>
+                  {item.severityLabel}
+                </Text>
+              </View>
+              <Text style={[fonts.caption, { color: colors.textLight }]}>
+                {format(new Date(item.completedAt), 'MMM d, yyyy')}
+              </Text>
+            </View>
+          </Card>
+        </AnimatedCard>
+      );
+    },
+    [assessment, colors, fonts]
+  );
+
+  const listHeader = (
+    <View>
+      <ChipGroup items={typeChips} selected={activeType} onSelect={setActiveType} />
+
+      {error && (
+        <Banner
+          variant="error"
+          message={error}
+          action="Retry"
+          onAction={() => loadData(true)}
+          onDismiss={() => setError(null)}
+        />
+      )}
 
       {/* Comparison card */}
       {comparison?.first && comparison?.latest && comparison.first.id !== comparison.latest.id && (
@@ -124,49 +196,50 @@ export function AssessmentHistoryScreen({ navigation, route }) {
           </Card>
         </AnimatedCard>
       )}
+    </View>
+  );
 
-      {/* History list */}
-      {history.length === 0 && !isLoading ? (
-        <EmptyState
-          icon="clipboard-outline"
-          title={`No ${assessment.name} assessments yet`}
-          description="Take your first assessment to start tracking your wellbeing over time."
+  const listFooter = (
+    <View>
+      {isLoadingMore && (
+        <ActivityIndicator
+          size="small"
+          color={colors.primary}
+          style={styles.loadingMoreIndicator}
         />
-      ) : (
-        history.map((item, idx) => {
-          const band = getSeverityBand(assessment, item.totalScore);
-          return (
-            <AnimatedCard key={item.id} index={idx + 1}>
-              <Card style={styles.historyItem}>
-                <View style={styles.historyRow}>
-                  <View style={[styles.severityDot, { backgroundColor: band.color }]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
-                      Score: {item.totalScore}/{assessment.maxScore}
-                    </Text>
-                    <Text style={[fonts.bodySmall, { color: band.color }]}>
-                      {item.severityLabel}
-                    </Text>
-                  </View>
-                  <Text style={[fonts.caption, { color: colors.textLight }]}>
-                    {format(new Date(item.completedAt), 'MMM d, yyyy')}
-                  </Text>
-                </View>
-              </Card>
-            </AnimatedCard>
-          );
-        })
       )}
-
       <Banner type="info" message={CLINICAL_DISCLAIMER} icon="medical-outline" />
-
       <Button
         title={`Take ${assessment.name} Assessment`}
         onPress={() => navigation.navigate('Assessment', { assessmentType: activeType })}
         icon={<Ionicons name="clipboard-outline" size={16} color="#FFFFFF" />}
         style={{ marginTop: 16 }}
       />
-    </ScrollView>
+    </View>
+  );
+
+  return (
+    <FlatList
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+      data={history}
+      keyExtractor={(item) => String(item.id)}
+      renderItem={renderHistoryItem}
+      ListHeaderComponent={listHeader}
+      ListFooterComponent={listFooter}
+      ListEmptyComponent={
+        !isLoading ? (
+          <EmptyState
+            icon="clipboard-outline"
+            title={`No ${assessment.name} assessments yet`}
+            description="Take your first assessment to start tracking your wellbeing over time."
+          />
+        ) : null
+      }
+      onEndReached={loadMore}
+      onEndReachedThreshold={0.3}
+      refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => loadData(true)} />}
+    />
   );
 }
 
@@ -183,4 +256,5 @@ const styles = StyleSheet.create({
   historyItem: { marginBottom: 8 },
   historyRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   severityDot: { width: 12, height: 12, borderRadius: 6 },
+  loadingMoreIndicator: { paddingVertical: 16 },
 });

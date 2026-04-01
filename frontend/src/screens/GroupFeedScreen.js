@@ -14,8 +14,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { format } from 'date-fns';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
+import { Banner } from '../components/Banner';
 import { communityApi } from '../services/communityApi';
 import { REACTION_TYPES } from '../constants/communityGuidelines';
 
@@ -25,21 +27,29 @@ import { REACTION_TYPES } from '../constants/communityGuidelines';
 export function GroupFeedScreen({ route }) {
   const { slug, name } = route.params;
   const { colors, fonts } = useTheme();
+  const { showToast } = useToast();
 
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [newPost, setNewPost] = useState('');
   const [isPosting, setIsPosting] = useState(false);
+  const [postError, setPostError] = useState(null);
 
   const loadPosts = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const result = await communityApi.getPosts(slug);
       if (!result.error && result.data) {
         setPosts(Array.isArray(result.data) ? result.data : []);
+      } else if (result.error) {
+        setLoadError(result.error || 'Failed to load posts.');
       }
-    } catch {
-      // Load failed
+    } catch (err) {
+      const isNetwork =
+        err instanceof TypeError || (err.message && err.message.toLowerCase().includes('network'));
+      setLoadError(isNetwork ? 'No internet connection' : 'Failed to load posts. Tap Retry to try again.');
     } finally {
       setIsLoading(false);
     }
@@ -61,16 +71,19 @@ export function GroupFeedScreen({ route }) {
     }
 
     setIsPosting(true);
+    setPostError(null);
     try {
       const result = await communityApi.createPost(slug, { content: trimmed });
       if (result.error) {
-        Alert.alert('Error', result.error);
+        setPostError(result.error || 'Failed to create post. Tap Retry to try again.');
         return;
       }
       setNewPost('');
       loadPosts();
-    } catch {
-      Alert.alert('Error', 'Failed to create post.');
+    } catch (err) {
+      const isNetwork =
+        err instanceof TypeError || (err.message && err.message.toLowerCase().includes('network'));
+      setPostError(isNetwork ? 'No internet connection' : 'Failed to create post. Tap Retry to try again.');
     } finally {
       setIsPosting(false);
     }
@@ -101,11 +114,11 @@ export function GroupFeedScreen({ route }) {
             onPress: async (reason) => {
               if (!reason?.trim()) return;
               await communityApi.reportPost(postId, reason.trim());
-              Alert.alert('Reported', 'Thank you. Our team will review this post.');
+              showToast({ message: 'Thank you. Our team will review this post.', variant: 'info' });
             },
           },
         ])
-      : Alert.alert('Report Post', 'Report submitted for review.');
+      : showToast({ message: 'Report submitted for review.', variant: 'info' });
   }, []);
 
   const renderPost = ({ item }) => (
@@ -179,8 +192,19 @@ export function GroupFeedScreen({ route }) {
         contentContainerStyle={styles.list}
         refreshing={isLoading}
         onRefresh={loadPosts}
+        ListHeaderComponent={
+          loadError ? (
+            <Banner
+              variant="error"
+              message={loadError}
+              action="Retry"
+              onAction={loadPosts}
+              style={{ marginBottom: 12 }}
+            />
+          ) : null
+        }
         ListEmptyComponent={
-          !isLoading && (
+          !isLoading && !loadError && (
             <View style={{ alignItems: 'center', paddingVertical: 40 }}>
               <Ionicons name="chatbubbles-outline" size={40} color={colors.textLight} />
               <Text
@@ -195,6 +219,17 @@ export function GroupFeedScreen({ route }) {
           )
         }
       />
+
+      {postError && (
+        <Banner
+          variant="error"
+          message={postError}
+          action="Retry"
+          onAction={handlePost}
+          onDismiss={() => setPostError(null)}
+          style={{ marginHorizontal: 12, marginBottom: 0, borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}
+        />
+      )}
 
       <View
         style={[

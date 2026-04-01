@@ -1,41 +1,35 @@
 import React from 'react';
-import { StyleSheet, Pressable, View, DeviceEventEmitter } from 'react-native';
+import { StyleSheet, Pressable, DeviceEventEmitter } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useHaptic } from '../hooks/useHaptic';
 
 export function CrisisButton() {
   const { colors } = useTheme();
+  const haptic = useHaptic();
+
+  const handlePress = () => {
+    haptic.triggerImpact('Light');
+    DeviceEventEmitter.emit('crisis:open');
+  };
 
   return (
     <Pressable
       style={styles.btn}
-      onPress={() => DeviceEventEmitter.emit('crisis:open')}
-      hitSlop={8}
+      onPress={handlePress}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel="Emergency crisis resources"
     >
-      <View
-        style={[
-          styles.inner,
-          {
-            backgroundColor: `${colors.error}14`,
-            borderColor: `${colors.error}30`,
-          },
-        ]}
-      >
-        <Ionicons name="heart-circle" size={24} color={colors.error} />
-      </View>
+      <Ionicons name="heart-circle" size={26} color={colors.error} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   btn: {
-    marginRight: 4,
-  },
-  inner: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
+    marginRight: 8,
+    padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },

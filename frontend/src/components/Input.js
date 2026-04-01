@@ -67,11 +67,15 @@ export function Input({
           onBlur={onBlur}
           multiline={multiline}
           textAlignVertical={multiline ? 'top' : 'center'}
+          accessibilityLabel={label}
         />
         {secureTextEntry && (
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+            accessibilityState={{ expanded: showPassword }}
           >
             <Ionicons
               name={showPassword ? 'eye-off-outline' : 'eye-outline'}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import {
   format,
@@ -16,6 +16,7 @@ import {
   getDay,
   getDaysInMonth,
 } from 'date-fns';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { journalApi } from '../services/journalApi';
 import { MOOD_COLORS } from '../constants/journal';
@@ -38,6 +39,7 @@ export function MoodCalendarScreen({ navigation }) {
   const [entries, setEntries] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
   const loadData = useCallback(async () => {
@@ -56,8 +58,9 @@ export function MoodCalendarScreen({ navigation }) {
         endDate = `${currentDate.getFullYear()}-12-31`;
       }
 
+      const entryLimit = viewMode === 'yearly' ? 366 : 31;
       const [entriesResult, summaryResult] = await Promise.all([
-        journalApi.getEntries({ startDate, endDate, limit: 366 }),
+        journalApi.getEntries({ startDate, endDate, limit: entryLimit }),
         journalApi.getMoodSummary({ startDate, endDate }),
       ]);
 
@@ -70,9 +73,30 @@ export function MoodCalendarScreen({ navigation }) {
     }
   }, [currentDate, viewMode]);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
+
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Reload calendar data when the screen regains focus so that new journal
+  // entries created on JournalScreen are reflected without a manual refresh.
+  // Skip the first focus event since the mount useEffect above already loaded data.
+  const hasMountedFocusRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasMountedFocusRef.current) {
+        hasMountedFocusRef.current = true;
+        return () => {};
+      }
+      loadData();
+      return () => {};
+    }, [loadData])
+  );
 
   const getEntryForDate = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -271,6 +295,7 @@ export function MoodCalendarScreen({ navigation }) {
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <ChipGroup
         items={VIEW_MODES}
@@ -343,7 +368,7 @@ export function MoodCalendarScreen({ navigation }) {
         </Card>
       )}
 
-      {error && <Banner variant="error" message={error} />}
+      {error && <Banner variant="error" message={error} action="Retry" onAction={loadData} />}
 
       <Card style={{ marginBottom: 16 }}>
         {loading ? (

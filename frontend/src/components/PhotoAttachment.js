@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,55 @@ import {
   StyleSheet,
   Platform,
   Linking,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useHaptic } from '../hooks/useHaptic';
 
 let ImagePicker = null;
 try {
   ImagePicker = require('expo-image-picker');
 } catch {
   // expo-image-picker not available — component will be hidden
+}
+
+/**
+ * Single thumbnail with a loading indicator overlay while the image decodes.
+ *
+ * React Native's Image component re-decodes local file URIs on each render cycle
+ * when there is no prior warm cache entry. Showing an ActivityIndicator via
+ * onLoadStart/onLoadEnd gives users visual feedback and prevents layout shift.
+ */
+function PhotoThumb({ uri, index, disabled, borderColor, errorColor, onRemove }) {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <View style={styles.thumbWrapper}>
+      <Image
+        source={{ uri }}
+        style={[styles.thumb, { borderColor }]}
+        onLoadStart={() => setLoading(true)}
+        onLoadEnd={() => setLoading(false)}
+      />
+      {loading && (
+        <View style={styles.thumbLoader}>
+          <ActivityIndicator size="small" color="#fff" />
+        </View>
+      )}
+      {!disabled && (
+        <TouchableOpacity
+          style={[styles.removeBtn, { backgroundColor: errorColor }]}
+          onPress={() => onRemove(index)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Remove photo"
+        >
+          <Ionicons name="close" size={14} color="#fff" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 }
 
 /**
@@ -35,6 +75,7 @@ try {
  */
 export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, disabled = false }) {
   const { colors, fonts } = useTheme();
+  const haptic = useHaptic();
 
   if (!ImagePicker) return null;
 
@@ -76,6 +117,7 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
+      haptic.triggerSelection();
       onPhotosChange([...photos, result.assets[0].uri]);
     }
   }, [photos, onPhotosChange, requestPermission]);
@@ -93,6 +135,7 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
     });
 
     if (!result.canceled && result.assets?.length > 0) {
+      haptic.triggerSelection();
       const newUris = result.assets.map((a) => a.uri);
       onPhotosChange([...photos, ...newUris].slice(0, maxPhotos));
     }
@@ -154,18 +197,15 @@ export function PhotoAttachment({ photos = [], onPhotosChange, maxPhotos = 3, di
           contentContainerStyle={styles.thumbRow}
         >
           {photos.map((uri, index) => (
-            <View key={`${uri}-${index}`} style={styles.thumbWrapper}>
-              <Image source={{ uri }} style={[styles.thumb, { borderColor: colors.border }]} />
-              {!disabled && (
-                <TouchableOpacity
-                  style={[styles.removeBtn, { backgroundColor: colors.error }]}
-                  onPress={() => removePhoto(index)}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  <Ionicons name="close" size={14} color="#fff" />
-                </TouchableOpacity>
-              )}
-            </View>
+            <PhotoThumb
+              key={`${uri}-${index}`}
+              uri={uri}
+              index={index}
+              disabled={disabled}
+              borderColor={colors.border}
+              errorColor={colors.error}
+              onRemove={removePhoto}
+            />
           ))}
         </ScrollView>
       )}
@@ -196,13 +236,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
+  thumbLoader: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   removeBtn: {
     position: 'absolute',
-    top: -6,
-    right: -6,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: -10,
+    right: -10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },

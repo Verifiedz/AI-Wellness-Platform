@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, UIManager, Platform } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -14,6 +15,10 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { TipProvider, useTip } from './src/context/TipContext';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { OnboardingProvider } from './src/context/OnboardingContext';
+import { NetworkProvider } from './src/context/NetworkContext';
+import { NetworkBanner } from './src/components/NetworkBanner';
+import { ToastProvider } from './src/context/ToastContext';
+import { Toast } from './src/components/Toast';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
@@ -23,6 +28,11 @@ import {
   addNotificationResponseReceivedListener,
   getLastNotificationResponse,
 } from './src/services/pushNotifications';
+
+// Enable LayoutAnimation on Android globally so theme transitions animate smoothly
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 SplashScreen.preventAutoHideAsync();
 
@@ -123,17 +133,25 @@ export default function App() {
   }
 
   return (
-    <View style={styles.root} onLayout={onLayoutRootView}>
-      <ThemeProvider>
-        <OnboardingProvider>
-          <AuthProvider>
-            <TipProvider>
-              <AppContent />
-            </TipProvider>
-          </AuthProvider>
-        </OnboardingProvider>
-      </ThemeProvider>
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.root} onLayout={onLayoutRootView}>
+        <ThemeProvider>
+          <NetworkProvider>
+            <ToastProvider>
+              <OnboardingProvider>
+                <AuthProvider>
+                  <TipProvider>
+                    <NetworkBanner />
+                    <AppContent />
+                  </TipProvider>
+                </AuthProvider>
+              </OnboardingProvider>
+              <Toast />
+            </ToastProvider>
+          </NetworkProvider>
+        </ThemeProvider>
+      </View>
+    </SafeAreaProvider>
   );
 }
 

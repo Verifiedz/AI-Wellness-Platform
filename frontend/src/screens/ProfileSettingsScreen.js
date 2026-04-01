@@ -1,35 +1,46 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { authApi } from '../services/authApi';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { Banner } from '../components/Banner';
 
 export function ProfileSettingsScreen() {
   const { user } = useAuth();
   const { colors, fonts } = useTheme();
+  const { showToast } = useToast();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
+
+  const validateFields = () => {
+    const fieldErrors = {};
+    if (!currentPassword) fieldErrors.currentPassword = 'Please enter your current password.';
+    if (newPassword.length < 8)
+      fieldErrors.newPassword = 'New password must be at least 8 characters.';
+    if (newPassword !== confirmPassword) fieldErrors.confirmPassword = 'New passwords do not match.';
+    return fieldErrors;
+  };
+
+  const handleFieldBlur = (field) => {
+    const fieldErrors = validateFields();
+    setErrors((prev) => ({ ...prev, [field]: fieldErrors[field] || undefined }));
+  };
 
   const handleChangePassword = async () => {
-    if (!currentPassword) {
-      Alert.alert('Validation', 'Please enter your current password.');
-      return;
-    }
-    if (newPassword.length < 8) {
-      Alert.alert('Validation', 'New password must be at least 8 characters.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      Alert.alert('Validation', 'New passwords do not match.');
-      return;
-    }
+    setApiError('');
+    const fieldErrors = validateFields();
+    setErrors(fieldErrors);
+    if (Object.keys(fieldErrors).length > 0) return;
 
     setIsSaving(true);
     try {
@@ -40,15 +51,16 @@ export function ProfileSettingsScreen() {
         confirmPassword
       );
       if (result.error) {
-        Alert.alert('Error', result.error);
+        setApiError(result.error);
       } else {
-        Alert.alert('Success', 'Password changed successfully!');
+        showToast({ message: 'Password changed successfully!', variant: 'success' });
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        setErrors({});
       }
     } catch {
-      Alert.alert('Error', 'Failed to change password. Please try again.');
+      setApiError('Failed to change password. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -93,26 +105,43 @@ export function ProfileSettingsScreen() {
           Enter your current password and choose a new one.
         </Text>
 
+        {apiError ? <Banner variant="error" message={apiError} style={{ marginBottom: 12 }} /> : null}
+
         <Input
           label="Current Password"
           value={currentPassword}
-          onChangeText={setCurrentPassword}
+          onChangeText={(t) => {
+            setCurrentPassword(t);
+            setErrors((p) => ({ ...p, currentPassword: undefined }));
+          }}
+          onBlur={() => handleFieldBlur('currentPassword')}
           placeholder="Enter current password"
           secureTextEntry
+          error={errors.currentPassword}
         />
         <Input
           label="New Password"
           value={newPassword}
-          onChangeText={setNewPassword}
+          onChangeText={(t) => {
+            setNewPassword(t);
+            setErrors((p) => ({ ...p, newPassword: undefined }));
+          }}
+          onBlur={() => handleFieldBlur('newPassword')}
           placeholder="At least 8 characters"
           secureTextEntry
+          error={errors.newPassword}
         />
         <Input
           label="Confirm New Password"
           value={confirmPassword}
-          onChangeText={setConfirmPassword}
+          onChangeText={(t) => {
+            setConfirmPassword(t);
+            setErrors((p) => ({ ...p, confirmPassword: undefined }));
+          }}
+          onBlur={() => handleFieldBlur('confirmPassword')}
           placeholder="Re-enter new password"
           secureTextEntry
+          error={errors.confirmPassword}
         />
 
         <Button

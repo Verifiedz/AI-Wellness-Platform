@@ -24,16 +24,20 @@ export function ForgotPasswordScreen({ navigation }) {
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
+  const validateEmail = (value) => {
+    if (!value.trim()) return 'Please enter your email address';
+    if (!EMAIL_REGEX.test(value.trim())) return 'Please enter a valid email address';
+    return '';
+  };
+
+  const handleEmailBlur = () => {
+    setError(validateEmail(email));
+  };
+
   const handleSubmit = async () => {
-    setError('');
-    if (!email.trim()) {
-      setError('Please enter your email address');
-      return;
-    }
-    if (!EMAIL_REGEX.test(email.trim())) {
-      setError('Please enter a valid email address');
-      return;
-    }
+    const emailError = validateEmail(email);
+    setError(emailError);
+    if (emailError) return;
 
     setIsLoading(true);
     try {
@@ -76,8 +80,6 @@ export function ForgotPasswordScreen({ navigation }) {
         </View>
 
         <View style={styles.form}>
-          {error ? <Banner variant="error" message={error} /> : null}
-
           {submitted ? (
             <>
               <Banner
@@ -96,13 +98,15 @@ export function ForgotPasswordScreen({ navigation }) {
                 value={email}
                 onChangeText={(t) => {
                   setEmail(t);
-                  setError('');
+                  if (error) setError('');
                 }}
+                onBlur={handleEmailBlur}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 returnKeyType="done"
                 onSubmitEditing={handleSubmit}
                 textContentType="emailAddress"
+                error={error}
               />
               <Button
                 title="Send Reset Code"

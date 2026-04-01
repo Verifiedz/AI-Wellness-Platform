@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -17,6 +17,9 @@ export function CommunityScreen({ navigation }) {
   const [groups, setGroups] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const hasLoadedRef = useRef(false);
 
   const loadGroups = useCallback(async (soft = false) => {
     if (soft) setIsRefreshing(true);
@@ -26,9 +29,14 @@ export function CommunityScreen({ navigation }) {
       const result = await communityApi.getGroups();
       if (!result.error && result.data) {
         setGroups(Array.isArray(result.data) ? result.data : []);
+        setError(null);
+      } else if (result.error) {
+        setError(result.error);
       }
-    } catch {
-      // Load failed
+    } catch (err) {
+      const isNetwork =
+        err instanceof TypeError || (err.message && err.message.toLowerCase().includes('network'));
+      setError(isNetwork ? 'No internet connection' : 'Failed to load community groups');
     } finally {
       if (soft) setIsRefreshing(false);
       else setIsLoading(false);
@@ -37,7 +45,9 @@ export function CommunityScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      loadGroups(false);
+      const soft = hasLoadedRef.current;
+      hasLoadedRef.current = true;
+      loadGroups(soft);
     }, [loadGroups])
   );
 
@@ -49,6 +59,16 @@ export function CommunityScreen({ navigation }) {
         <RefreshControl refreshing={isRefreshing} onRefresh={() => loadGroups(true)} />
       }
     >
+      {error && (
+        <Banner
+          variant="error"
+          message={error}
+          action="Retry"
+          onAction={() => loadGroups(true)}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
       <Banner
         type="info"
         message="All posts are anonymous. Be kind and supportive. If you need immediate help, use the crisis button."
@@ -95,6 +115,7 @@ export function CommunityScreen({ navigation }) {
                   { color: colors.textSecondary, marginTop: 4, textAlign: 'center' },
                 ]}
                 numberOfLines={2}
+                ellipsizeMode="tail"
               >
                 {group.description}
               </Text>

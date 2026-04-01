@@ -13,7 +13,12 @@ export function ProgressBar({ step, total, color, style }) {
   }));
 
   return (
-    <View style={[styles.track, { backgroundColor: colors.border }, style]}>
+    <View
+      style={[styles.track, { backgroundColor: colors.border }, style]}
+      accessibilityRole="progressbar"
+      accessibilityValue={{ min: 0, max: total, now: step }}
+      accessibilityLabel={`Progress: ${step} out of ${total}`}
+    >
       <Animated.View style={[styles.fill, { backgroundColor: fillColor }, animatedStyle]} />
     </View>
   );

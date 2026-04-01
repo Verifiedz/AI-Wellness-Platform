@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Switch, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Switch, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format, subDays } from 'date-fns';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Banner } from '../components/Banner';
@@ -23,6 +24,7 @@ const DATE_RANGE_OPTIONS = [
  */
 export function ExportScreen({ navigation }) {
   const { colors, fonts } = useTheme();
+  const { showToast } = useToast();
 
   const [dateRange, setDateRange] = useState('90');
   const [includeAssessments, setIncludeAssessments] = useState(true);
@@ -31,6 +33,8 @@ export function ExportScreen({ navigation }) {
   const [preview, setPreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [previewError, setPreviewError] = useState(null);
+  const [exportError, setExportError] = useState(null);
 
   const getDateRange = useCallback(() => {
     const endDate = format(new Date(), 'yyyy-MM-dd');
@@ -40,6 +44,7 @@ export function ExportScreen({ navigation }) {
 
   const handlePreview = useCallback(async () => {
     setIsLoading(true);
+    setPreviewError(null);
     try {
       const { startDate, endDate } = getDateRange();
       const result = await exportApi.preview({
@@ -52,13 +57,13 @@ export function ExportScreen({ navigation }) {
       });
 
       if (result.error) {
-        Alert.alert('Error', result.error);
+        setPreviewError(result.error || 'Failed to load preview. Tap Retry to try again.');
         return;
       }
 
       setPreview(result.data);
     } catch {
-      Alert.alert('Error', 'Failed to load preview.');
+      setPreviewError('Failed to load preview. Tap Retry to try again.');
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +71,7 @@ export function ExportScreen({ navigation }) {
 
   const handleExport = useCallback(async () => {
     setIsExporting(true);
+    setExportError(null);
     try {
       const { startDate, endDate } = getDateRange();
       const result = await exportApi.generate({
@@ -78,17 +84,17 @@ export function ExportScreen({ navigation }) {
       });
 
       if (result.error) {
-        Alert.alert('Error', result.error);
+        setExportError(result.error || 'Failed to generate export. Tap Retry to try again.');
         return;
       }
 
-      Alert.alert(
-        'Export Ready',
-        "Your wellness report has been generated. In a future update, you'll be able to download and share the file directly.",
-        [{ text: 'OK' }]
-      );
+      showToast({
+        message: "Your wellness report has been generated. In a future update, you'll be able to download and share the file directly.",
+        variant: 'success',
+        duration: 5000,
+      });
     } catch {
-      Alert.alert('Error', 'Failed to generate export.');
+      setExportError('Failed to generate export. Tap Retry to try again.');
     } finally {
       setIsExporting(false);
     }
@@ -122,7 +128,7 @@ export function ExportScreen({ navigation }) {
       <Text style={[fonts.caption, styles.sectionLabel, { color: colors.textSecondary }]}>
         DATE RANGE
       </Text>
-      <ChipGroup options={DATE_RANGE_OPTIONS} selected={dateRange} onSelect={setDateRange} />
+      <ChipGroup items={DATE_RANGE_OPTIONS} selected={dateRange} onSelect={setDateRange} />
 
       {/* Sections to include */}
       <Text style={[fonts.caption, styles.sectionLabel, { color: colors.textSecondary }]}>
@@ -192,6 +198,28 @@ export function ExportScreen({ navigation }) {
             </Text>
           )}
         </Card>
+      )}
+
+      {previewError && (
+        <Banner
+          variant="error"
+          message={previewError}
+          action="Retry"
+          onAction={handlePreview}
+          onDismiss={() => setPreviewError(null)}
+          style={{ marginTop: 16 }}
+        />
+      )}
+
+      {exportError && (
+        <Banner
+          variant="error"
+          message={exportError}
+          action="Retry"
+          onAction={handleExport}
+          onDismiss={() => setExportError(null)}
+          style={{ marginTop: previewError ? 0 : 16 }}
+        />
       )}
 
       {/* Actions */}

@@ -185,7 +185,7 @@ function ChatDrawerContent({ navigation }) {
 
   const confirmDeleteSession = useCallback(
     (session) => {
-      Alert.alert('Delete Chat', 'Are you sure? This cannot be undone.', [
+      Alert.alert('Delete conversation?', 'This cannot be undone.', [
         {
           text: 'Cancel',
           style: 'cancel',

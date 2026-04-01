@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { journalApi } from '../services/journalApi';
 import { EMOTIONS } from '../constants/journal';
@@ -25,10 +26,12 @@ import { AnimatedCard } from '../components/AnimatedCard';
 import { VoiceInputButton } from '../components/VoiceInputButton';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { useHaptic } from '../hooks/useHaptic';
+import { useToast } from '../context/ToastContext';
 import { JournalSkeleton } from '../components/skeletons/JournalSkeleton';
 import { WordCount } from '../components/WordCount';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { PhotoAttachment } from '../components/PhotoAttachment';
+import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 const ENERGY_LEVELS = [
   { id: 1, label: 'Very\nLow' },
@@ -40,6 +43,7 @@ const ENERGY_LEVELS = [
 
 export function JournalScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
+  const { showToast } = useToast();
   const voice = useVoiceInput();
   const haptic = useHaptic();
   const [selectedMood, setSelectedMood] = useState(null);
@@ -47,6 +51,7 @@ export function JournalScreen({ navigation, route }) {
   const [energyLevel, setEnergyLevel] = useState(3);
   const [journalText, setJournalText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [existingEntry, setExistingEntry] = useState(null);
   const [prompt, setPrompt] = useState(null);
@@ -56,6 +61,7 @@ export function JournalScreen({ navigation, route }) {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const selectedDate = route.params?.selectedDate || todayStr;
   const preselectedMood = route.params?.preselectedMood;
+  const preselectedTs = route.params?._ts;
   const isViewingPast = selectedDate !== todayStr;
 
   // Append voice transcript to journal text when recognition stops
@@ -70,10 +76,10 @@ export function JournalScreen({ navigation, route }) {
   }, [voice.isListening, voice.transcript, voice.resetTranscript]);
 
   useEffect(() => {
-    if (preselectedMood && !selectedMood) {
+    if (preselectedMood) {
       setSelectedMood(preselectedMood);
     }
-  }, [preselectedMood]);
+  }, [preselectedMood, preselectedTs]);
 
   const loadEntry = useCallback(async () => {
     try {
@@ -115,6 +121,21 @@ export function JournalScreen({ navigation, route }) {
     init();
   }, [loadEntry, loadPrompt]);
 
+  // Reload the journal entry when the screen regains focus so that edits
+  // made via MoodCalendar navigation are reflected without a manual refresh.
+  // Skip the first focus event since the mount useEffect above already loaded data.
+  const hasMountedFocusRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasMountedFocusRef.current) {
+        hasMountedFocusRef.current = true;
+        return () => {};
+      }
+      loadEntry();
+      return () => {};
+    }, [loadEntry])
+  );
+
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([loadEntry(), loadPrompt()]);
@@ -137,6 +158,7 @@ export function JournalScreen({ navigation, route }) {
     }
 
     setSaving(true);
+    setSaveError(null);
     try {
       const payload = {
         mood: selectedMood,
@@ -154,13 +176,16 @@ export function JournalScreen({ navigation, route }) {
       }
 
       if (result.error) {
-        Alert.alert('Error', result.error);
+        setSaveError(result.error || 'Failed to save. Tap Retry to try again.');
       } else {
         setExistingEntry(result.data);
-        Alert.alert('Saved', existingEntry ? 'Journal entry updated!' : 'Journal entry saved!');
+        showToast({
+          message: existingEntry ? 'Journal entry updated!' : 'Journal entry saved!',
+          variant: 'success',
+        });
       }
     } catch {
-      Alert.alert('Error', 'Failed to save journal entry. Please try again.');
+      setSaveError('Failed to save journal entry. Tap Retry to try again.');
     } finally {
       setSaving(false);
     }
@@ -178,7 +203,7 @@ export function JournalScreen({ navigation, route }) {
             const result = await journalApi.deleteEntry(existingEntry.id);
             if (!result.error) {
               resetForm();
-              Alert.alert('Deleted', 'Journal entry deleted.');
+              showToast({ message: 'Journal entry deleted.', variant: 'success' });
             } else {
               Alert.alert('Error', result.error);
             }
@@ -229,7 +254,9 @@ export function JournalScreen({ navigation, route }) {
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.content}
       >
-        <JournalSkeleton />
+        <ResponsiveContainer>
+          <JournalSkeleton />
+        </ResponsiveContainer>
       </ScrollView>
     );
   }
@@ -242,6 +269,7 @@ export function JournalScreen({ navigation, route }) {
       keyboardShouldPersistTaps="handled"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
+      <ResponsiveContainer>
       <View style={styles.headerRow}>
         <View>
           <Text style={[fonts.heading1, { color: colors.text }]}>Mood Journal</Text>
@@ -451,6 +479,16 @@ export function JournalScreen({ navigation, route }) {
         </Card>
       </AnimatedCard>
 
+      {saveError && (
+        <Banner
+          variant="error"
+          message={saveError}
+          action="Retry"
+          onAction={handleSave}
+          onDismiss={() => setSaveError(null)}
+        />
+      )}
+
       <Button
         title={existingEntry ? 'Update Journal Entry' : 'Save Journal Entry'}
         onPress={handleSave}
@@ -481,6 +519,7 @@ export function JournalScreen({ navigation, route }) {
       )}
 
       <View style={{ height: 32 }} />
+      </ResponsiveContainer>
     </ScrollView>
   );
 }

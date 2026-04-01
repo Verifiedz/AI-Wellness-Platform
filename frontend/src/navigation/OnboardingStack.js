@@ -17,7 +17,7 @@ export function OnboardingStack() {
         animationDuration: 350,
       }}
     >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
+      <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="Goal" component={GoalScreen} />
       <Stack.Screen name="Frequency" component={FrequencyScreen} />
       <Stack.Screen name="TimeOfDay" component={TimeOfDayScreen} />

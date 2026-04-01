@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../../components/Button';
@@ -14,6 +15,7 @@ const OPTIONS = [
 
 export function TimeOfDayScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState(null);
 
   const handleContinue = () => {
@@ -24,7 +26,12 @@ export function TimeOfDayScreen({ navigation, route }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+      ]}
+    >
       <ProgressBar step={3} total={3} style={styles.progress} />
 
       <View style={styles.body}>
@@ -99,8 +106,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
   },
   progress: {
     marginBottom: 32,

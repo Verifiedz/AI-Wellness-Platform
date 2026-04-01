@@ -7,6 +7,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '../context/ThemeContext';
+import { useHaptic } from '../hooks/useHaptic';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -20,6 +21,7 @@ export function Button({
   style,
 }) {
   const { colors, fonts } = useTheme();
+  const haptic = useHaptic();
   const isDisabled = disabled || loading;
   const scale = useSharedValue(1);
 
@@ -60,6 +62,13 @@ export function Button({
     scale.value = withSpring(1, { damping: 15, stiffness: 150 });
   };
 
+  const handlePress = () => {
+    if (!isDisabled) {
+      haptic.triggerSelection();
+    }
+    onPress?.();
+  };
+
   return (
     <AnimatedPressable
       style={[
@@ -73,10 +82,13 @@ export function Button({
         animatedStyle,
         style,
       ]}
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {loading ? (
         <ActivityIndicator color={v.text} size="small" />

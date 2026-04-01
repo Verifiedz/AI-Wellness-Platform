@@ -20,6 +20,7 @@ import {
 import ReAnimated, { SlideInRight, SlideInLeft } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useHeaderHeight } from '@react-navigation/elements';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { chatApi } from '../services/chatApi';
@@ -29,6 +30,7 @@ import { ChatMessageRenderer } from '../components/chat/ChatMessageRenderer';
 import { VoiceInputButton } from '../components/VoiceInputButton';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import { ChatSkeleton } from '../components/skeletons/ChatSkeleton';
+import { ResponsiveContainer } from '../components/ResponsiveContainer';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -129,6 +131,22 @@ export function AIChatScreen({ route, navigation }) {
   const voice = useVoiceInput();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const historyLoadedCount = useRef(0);
+  const isSendingRef = useRef(false);
+  const activeSessionIdRef = useRef(activeSessionId);
+  const isMountedRef = useRef(true);
+
+  // Keep session ref in sync with state
+  useEffect(() => {
+    activeSessionIdRef.current = activeSessionId;
+  }, [activeSessionId]);
+
+  // Track component mount status for async guard
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Append voice transcript to input text when recognition stops
   useEffect(() => {
@@ -206,14 +224,36 @@ export function AIChatScreen({ route, navigation }) {
     setIsLoadingHistory(false);
   }, [initialSessionId, initialSessionName, forceNewAt, loadHistory]);
 
+  // Refresh chat history when the screen regains focus (e.g. navigating back).
+  // Skip the very first focus event since the mount useEffect above already loaded data.
+  const hasMountedFocusRef = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasMountedFocusRef.current) {
+        hasMountedFocusRef.current = true;
+        return () => {};
+      }
+      const sessionId = activeSessionIdRef.current;
+      if (sessionId) {
+        loadHistory(sessionId);
+      }
+      return () => {};
+    }, [loadHistory])
+  );
+
   const sendMessage = useCallback(
     async (overrideText) => {
       const messageText = (overrideText || inputText).trim();
-      if (!messageText || isSending) return;
+      if (!messageText || isSendingRef.current) return;
 
+      // Lock via ref to prevent concurrent sends
+      isSendingRef.current = true;
       setError('');
       setIsSending(true);
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+      // Capture session ID from ref so we always use the latest value
+      const sessionIdAtSend = activeSessionIdRef.current;
 
       const optimisticMessage = {
         id: `tmp_${Date.now()}`,
@@ -232,8 +272,21 @@ export function AIChatScreen({ route, navigation }) {
       const response = await chatApi.sendMessage({
         messageRequest: messageText,
         context: '',
-        sessionId: activeSessionId,
+        sessionId: sessionIdAtSend,
       });
+
+      // Guard: discard result if component unmounted or session changed during the request
+      if (!isMountedRef.current) {
+        isSendingRef.current = false;
+        return;
+      }
+
+      if (activeSessionIdRef.current !== sessionIdAtSend && sessionIdAtSend !== null) {
+        // Session changed while we were waiting -- discard stale response
+        isSendingRef.current = false;
+        setIsSending(false);
+        return;
+      }
 
       if (response.error || !response.data) {
         setMessages((prev) =>
@@ -242,26 +295,54 @@ export function AIChatScreen({ route, navigation }) {
           )
         );
         setError(response.error || 'Failed to send message.');
+        isSendingRef.current = false;
         setIsSending(false);
         return;
       }
 
-      const nextSessionId = String(response.data.sessionId || activeSessionId || '');
-      if (nextSessionId) {
-        const wasNewSessionCreated = !activeSessionId;
-        setActiveSessionId(nextSessionId);
-        if (wasNewSessionCreated) {
-          const words = messageText.split(/\s+/).slice(0, 6).join(' ');
-          setActiveSessionName(words);
-        }
-        await loadHistory(nextSessionId);
-        if (wasNewSessionCreated) {
-          DeviceEventEmitter.emit('chat:session-created', { sessionId: nextSessionId });
-        }
+      const responseSessionId = response.data.sessionId;
+      const nextSessionId = responseSessionId
+        ? String(responseSessionId)
+        : sessionIdAtSend
+          ? String(sessionIdAtSend)
+          : null;
+
+      if (!nextSessionId) {
+        // Server returned no session ID and we had none -- cannot proceed
+        setMessages((prev) =>
+          prev.map((item) =>
+            item.id === optimisticMessage.id ? { ...item, isPending: false, failed: true } : item
+          )
+        );
+        setError('Failed to create chat session. Please try again.');
+        isSendingRef.current = false;
+        setIsSending(false);
+        return;
       }
-      setIsSending(false);
+
+      // Check again after validation in case session changed
+      if (!isMountedRef.current) {
+        isSendingRef.current = false;
+        return;
+      }
+
+      const wasNewSessionCreated = !sessionIdAtSend;
+      setActiveSessionId(nextSessionId);
+      activeSessionIdRef.current = nextSessionId;
+      if (wasNewSessionCreated) {
+        const words = messageText.split(/\s+/).slice(0, 6).join(' ');
+        setActiveSessionName(words);
+      }
+      await loadHistory(nextSessionId);
+      if (isMountedRef.current && wasNewSessionCreated) {
+        DeviceEventEmitter.emit('chat:session-created', { sessionId: nextSessionId });
+      }
+      isSendingRef.current = false;
+      if (isMountedRef.current) {
+        setIsSending(false);
+      }
     },
-    [activeSessionId, inputText, isSending, loadHistory, scrollToBottom]
+    [inputText, loadHistory, scrollToBottom]
   );
 
   const retryMessage = useCallback((failedMessage) => {
@@ -417,6 +498,7 @@ export function AIChatScreen({ route, navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
     >
+      <ResponsiveContainer style={{ flex: 1 }}>
       {isLoadingHistory ? (
         <ChatSkeleton />
       ) : messages.length === 0 ? (
@@ -511,6 +593,7 @@ export function AIChatScreen({ route, navigation }) {
           <Ionicons name="send" size={18} color="#fff" />
         </TouchableOpacity>
       </View>
+      </ResponsiveContainer>
     </KeyboardAvoidingView>
   );
 }

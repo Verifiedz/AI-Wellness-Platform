@@ -17,8 +17,8 @@ export function AuthStack({ initialRoute = 'Login' }) {
     >
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
-      <Stack.Screen name="TwoFactor" component={TwoFactorScreen} />
+      <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} options={{ gestureEnabled: false }} />
+      <Stack.Screen name="TwoFactor" component={TwoFactorScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
     </Stack.Navigator>

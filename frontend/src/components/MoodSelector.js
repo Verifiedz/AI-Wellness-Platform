@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { MOODS } from '../constants/journal';
@@ -25,20 +26,23 @@ export function MoodSelector({ selected, onSelect, style }) {
 }
 
 function MoodButton({ mood, isSelected, onPress, colors, fonts }) {
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useSharedValue(1);
   const haptic = useHaptic();
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 
   const handlePress = () => {
     haptic.triggerSelection();
-    Animated.sequence([
-      Animated.spring(scale, { toValue: 1.15, useNativeDriver: true, speed: 40 }),
-      Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20 }),
-    ]).start();
+    scale.value = withSpring(1.15, { damping: 15, stiffness: 150 }, () => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 150 });
+    });
     onPress();
   };
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
+    <Animated.View style={[{ flex: 1 }, animatedStyle]}>
       <TouchableOpacity
         style={[
           styles.moodBtn,
@@ -48,6 +52,9 @@ function MoodButton({ mood, isSelected, onPress, colors, fonts }) {
         ]}
         onPress={handlePress}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`Mood: ${mood.label}`}
+        accessibilityState={{ selected: isSelected }}
       >
         <Ionicons name={mood.icon} size={24} color={isSelected ? '#fff' : mood.color} />
         <Text

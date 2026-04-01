@@ -53,7 +53,7 @@ export function ProfessionalDirectoryScreen() {
     >
       <Banner type="info" message={PROFESSIONAL_DISCLAIMER} icon="information-circle-outline" />
 
-      <ChipGroup options={TYPE_FILTERS} selected={filter} onSelect={setFilter} />
+      <ChipGroup items={TYPE_FILTERS} selected={filter} onSelect={setFilter} />
 
       {filtered.map((prof, idx) => (
         <AnimatedCard key={prof.id} index={idx}>
@@ -67,10 +67,20 @@ export function ProfessionalDirectoryScreen() {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[fonts.body, { color: colors.text, fontWeight: '600' }]}>
+                <Text
+                  style={[fonts.body, { color: colors.text, fontWeight: '600' }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {prof.name}
                 </Text>
-                <Text style={[fonts.caption, { color: colors.primary }]}>{prof.specialty}</Text>
+                <Text
+                  style={[fonts.caption, { color: colors.primary }]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {prof.specialty}
+                </Text>
               </View>
             </View>
 
@@ -79,6 +89,8 @@ export function ProfessionalDirectoryScreen() {
                 fonts.bodySmall,
                 { color: colors.textSecondary, lineHeight: 20, marginTop: 8 },
               ]}
+              numberOfLines={3}
+              ellipsizeMode="tail"
             >
               {prof.description}
             </Text>

@@ -23,18 +23,23 @@ export function Banner({ variant = 'info', message, action, onAction, onDismiss,
   const tint = colorMap[variant] || colors.primary;
 
   return (
-    <View style={[styles.container, { backgroundColor: tint + '14' }, style]}>
+    <View style={[styles.container, { backgroundColor: tint + '14' }, style]} accessibilityRole="alert">
       <Ionicons name={icon || config.icon} size={18} color={tint} />
       <Text style={[fonts.bodySmall, styles.text, { color: tint }]}>{message}</Text>
       {action && onAction && (
-        <TouchableOpacity onPress={onAction}>
+        <TouchableOpacity onPress={onAction} accessibilityRole="button" accessibilityLabel={action}>
           <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '700' }]}>
             {action}
           </Text>
         </TouchableOpacity>
       )}
       {onDismiss && (
-        <TouchableOpacity onPress={onDismiss} hitSlop={8}>
+        <TouchableOpacity
+          onPress={onDismiss}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
+        >
           <Ionicons name="close" size={16} color={tint} />
         </TouchableOpacity>
       )}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../../components/Button';
@@ -15,6 +16,7 @@ const GOALS = [
 
 export function GoalScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState([]);
 
   const toggle = (id) => {
@@ -38,7 +40,12 @@ export function GoalScreen({ navigation, route }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+      ]}
+    >
       <ProgressBar step={1} total={3} style={styles.progress} />
 
       <ScrollView
@@ -117,8 +124,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
   },
   progress: {
     marginBottom: 32,

@@ -14,9 +14,13 @@ export function ScoreGauge({ score, assessment }) {
   const percentage = Math.min((score / assessment.maxScore) * 100, 100);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityRole="none"
+      accessibilityLabel={`Score gauge: ${score} out of ${assessment.maxScore}, severity level ${band.label}`}
+    >
       <View style={styles.header}>
-        <Text style={[fonts.heading1, { color: band.color, fontSize: 36 }]}>{score}</Text>
+        <Text style={[fonts.heading1, { color: band.color, fontSize: 36, lineHeight: 44 }]}>{score}</Text>
         <Text style={[fonts.bodySmall, { color: colors.textSecondary }]}>
           out of {assessment.maxScore}
         </Text>
@@ -56,7 +60,7 @@ export function ScoreGauge({ score, assessment }) {
 }
 
 const styles = StyleSheet.create({
-  container: { alignItems: 'center', paddingVertical: 8 },
+  container: { alignItems: 'center', paddingTop: 16, paddingBottom: 8 },
   header: { alignItems: 'center', marginBottom: 16 },
   trackOuter: {
     width: '100%',

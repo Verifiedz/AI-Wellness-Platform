@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { useHaptic } from '../hooks/useHaptic';
 
-export function ChipGroup({ items, selected, onSelect, multiSelect = false, style }) {
+export function ChipGroup({ items = [], selected, onSelect, multiSelect = false, style }) {
   const { colors, fonts } = useTheme();
   const haptic = useHaptic();
 
@@ -25,7 +25,7 @@ export function ChipGroup({ items, selected, onSelect, multiSelect = false, styl
 
   const chipItems = items.map((item) => {
     const label = typeof item === 'string' ? item : item.label;
-    const value = typeof item === 'string' ? item : item.id;
+    const value = typeof item === 'string' ? item : (item.id ?? item.key ?? item.value);
     return { label, value };
   });
 
@@ -45,6 +45,9 @@ export function ChipGroup({ items, selected, onSelect, multiSelect = false, styl
             ]}
             onPress={() => handlePress(value)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: active }}
           >
             <Text
               style={[

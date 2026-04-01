@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useTheme } from '../../context/ThemeContext';
 import { useOnboarding } from '../../context/OnboardingContext';
@@ -9,6 +10,7 @@ import { Button } from '../../components/Button';
 export function FirstValueScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
   const { completeOnboarding } = useOnboarding();
+  const insets = useSafeAreaInsets();
   const [cycleFinished, setCycleFinished] = useState(false);
 
   const goals = route.params?.goals ?? [];
@@ -27,7 +29,12 @@ export function FirstValueScreen({ navigation, route }) {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <View style={styles.content}>
         {!cycleFinished ? (
           <>
@@ -85,8 +92,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
   },
   content: {
     flex: 1,

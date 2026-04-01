@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -16,6 +17,7 @@ import { Button } from '../../components/Button';
 export function WelcomeScreen({ navigation }) {
   const { colors, fonts } = useTheme();
   const { completeOnboarding } = useOnboarding();
+  const insets = useSafeAreaInsets();
   const pulse = useSharedValue(1);
 
   const handleSignIn = useCallback(async () => {
@@ -38,7 +40,12 @@ export function WelcomeScreen({ navigation }) {
   }));
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <View style={styles.content}>
         <Animated.View style={pulseStyle}>
           <Logo size="large" showText={false} />
@@ -74,8 +81,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 28,
-    paddingTop: 80,
-    paddingBottom: 40,
   },
   content: {
     flex: 1,

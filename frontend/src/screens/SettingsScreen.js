@@ -182,6 +182,13 @@ export function SettingsScreen({ navigation }) {
           color: colors.textSecondary,
           screen: 'HelpSupport',
         },
+        {
+          icon: 'people-outline',
+          label: 'Find a Professional',
+          sublabel: 'Mental health professionals & resources',
+          color: colors.primary,
+          screen: 'ProfessionalDirectory',
+        },
       ],
     },
   ];

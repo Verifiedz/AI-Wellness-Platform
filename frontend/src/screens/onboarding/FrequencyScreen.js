@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../../components/Button';
 import { ProgressBar } from '../../components/ProgressBar';
@@ -13,6 +14,7 @@ const OPTIONS = [
 
 export function FrequencyScreen({ navigation, route }) {
   const { colors, fonts } = useTheme();
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState(null);
 
   const handleContinue = () => {
@@ -23,7 +25,12 @@ export function FrequencyScreen({ navigation, route }) {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.background, paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 },
+      ]}
+    >
       <ProgressBar step={2} total={3} style={styles.progress} />
 
       <View style={styles.body}>
@@ -92,8 +99,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60,
-    paddingBottom: 32,
   },
   progress: {
     marginBottom: 32,

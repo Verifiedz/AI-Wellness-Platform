@@ -53,7 +53,7 @@ export function AccentPicker({ selectedId, onSelect }) {
 
 const styles = StyleSheet.create({
   list: { gap: 16, paddingVertical: 8, paddingHorizontal: 4 },
-  item: { alignItems: 'center', width: 52 },
+  item: { alignItems: 'center', width: 62 },
   swatch: {
     width: 40,
     height: 40,

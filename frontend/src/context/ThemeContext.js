@@ -1,4 +1,5 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Appearance, LayoutAnimation } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DarkColors, LightColors } from '../theme/colors';
 import { Typography } from '../theme/typography';
@@ -43,6 +44,9 @@ export function ThemeProvider({ children }) {
   const [accentId, setAccentIdState] = useState(DEFAULT_ACCENT_ID);
   const [isThemeReady, setIsThemeReady] = useState(false);
 
+  // true while the user has no explicit preference — system scheme changes are respected
+  const isSystemManaged = useRef(false);
+
   const { period, overrides: timeOverrides } = useTimeOfDay();
 
   useEffect(() => {
@@ -54,7 +58,15 @@ export function ThemeProvider({ children }) {
           AsyncStorage.getItem(ACCENT_ID_KEY),
         ]);
 
-        if (modeVal === 'dark') setIsDarkMode(true);
+        if (modeVal !== null) {
+          // User has an explicit saved preference — honour it
+          if (modeVal === 'dark') setIsDarkMode(true);
+        } else {
+          // First launch or cleared preference — follow system color scheme
+          isSystemManaged.current = true;
+          setIsDarkMode(Appearance.getColorScheme() === 'dark');
+        }
+
         if (dynamicVal !== null) setIsDynamicThemeState(dynamicVal === 'true');
         if (accentVal) setAccentIdState(accentVal);
       } catch {
@@ -65,7 +77,21 @@ export function ThemeProvider({ children }) {
     })();
   }, []);
 
+  // Mirror system theme changes while no explicit preference is set
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+      if (isSystemManaged.current) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        setIsDarkMode(colorScheme === 'dark');
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
   const setDarkMode = useCallback(async (enabled) => {
+    // An explicit call always locks in the user's preference
+    isSystemManaged.current = false;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsDarkMode(enabled);
     try {
       await AsyncStorage.setItem(THEME_MODE_KEY, enabled ? 'dark' : 'light');
@@ -74,11 +100,27 @@ export function ThemeProvider({ children }) {
     }
   }, []);
 
+  /**
+   * Clears the persisted preference and reverts to following the system scheme.
+   * Useful for a "Use System Default" settings option.
+   */
+  const resetToSystemTheme = useCallback(async () => {
+    isSystemManaged.current = true;
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsDarkMode(Appearance.getColorScheme() === 'dark');
+    try {
+      await AsyncStorage.removeItem(THEME_MODE_KEY);
+    } catch {
+      // Non-critical
+    }
+  }, []);
+
   const toggleDarkMode = useCallback(() => {
     setDarkMode(!isDarkMode);
   }, [isDarkMode, setDarkMode]);
 
   const setDynamicTheme = useCallback(async (enabled) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsDynamicThemeState(enabled);
     try {
       await AsyncStorage.setItem(DYNAMIC_THEME_KEY, String(enabled));
@@ -88,6 +130,7 @@ export function ThemeProvider({ children }) {
   }, []);
 
   const setAccentId = useCallback(async (id) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setAccentIdState(id);
     try {
       await AsyncStorage.setItem(ACCENT_ID_KEY, id);
@@ -116,6 +159,7 @@ export function ThemeProvider({ children }) {
       toggleDarkMode,
       setDynamicTheme,
       setAccentId,
+      resetToSystemTheme,
     }),
     [
       colors,
@@ -129,6 +173,7 @@ export function ThemeProvider({ children }) {
       toggleDarkMode,
       setDynamicTheme,
       setAccentId,
+      resetToSystemTheme,
     ]
   );
 

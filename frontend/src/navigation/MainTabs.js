@@ -112,7 +112,15 @@ export function MainTabs() {
           name="Sakina"
           component={ChatStack}
           listeners={({ navigation }) => ({
-            tabPress: () => {
+            tabPress: (e) => {
+              // If the user is already on the Sakina tab, let the default
+              // behavior run (no-op) so we don't force a new conversation.
+              if (navigation.isFocused()) {
+                return;
+              }
+              // Coming from a different tab — prevent default and force a
+              // new conversation screen.
+              e.preventDefault();
               navigation.navigate('Sakina', {
                 screen: 'ChatDrawer',
                 params: {

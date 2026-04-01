@@ -7,9 +7,15 @@ export function SectionHeader({ title, action, onAction, style }) {
 
   return (
     <View style={[styles.row, style]}>
-      <Text style={[fonts.heading3, { color: colors.text }]}>{title}</Text>
+      <Text style={[fonts.heading3, { color: colors.text }]} accessibilityRole="header">
+        {title}
+      </Text>
       {action && onAction && (
-        <TouchableOpacity onPress={onAction}>
+        <TouchableOpacity
+          onPress={onAction}
+          accessibilityRole="button"
+          accessibilityLabel={action}
+        >
           <Text style={[fonts.bodySmall, { color: colors.primary, fontWeight: '600' }]}>
             {action}
           </Text>

@@ -12,8 +12,9 @@ export default {
   expo: {
     name: 'Sakina',
     slug: 'sakina',
+    scheme: 'sakina',
     version: '1.0.0',
-    orientation: 'portrait',
+    orientation: 'default',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,

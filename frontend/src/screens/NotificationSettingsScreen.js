@@ -18,12 +18,14 @@ import {
   formatTimeForDisplay,
 } from '../utils/time';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Banner } from '../components/Banner';
 
 export function NotificationSettingsScreen() {
   const { colors, fonts } = useTheme();
+  const { showToast } = useToast();
   const [isEnabled, setIsEnabled] = useState(false);
   const [preferredTime, setPreferredTime] = useState('09:00');
   const [timezone, setTimezone] = useState(getDeviceTimezone());
@@ -81,7 +83,7 @@ export function NotificationSettingsScreen() {
       if (result.error) Alert.alert('Error', result.error);
       else {
         setHasExisting(true);
-        Alert.alert('Success', 'Preferences saved!');
+        showToast({ message: 'Preferences saved!', variant: 'success' });
       }
     } catch {
       Alert.alert('Error', 'Failed to save preferences.');
