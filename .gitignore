@@ -22,5 +22,5 @@ firebase-service-account.json
 
 journal-service-demo/
 
-# Documentation
-docs/
+# Documentation (root-level only, not service subdirectories)
+/docs/

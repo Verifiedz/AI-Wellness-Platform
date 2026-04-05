@@ -1,0 +1,7 @@
+data/
+models/
+*.pyc
+__pycache__/
+.venv/
+*.egg-info/
+*.gguf
