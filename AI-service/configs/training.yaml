@@ -1,0 +1,30 @@
+# MLX LoRA fine-tuning configuration
+# Tuned for MacBook Pro M2 16GB
+
+model: "../models/llama-8b-mlx"
+data: "../data/processed"
+adapter_path: "../models/adapters"
+
+train: true
+seed: 42
+
+# Memory-constrained settings for 16GB
+batch_size: 1
+max_seq_length: 1024
+grad_checkpoint: true
+
+# LoRA parameters
+lora_layers: 16
+lora_parameters:
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+  scale: 2.0
+
+# Training schedule
+iters: 1000
+learning_rate: 2e-5
+steps_per_report: 10
+steps_per_eval: 100
+save_every: 200
+val_batches: 5
