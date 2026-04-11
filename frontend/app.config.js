@@ -14,6 +14,11 @@ export default {
     slug: 'sakina',
     scheme: 'sakina',
     version: '1.0.0',
+    runtimeVersion: { policy: 'appVersion' },
+    updates: {
+      url: 'https://u.expo.dev/79057051-8f94-4dd2-b705-d8c5d2d5c060',
+      fallbackToCacheTimeout: 0,
+    },
     orientation: 'default',
     icon: './assets/icon.png',
     userInterfaceStyle: 'automatic',

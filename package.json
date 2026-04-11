@@ -30,5 +30,8 @@
     "serve": "^14.2.6",
     "typescript": "^6.0.2",
     "wait-on": "^9.0.4"
+  },
+  "dependencies": {
+    "puppeteer": "^24.40.0"
   }
 }
