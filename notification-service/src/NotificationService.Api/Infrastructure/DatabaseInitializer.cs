@@ -59,6 +59,7 @@ public class DatabaseInitializer
             await ExecuteScriptAsync(Path.Combine(databasePath, "02_stored_procedures.sql"), "Stored Procedures");
             await ExecuteScriptAsync(Path.Combine(databasePath, "03_seed.sql"), "Seed Data");
             await ExecuteScriptAsync(Path.Combine(databasePath, "04_indexes.sql"), "Indexes");
+            await ExecuteScriptAsync(Path.Combine(databasePath, "05_user_deletion.sql"), "User Deletion");
 
             _logger.LogInformation("Database initialization completed successfully");
         }

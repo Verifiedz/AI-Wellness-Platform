@@ -20,6 +20,8 @@ public class AuthServiceTests
   private readonly Mock<IJwtService> _jwtService = new();
   private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
   private readonly Mock<IConfiguration> _configuration = new();
+  private readonly Mock<IUserDataDeletionClient> _userDataDeletionClient = new();
+  private readonly Mock<ISecurityAuditService> _securityAudit = new();
   private readonly Mock<ILogger<AIWellness.Auth.Services.AuthService>> _logger = new();
 
   private AIWellness.Auth.Services.AuthService CreateSut()
@@ -32,6 +34,8 @@ public class AuthServiceTests
       _jwtService.Object,
       _httpContextAccessor.Object,
       _configuration.Object,
+      _userDataDeletionClient.Object,
+      _securityAudit.Object,
       _logger.Object);
   }
 

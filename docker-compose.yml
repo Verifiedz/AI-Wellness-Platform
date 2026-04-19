@@ -1,11 +1,68 @@
+# ---------------------------------------------------------------------------
+# SHARED DEFAULTS (Issue 17)
+#
+# Resource caps keep any single container from OOM-killing its neighbours on
+# the shared host, restart policies make crashes self-healing, and the logging
+# driver caps (10 MB × 5 files ≈ 50 MB per container) stop json-file logs from
+# filling the disk between VM reboots. Caps were sized from the load-test
+# numbers in loadtest/README.md — p99 memory for the .NET services sits
+# around 400 MB under 50 RPS, so 1 GB is ~2.5× headroom.
+#
+# Apply with a YAML merge key (`<<: *api-defaults`). If a service needs a
+# higher ceiling, override mem_limit on that service directly — the merge
+# key respects later overrides.
+# ---------------------------------------------------------------------------
+x-api-defaults: &api-defaults
+  restart: unless-stopped
+  mem_limit: 1g
+  mem_reservation: 512m
+  cpus: '1.0'
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '5'
+
+x-db-defaults: &db-defaults
+  restart: unless-stopped
+  mem_limit: 1g
+  mem_reservation: 256m
+  cpus: '1.0'
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '5'
+
+x-edge-defaults: &edge-defaults
+  restart: unless-stopped
+  mem_limit: 256m
+  mem_reservation: 64m
+  cpus: '0.5'
+  logging:
+    driver: json-file
+    options:
+      max-size: '10m'
+      max-file: '5'
+
+x-migrator-defaults: &migrator-defaults
+  restart: 'no'
+  mem_limit: 128m
+  cpus: '0.25'
+  logging:
+    driver: json-file
+    options:
+      max-size: '5m'
+      max-file: '2'
+
 services:
   # ---------------------------------------------------------------------------
   # NGINX — TLS termination edge proxy
   # ---------------------------------------------------------------------------
   nginx:
+    <<: *edge-defaults
     image: nginx:alpine
     container_name: wellness_nginx
-    restart: unless-stopped
     ports:
       - '80:80'
       - '443:443'
@@ -14,6 +71,8 @@ services:
       # nginx.conf with nginx-bootstrap.conf in the volume mount below,
       # run certbot, then switch back.
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/legal:/etc/nginx/legal:ro
+      - ./nginx/well-known:/etc/nginx/well-known:ro
       - certbot_webroot:/var/www/certbot:ro
       - certbot_certs:/etc/letsencrypt:ro
     depends_on:
@@ -39,6 +98,7 @@ services:
   # NOTIFICATION STACK
   # ---------------------------------------------------------------------------
   notification-db:
+    <<: *db-defaults
     image: postgres:16
     container_name: notification-db
     environment:
@@ -56,7 +116,33 @@ services:
       timeout: 5s
       retries: 10
 
+  # DbUp-style migrator (Issue 16). Applies anything new under
+  # notification-service/database/migrations/*.sql, tracking each file in a
+  # schema_migrations journal so reruns are no-ops. Runs once per boot and
+  # exits — downstream services depend on the DB's health check, not on this
+  # container, so a missing migration only fails the migrator itself.
+  notification-migrator:
+    <<: *migrator-defaults
+    image: postgres:16
+    container_name: notification_db_migrator
+    depends_on:
+      notification-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${NOTIFICATION_DB_PASSWORD}
+    entrypoint: ['/bin/bash', '/usr/local/bin/migrate.sh']
+    command:
+      - 'notification-db'
+      - '5432'
+      - 'wellness_notifications'
+      - 'postgres'
+      - '/migrations'
+    volumes:
+      - ./scripts/migrations/migrate.sh:/usr/local/bin/migrate.sh:ro
+      - ./notification-service/database/migrations:/migrations:ro
+
   notification-service:
+    <<: *api-defaults
     build:
       context: ./notification-service
       dockerfile: dockerfile
@@ -64,6 +150,8 @@ services:
     depends_on:
       notification-db:
         condition: service_healthy
+      notification-migrator:
+        condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
@@ -78,6 +166,8 @@ services:
       Email__Smtp__Password: '${SENDGRID_API_KEY}'
       Email__Smtp__FromAddress: '${SENDGRID_FROM_EMAIL}'
       Email__Smtp__FromName: '${SENDGRID_FROM_NAME:-AI Wellness}'
+      Sentry__Dsn: '${SENTRY_DSN_NOTIFICATION:-}'
+      Sentry__TracesSampleRate: '${SENTRY_TRACES_SAMPLE_RATE:-0.1}'
     expose:
       - '8080'
 
@@ -85,6 +175,7 @@ services:
   # CHAT Service + AI Wrapper STACK
   # ---------------------------------------------------------------------------
   chat-db:
+    <<: *db-defaults
     image: postgres:16
     container_name: chat_service_db
     environment:
@@ -102,11 +193,31 @@ services:
       timeout: 5s
       retries: 10
 
+  chat-migrator:
+    <<: *migrator-defaults
+    image: postgres:16
+    container_name: chat_db_migrator
+    depends_on:
+      chat-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${CHAT_DB_PASSWORD}
+    entrypoint: ['/bin/bash', '/usr/local/bin/migrate.sh']
+    command:
+      - 'chat-db'
+      - '5432'
+      - 'chatservicedb'
+      - '${CHAT_DB_USER}'
+      - '/migrations'
+    volumes:
+      - ./scripts/migrations/migrate.sh:/usr/local/bin/migrate.sh:ro
+      - ./chat-service/Database/migrations:/migrations:ro
+
   redis-cache:
+    <<: *edge-defaults
     image: redis:7-alpine
     container_name: wellness_redis
-    restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 192mb --maxmemory-policy allkeys-lru
     expose:
       - '6379'
     healthcheck:
@@ -115,10 +226,14 @@ services:
       timeout: 5s
       retries: 10
   ai-wrapper-service:
+    <<: *api-defaults
     build:
       context: ./AI-Wrapper-Service
       dockerfile: Dockerfile
     container_name: ai_wrapper_service_api
+    depends_on:
+      redis-cache:
+        condition: service_healthy
     expose:
       - '8080'
     environment:
@@ -129,12 +244,17 @@ services:
       - OpenAI__BaseUrl=${OPENAI_BASE_URL:-https://api.openai.com/v1/}
       - OpenAI__Model=${OPENAI_MODEL:-wellness-chat:latest}
       - AiService__RateLimitPerMinute=60
+      # Distributed rate limiting: share counters across replicas via Redis.
+      - Redis__ConnectionString=redis-cache:6379,password=${REDIS_PASSWORD}
+      - Sentry__Dsn=${SENTRY_DSN_AI_WRAPPER:-}
+      - Sentry__TracesSampleRate=${SENTRY_TRACES_SAMPLE_RATE:-0.1}
     healthcheck:
       test: ['CMD-SHELL', 'curl -f http://localhost:8080/health || exit 1']
       interval: 10s
       timeout: 5s
       retries: 5
   chat-service:
+    <<: *api-defaults
     build:
       context: ./chat-service
       dockerfile: dockerfile
@@ -142,6 +262,8 @@ services:
     depends_on:
       chat-db:
         condition: service_healthy
+      chat-migrator:
+        condition: service_completed_successfully
       redis-cache:
         condition: service_healthy
       ai-wrapper-service:
@@ -157,10 +279,14 @@ services:
       Jwt__Key: '${JWT_KEY}'
       Jwt__Issuer: 'AIWellness'
       Jwt__Audience: 'AIWellnessUsers'
+      Gateway__SharedSecret: '${CHAT_INTERNAL_API_KEY}'
+      Sentry__Dsn: '${SENTRY_DSN_CHAT:-}'
+      Sentry__TracesSampleRate: '${SENTRY_TRACES_SAMPLE_RATE:-0.1}'
   # ---------------------------------------------------------------------------
   # JOURNAL STACK
   # ---------------------------------------------------------------------------
   journal-db:
+    <<: *db-defaults
     image: postgres:16
     container_name: journal_service_db
     environment:
@@ -178,7 +304,28 @@ services:
       timeout: 5s
       retries: 10
 
+  journal-migrator:
+    <<: *migrator-defaults
+    image: postgres:16
+    container_name: journal_db_migrator
+    depends_on:
+      journal-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${JOURNAL_DB_PASSWORD}
+    entrypoint: ['/bin/bash', '/usr/local/bin/migrate.sh']
+    command:
+      - 'journal-db'
+      - '5432'
+      - 'wellness_journal'
+      - 'postgres'
+      - '/migrations'
+    volumes:
+      - ./scripts/migrations/migrate.sh:/usr/local/bin/migrate.sh:ro
+      - ./journal-service/database/migrations:/migrations:ro
+
   journal-service:
+    <<: *api-defaults
     build:
       context: ./journal-service
       dockerfile: dockerfile
@@ -186,12 +333,21 @@ services:
     depends_on:
       journal-db:
         condition: service_healthy
+      journal-migrator:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
       ConnectionStrings__JournalDatabase: 'Host=journal-db;Database=wellness_journal;Username=postgres;Password=${JOURNAL_DB_PASSWORD}'
       Gateway__SharedSecret: '${JOURNAL_INTERNAL_API_KEY}'
       Gateway__RequireSharedSecret: 'true'
+      Sentry__Dsn: '${SENTRY_DSN_JOURNAL:-}'
+      Sentry__TracesSampleRate: '${SENTRY_TRACES_SAMPLE_RATE:-0.1}'
+      # Field-level encryption (Issue 10): the Data Protection key ring lives
+      # in Redis so every replica decrypts the same ciphertext.
+      Redis__ConnectionString: 'redis-cache:6379,password=${REDIS_PASSWORD}'
     expose:
       - '8080'
 
@@ -199,6 +355,7 @@ services:
   # COMMUNITY STACK
   # ---------------------------------------------------------------------------
   community-db:
+    <<: *db-defaults
     image: postgres:16
     container_name: community_service_db
     environment:
@@ -216,7 +373,28 @@ services:
       timeout: 5s
       retries: 10
 
+  community-migrator:
+    <<: *migrator-defaults
+    image: postgres:16
+    container_name: community_db_migrator
+    depends_on:
+      community-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${COMMUNITY_DB_PASSWORD}
+    entrypoint: ['/bin/bash', '/usr/local/bin/migrate.sh']
+    command:
+      - 'community-db'
+      - '5432'
+      - 'wellness_community'
+      - 'postgres'
+      - '/migrations'
+    volumes:
+      - ./scripts/migrations/migrate.sh:/usr/local/bin/migrate.sh:ro
+      - ./community-service/database/migrations:/migrations:ro
+
   community-service:
+    <<: *api-defaults
     build:
       context: ./community-service
       dockerfile: dockerfile
@@ -224,12 +402,16 @@ services:
     depends_on:
       community-db:
         condition: service_healthy
+      community-migrator:
+        condition: service_completed_successfully
     environment:
       ASPNETCORE_ENVIRONMENT: 'Production'
       ASPNETCORE_URLS: 'http://+:8080'
       ConnectionStrings__CommunityDatabase: 'Host=community-db;Database=wellness_community;Username=postgres;Password=${COMMUNITY_DB_PASSWORD}'
       Gateway__SharedSecret: '${COMMUNITY_INTERNAL_API_KEY}'
       Gateway__RequireSharedSecret: 'true'
+      Sentry__Dsn: '${SENTRY_DSN_COMMUNITY:-}'
+      Sentry__TracesSampleRate: '${SENTRY_TRACES_SAMPLE_RATE:-0.1}'
     expose:
       - '8080'
 
@@ -237,6 +419,7 @@ services:
   # AUTHENTICATION STACK
   # ---------------------------------------------------------------------------
   auth-db:
+    <<: *db-defaults
     image: postgres:16
     container_name: auth_service_db
     environment:
@@ -254,13 +437,38 @@ services:
       timeout: 5s
       retries: 10
 
+  auth-migrator:
+    <<: *migrator-defaults
+    image: postgres:16
+    container_name: auth_db_migrator
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${AUTH_DB_PASSWORD}
+    entrypoint: ['/bin/bash', '/usr/local/bin/migrate.sh']
+    command:
+      - 'auth-db'
+      - '5432'
+      - 'authdb'
+      - 'postgres'
+      - '/migrations'
+    volumes:
+      - ./scripts/migrations/migrate.sh:/usr/local/bin/migrate.sh:ro
+      - ./auth-service/Database/migrations:/migrations:ro
+
   auth-service:
+    <<: *api-defaults
     build:
       context: ./auth-service
       dockerfile: Dockerfile
     container_name: auth_service_api
     depends_on:
       auth-db:
+        condition: service_healthy
+      auth-migrator:
+        condition: service_completed_successfully
+      redis-cache:
         condition: service_healthy
       notification-service:
         condition: service_started
@@ -286,9 +494,23 @@ services:
       NotificationService__BaseUrl: 'http://notification-service:8080'
       NotificationService__ApiKey: '${NOTIFICATION_INTERNAL_API_KEY}'
       CommunityService__ApiKey: '${COMMUNITY_INTERNAL_API_KEY}'
+      # Internal deletion cascade (Issue 1 — DELETE /api/auth/me fans out here)
+      InternalServices__Journal__BaseUrl: 'http://journal-service:8080/'
+      InternalServices__Journal__ApiKey: '${JOURNAL_INTERNAL_API_KEY}'
+      InternalServices__Chat__BaseUrl: 'http://chat-service:8080/'
+      InternalServices__Chat__ApiKey: '${CHAT_INTERNAL_API_KEY}'
+      InternalServices__Community__BaseUrl: 'http://community-service:8080/'
+      InternalServices__Community__ApiKey: '${COMMUNITY_INTERNAL_API_KEY}'
+      InternalServices__Notification__BaseUrl: 'http://notification-service:8080/'
+      InternalServices__Notification__ApiKey: '${NOTIFICATION_INTERNAL_API_KEY}'
       Cors__AllowedOrigins__0: '${CORS_ORIGIN_0:-}'
       ASPNETCORE_URLS: 'http://+:8080'
       ASPNETCORE_ENVIRONMENT: 'Production'
+      Sentry__Dsn: '${SENTRY_DSN_AUTH:-}'
+      Sentry__TracesSampleRate: '${SENTRY_TRACES_SAMPLE_RATE:-0.1}'
+      # Distributed rate limiting: share per-IP counters across replicas so
+      # attackers can't hop between instances to bypass login throttling.
+      Redis__ConnectionString: 'redis-cache:6379,password=${REDIS_PASSWORD}'
     healthcheck:
       test: ['CMD-SHELL', 'curl -f http://localhost:8080/api/auth/health || exit 1']
       interval: 10s

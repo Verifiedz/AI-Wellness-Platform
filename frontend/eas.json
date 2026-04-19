@@ -7,24 +7,53 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "channel": "development"
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_APP_LINK_HOST": "sakina.example.com"
+      }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
+      "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.sakina.app"
+        "EXPO_PUBLIC_API_URL": "https://staging-api.sakina.app",
+        "EXPO_PUBLIC_APP_LINK_HOST": "staging.sakina.example.com"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
       }
     },
     "production": {
       "channel": "production",
+      "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://api.sakina.app"
+        "EXPO_PUBLIC_API_URL": "https://api.sakina.app",
+        "EXPO_PUBLIC_APP_LINK_HOST": "sakina.example.com"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "app-bundle"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "REPLACE_WITH_APPLE_APP_ID",
+        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./play-service-account.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   },
   "update": {
     "production": {

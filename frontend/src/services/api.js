@@ -1,4 +1,5 @@
 import { API_BASE_URL, DEV_MODE, API_TIMEOUT } from '../config';
+import { generateCorrelationId } from '../utils/correlationId';
 
 /**
  * Lightweight API client with auth header support and automatic token refresh.
@@ -63,6 +64,10 @@ class ApiClient {
   _buildHeaders(extraHeaders = {}) {
     const headers = {
       'Content-Type': 'application/json',
+      // Always attach a correlation id so every request can be traced
+      // end-to-end in our observability stack. The backend accepts this
+      // header unchanged and propagates it across all downstream services.
+      'X-Correlation-Id': generateCorrelationId(),
       ...extraHeaders,
     };
     if (this.token) {
@@ -199,8 +204,8 @@ class ApiClient {
   patch(path, body) {
     return this._request('PATCH', path, body);
   }
-  delete(path) {
-    return this._request('DELETE', path);
+  delete(path, body = null) {
+    return this._request('DELETE', path, body);
   }
 }
 

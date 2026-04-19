@@ -30,3 +30,9 @@ public sealed record ErrorResponse
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
     public string? Details { get; init; }
 }
+
+public sealed record BlockedUserResponse(
+    Guid BlockedUserId,
+    DateTime BlockedAt,
+    string? Reason
+);

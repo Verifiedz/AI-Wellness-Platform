@@ -212,6 +212,18 @@ public class DatabaseService : IDatabaseService
         return await _executor.TestConnectionAsync();
     }
 
+    public async Task DeleteUserDataAsync(Guid userId)
+    {
+        _logger.LogInformation("Deleting all journal data for user {UserId}", userId);
+
+        var parameters = new[]
+        {
+            new NpgsqlParameter("p_user_id", NpgsqlDbType.Uuid) { Value = userId }
+        };
+
+        await _executor.ExecuteNonQueryAsync("sp_delete_user_data", parameters);
+    }
+
     #endregion
 
     private static JournalEntry MapJournalEntry(NpgsqlDataReader reader)

@@ -21,3 +21,7 @@ public sealed record ReportPostRequest(
     [MaxLength(200)]
     string Reason
 );
+
+public sealed record BlockByPostRequest(
+    [MaxLength(200)] string? Reason
+);

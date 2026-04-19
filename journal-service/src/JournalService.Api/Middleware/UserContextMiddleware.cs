@@ -15,7 +15,9 @@ public class UserContextMiddleware
         _logger = logger;
     }
 
-    private static readonly string[] ExcludedPaths = ["/api/health", "/api/ping"];
+    // /internal/* is authenticated by GatewayAuthMiddleware (service-to-service shared secret);
+    // the health and ping endpoints are intentionally public.
+    private static readonly string[] ExcludedPaths = ["/api/health", "/api/ping", "/internal"];
 
     public async Task InvokeAsync(HttpContext context)
     {

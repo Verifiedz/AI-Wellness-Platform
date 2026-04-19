@@ -17,6 +17,7 @@ public class ChatServiceTests
     private readonly Mock<ISessionService> _sessionMock;
     private readonly Mock<IChatDatabaseProvider> _dbMock;
     private readonly HtmlSanitizer _sanitizer;
+    private readonly Mock<IFieldProtector> _protectorMock;
     private readonly global::ChatService.Services.ChatService _sut;
 
     public ChatServiceTests()
@@ -29,11 +30,20 @@ public class ChatServiceTests
         _sanitizer.AllowedTags.Clear();
         _sanitizer.AllowedAttributes.Clear();
 
+        // Pass-through protector keeps these tests focused on ChatService logic;
+        // the encryption round-trip is validated in FieldProtector's own tests.
+        _protectorMock = new Mock<IFieldProtector>();
+        _protectorMock.Setup(p => p.Protect(It.IsAny<string>()))
+                      .Returns<string?>(s => s);
+        _protectorMock.Setup(p => p.Unprotect(It.IsAny<string>()))
+                      .Returns<string?>(s => s);
+
         _sut = new global::ChatService.Services.ChatService(
             _wrapperMock.Object,
             _sessionMock.Object,
             _dbMock.Object,
-            _sanitizer);
+            _sanitizer,
+            _protectorMock.Object);
     }
 
     // ------------------------------------------------------------------ //

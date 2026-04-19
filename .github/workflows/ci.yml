@@ -11,20 +11,33 @@ jobs:
     name: Backend Tests
     runs-on: ubuntu-latest
     strategy:
+      # Don't let one service failing mask a coverage regression in another.
+      fail-fast: false
       matrix:
         include:
+          # Coverage thresholds are enforced via coverlet.msbuild. Auth and the AI
+          # wrapper sit on the critical path (handling credentials and LLM traffic
+          # respectively), so they are held to 80% line coverage. The rest of the
+          # services are held to 60% line coverage, which is the app-store-readiness
+          # minimum documented in the Week 2 plan.
           - name: auth-service
             path: auth-service/AuthService.Tests/AuthService.Tests.csproj
-          - name: chat-service
-            path: chat-service/ChatService.Tests/ChatService.Tests.csproj
+            threshold: '80'
           - name: ai-wrapper-service
             path: AI-Wrapper-Service/AIWrapperService.Tests/AIWrapperService.Tests.csproj
+            threshold: '80'
+          - name: chat-service
+            path: chat-service/ChatService.Tests/ChatService.Tests.csproj
+            threshold: '60'
           - name: notification-service
             path: notification-service/src/NotificationService.Tests/NotificationService.Tests.csproj
+            threshold: '60'
           - name: journal-service
             path: journal-service/src/JournalService.Tests/JournalService.Tests.csproj
+            threshold: '60'
           - name: community-service
             path: community-service/CommunityService.Tests/CommunityService.Tests.csproj
+            threshold: '60'
 
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +50,24 @@ jobs:
       - name: Restore ${{ matrix.name }}
         run: dotnet restore "${{ matrix.path }}"
 
-      - name: Test ${{ matrix.name }}
-        run: dotnet test "${{ matrix.path }}" --no-restore --verbosity normal
+      - name: Test ${{ matrix.name }} with ${{ matrix.threshold }}% line coverage gate
+        run: |
+          dotnet test "${{ matrix.path }}" --no-restore --verbosity normal \
+            -p:CollectCoverage=true \
+            -p:CoverletOutputFormat=cobertura \
+            -p:CoverletOutput=./TestResults/coverage.cobertura.xml \
+            -p:Threshold=${{ matrix.threshold }} \
+            -p:ThresholdType=line \
+            -p:ThresholdStat=total \
+            -p:ExcludeByAttribute='"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute"'
+
+      - name: Upload coverage report for ${{ matrix.name }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.name }}
+          path: '**/TestResults/coverage.cobertura.xml'
+          retention-days: 14
 
   frontend-tests:
     name: Frontend Tests
@@ -62,9 +91,17 @@ jobs:
         working-directory: frontend
         run: npm run lint
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: frontend
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload frontend coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          path: frontend/coverage/
+          retention-days: 14
 
   e2e-tests:
     name: E2E Tests (Playwright)
@@ -137,6 +174,29 @@ jobs:
           name: playwright-traces
           path: test-results/
           retention-days: 7
+
+  secret-scan:
+    # Gitleaks is the post-rotation gate from SEC-ADV-03: we accept the
+    # existing history but never want a new secret to land on main. A finding
+    # here is a blocking failure — rotate and repush, don't merge through.
+    name: Secret Scan (gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks can cover the whole PR range, not just
+          # the tip commit. Shallow clones miss stacked commits.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Ignore the two known-historical strings we already accepted in
+          # SEC-ADV-03 so they don't re-alert forever. Everything else is a
+          # real finding.
+          GITLEAKS_CONFIG: .gitleaks.toml
 
   docker-build:
     name: Docker Build

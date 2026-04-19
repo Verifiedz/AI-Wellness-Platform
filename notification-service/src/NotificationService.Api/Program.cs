@@ -2,8 +2,33 @@ using NotificationService.Api.Infrastructure;
 using NotificationService.Api.Middleware;
 using NotificationService.Api.Services;
 using NotificationService.Api.UserContext;
+using Serilog;
+using Serilog.Formatting.Compact;
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "notification-service")
+    .WriteTo.Console(new CompactJsonFormatter())
+    .CreateBootstrapLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, config) => config
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "notification-service")
+    .WriteTo.Console(new CompactJsonFormatter()));
+
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"] ?? string.Empty;
+    options.Environment = builder.Environment.EnvironmentName;
+    options.Release = typeof(Program).Assembly.GetName().Version?.ToString();
+    options.TracesSampleRate = builder.Configuration.GetValue("Sentry:TracesSampleRate", 0.1);
+    options.SendDefaultPii = false;
+    options.AttachStacktrace = true;
+});
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -95,12 +120,18 @@ if (!string.IsNullOrWhiteSpace(firebasePath) && !firebaseService.IsInitialized)
 }
 
 // Configure the HTTP request pipeline
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseSerilogRequestLogging();
+
 app.UseHttpsRedirection();
 
 app.UseCors("NotificationCors");
 
 // Global exception handling middleware (first in pipeline)
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Service-to-service authentication on /internal/* (e.g. account deletion cascade)
+app.UseMiddleware<GatewayAuthMiddleware>();
 
 // User context middleware - extracts user from YARP headers
 // Check if development mode allows testing without gateway

@@ -3,6 +3,11 @@ using AIWrapperService.Middleware;
 using AIWrapperService.Services;
 using DotNetEnv;
 using Microsoft.AspNetCore.RateLimiting;
+using RedisRateLimiting;
+using RedisRateLimiting.AspNetCore;
+using Serilog;
+using Serilog.Formatting.Compact;
+using StackExchange.Redis;
 using System.Threading.RateLimiting;
 
 // Load .env file if it exists (for local development)
@@ -11,7 +16,30 @@ if (File.Exists(".env"))
     Env.Load();
 }
 
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "ai-wrapper-service")
+    .WriteTo.Console(new CompactJsonFormatter())
+    .CreateBootstrapLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, config) => config
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Service", "ai-wrapper-service")
+    .WriteTo.Console(new CompactJsonFormatter()));
+
+builder.WebHost.UseSentry(options =>
+{
+    options.Dsn = builder.Configuration["Sentry:Dsn"] ?? string.Empty;
+    options.Environment = builder.Environment.EnvironmentName;
+    options.Release = typeof(Program).Assembly.GetName().Version?.ToString();
+    options.TracesSampleRate = builder.Configuration.GetValue("Sentry:TracesSampleRate", 0.1);
+    options.SendDefaultPii = false;
+    options.AttachStacktrace = true;
+});
 
 // ===== Service Registration =====
 
@@ -41,21 +69,43 @@ builder.Services.AddHealthChecks();
 // Add ProblemDetails support
 builder.Services.AddProblemDetails();
 
-// Add built-in rate limiting (replaces custom RateLimitingMiddleware).
-// Configuration is resolved from IConfiguration at host-build time so that
-// WebApplicationFactory test overrides applied via ConfigureAppConfiguration are respected.
+// Distributed rate limiting backed by Redis. When a Redis connection string is
+// present we share counters across every AI-wrapper replica; when it is absent
+// (local dev without Redis) we fall back to the in-memory fixed-window
+// limiter so developers don't need to run Redis just to call /chat.
+var redisConnectionString = builder.Configuration["Redis:ConnectionString"];
+IConnectionMultiplexer? redisConnection = null;
+if (!string.IsNullOrWhiteSpace(redisConnectionString))
+{
+    redisConnection = ConnectionMultiplexer.Connect(redisConnectionString);
+    builder.Services.AddSingleton(redisConnection);
+}
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    // Named policy for /chat/ routes: per-IP fixed window.
-    // PermitLimit is read from IConfiguration per-request so that test overrides
-    // applied via WebApplicationFactory.ConfigureAppConfiguration take effect.
+    // Named policy for /chat/ routes: per-IP fixed window. We resolve
+    // PermitLimit at request time so WebApplicationFactory overrides during
+    // integration tests still take effect.
     options.AddPolicy("chat", httpContext =>
     {
         var config = httpContext.RequestServices.GetRequiredService<IConfiguration>();
         var rateLimitPerMinute = config.GetValue("AiService:RateLimitPerMinute", 60);
         var clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        if (redisConnection is not null)
+        {
+            return RedisRateLimitPartition.GetFixedWindowRateLimiter(
+                partitionKey: clientIp,
+                factory: key => new RedisFixedWindowRateLimiterOptions
+                {
+                    ConnectionMultiplexerFactory = () => redisConnection,
+                    PermitLimit = rateLimitPerMinute,
+                    Window = TimeSpan.FromMinutes(1),
+                    RedisKey = $"sakina:ratelimit:aiwrapper:chat:{key}",
+                });
+        }
 
         return RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: clientIp,
@@ -116,6 +166,9 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = string.Empty; // Serve Swagger UI at root
     });
 }
+
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseSerilogRequestLogging();
 
 // Exception handling middleware
 app.UseExceptionHandler(exceptionHandlerApp =>

@@ -14,14 +14,17 @@ using Moq;
 public class CommunityControllerTests
 {
     private readonly Mock<ICommunityDbService> _dbMock;
+    private readonly Mock<IContentFilter> _filterMock;
     private readonly Mock<ILogger<CommunityController>> _loggerMock;
     private readonly CommunityController _sut;
 
     public CommunityControllerTests()
     {
         _dbMock = new Mock<ICommunityDbService>();
+        _filterMock = new Mock<IContentFilter>();
+        _filterMock.Setup(f => f.Validate(It.IsAny<string>())).Returns((string?)null);
         _loggerMock = new Mock<ILogger<CommunityController>>();
-        _sut = new CommunityController(_dbMock.Object, _loggerMock.Object);
+        _sut = new CommunityController(_dbMock.Object, _filterMock.Object, _loggerMock.Object);
     }
 
     // ------------------------------------------------------------------ //

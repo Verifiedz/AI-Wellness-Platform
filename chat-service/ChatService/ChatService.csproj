@@ -7,16 +7,28 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <!--
+    Production runtime dependencies for chat-service. Test-framework packages
+    (Microsoft.NET.Test.Sdk, xunit*, Moq, FluentAssertions, coverlet*) used to
+    live here too, which pulled analyzer DLLs into the published image and
+    inflated the runtime closure. Those are now confined to
+    ../ChatService.Tests/ChatService.Tests.csproj (Issue 12).
+    Npgsql is kept at 9.0.x to match the chat-service's existing migrations.
+  -->
   <ItemGroup>
     <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="Npgsql" Version="9.0.4" />
-    <PackageReference Include="xunit" Version="2.9.3" />
-    <PackageReference Include="xunit.abstractions" Version="2.0.3" />
-    <PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
+    <PackageReference Include="Sentry.AspNetCore" Version="5.8.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.16" />
+    <PackageReference Include="RedisRateLimiting" Version="1.1.0" />
+    <PackageReference Include="RedisRateLimiting.AspNetCore" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="9.0.0" />
   </ItemGroup>
 <ItemGroup>
   <Content Update="appsettings.json">

@@ -15,4 +15,5 @@ public interface IAuthService
   Task ChangePasswordAsync(ChangePasswordRequest request);
   Task<UserInfoResponse> GetUserInfoAsync(string email);
   Task<TwoFactorResponse> RefreshTokenAsync(string refreshToken);
+  Task DeleteAccountAsync(Guid userId, string password);
 }

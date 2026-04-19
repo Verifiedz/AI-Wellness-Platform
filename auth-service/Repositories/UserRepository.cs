@@ -218,6 +218,16 @@ public class UserRepository : IUserRepository
         new { TokenHash = tokenHash, ReplacedByHash = replacedByHash });
   }
 
+  public async Task DeleteUserAsync(Guid userId)
+  {
+    using var connection = _connectionFactory.CreateConnection();
+    // FK cascades remove verificationcodes and refresh_tokens.
+    // loginattempts has ON DELETE SET NULL so history is retained for anti-abuse.
+    await connection.ExecuteAsync(
+        "DELETE FROM users WHERE id = @UserId",
+        new { UserId = userId });
+  }
+
   private static string HashToken(string token) =>
       Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token))).ToLowerInvariant();
 }

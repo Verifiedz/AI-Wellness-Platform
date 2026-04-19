@@ -9,6 +9,7 @@ public class JournalEntryService
     private readonly IDatabaseService _databaseService;
     private readonly ILogger<JournalEntryService> _logger;
     private readonly Ganss.Xss.HtmlSanitizer _sanitizer;
+    private readonly IFieldProtector _fieldProtector;
 
     private static readonly HashSet<string> ValidEmotions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -20,11 +21,13 @@ public class JournalEntryService
     public JournalEntryService(
         IDatabaseService databaseService,
         ILogger<JournalEntryService> logger,
-        Ganss.Xss.HtmlSanitizer sanitizer)
+        Ganss.Xss.HtmlSanitizer sanitizer,
+        IFieldProtector fieldProtector)
     {
         _databaseService = databaseService;
         _logger = logger;
         _sanitizer = sanitizer;
+        _fieldProtector = fieldProtector;
     }
 
     public async Task<JournalEntryResponse> CreateEntryAsync(Guid userId, CreateJournalEntryRequest request)
@@ -35,14 +38,19 @@ public class JournalEntryService
         if (existing != null)
             throw new ArgumentException($"A journal entry already exists for {request.EntryDate:yyyy-MM-dd}. Use PUT to update it.");
 
+        // Sanitize first, then encrypt. Doing sanitize-before-encrypt keeps
+        // the stored ciphertext small (no stripped markup) and means the
+        // decrypted plaintext is already safe to render without a second
+        // sanitization pass.
         var safeContent = _sanitizer.Sanitize(request.Content);
+        var storedContent = _fieldProtector.Protect(safeContent) ?? safeContent;
 
         var entry = await _databaseService.CreateJournalEntryAsync(
             userId,
             request.Mood,
             request.Emotions,
             request.EnergyLevel,
-            safeContent,
+            storedContent,
             request.EntryDate);
 
         return MapToResponse(entry ?? throw new InvalidOperationException("Failed to create journal entry"));
@@ -76,6 +84,7 @@ public class JournalEntryService
         ValidateEmotions(request.Emotions);
 
         var safeContent = _sanitizer.Sanitize(request.Content);
+        var storedContent = _fieldProtector.Protect(safeContent) ?? safeContent;
 
         var entry = await _databaseService.UpdateJournalEntryAsync(
             entryId,
@@ -83,7 +92,7 @@ public class JournalEntryService
             request.Mood,
             request.Emotions,
             request.EnergyLevel,
-            safeContent);
+            storedContent);
 
         if (entry == null)
             throw new KeyNotFoundException($"Journal entry {entryId} not found or does not belong to this user.");
@@ -143,7 +152,7 @@ public class JournalEntryService
                 $"Valid emotions are: {string.Join(", ", ValidEmotions.Order())}");
     }
 
-    private static JournalEntryResponse MapToResponse(JournalEntry entry)
+    private JournalEntryResponse MapToResponse(JournalEntry entry)
     {
         return new JournalEntryResponse
         {
@@ -152,7 +161,10 @@ public class JournalEntryService
             Mood = entry.Mood,
             Emotions = entry.Emotions,
             EnergyLevel = entry.EnergyLevel,
-            Content = entry.Content,
+            // Decrypt on read. Rows that predate field protection come back
+            // through the protector unchanged (no v1: prefix) so pre-rollout
+            // entries remain readable without a migration.
+            Content = _fieldProtector.Unprotect(entry.Content) ?? entry.Content,
             EntryDate = entry.EntryDate.ToString("yyyy-MM-dd"),
             CreatedAt = entry.CreatedAt,
             UpdatedAt = entry.UpdatedAt

@@ -45,4 +45,11 @@ public interface IDatabaseService
     Task<JournalPrompt?> GetRandomPromptAsync(string? category = null);
 
     Task<bool> TestConnectionAsync();
+
+    /// <summary>
+    /// Permanently deletes all journal-owned data for the given user:
+    /// journal entries, assessments, and escalation events. Called by
+    /// auth-service during account deletion (Apple Guideline 5.1.1(v)).
+    /// </summary>
+    Task DeleteUserDataAsync(Guid userId);
 }

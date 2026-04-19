@@ -114,6 +114,25 @@ public class AuthController : ControllerBase
     return Ok(result);
   }
 
+  /// <summary>
+  /// Permanently deletes the authenticated user's account and cascades deletion
+  /// to all downstream services. Required by Apple App Store Guideline 5.1.1(v)
+  /// and Google Play User Data policy. Requires password re-authentication.
+  /// </summary>
+  [Authorize]
+  [HttpDelete("me")]
+  public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
+  {
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                      ?? User.FindFirst("sub")?.Value;
+    if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+      return Unauthorized(new { message = "Invalid token" });
+
+    await _authService.DeleteAccountAsync(userId, request.Password);
+    _logger.LogInformation("Account deletion completed for {UserId}", userId);
+    return NoContent();
+  }
+
   [HttpGet("health")]
   public IActionResult HealthCheck()
   {

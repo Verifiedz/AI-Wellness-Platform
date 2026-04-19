@@ -20,7 +20,8 @@ public class UserContextMiddleware
         _logger = logger;
     }
 
-    private static readonly string[] ExcludedPaths = ["/api/health", "/api/ping", "/api/notifications/send-code"];
+    // /internal/* is authenticated by GatewayAuthMiddleware (service-to-service shared secret).
+    private static readonly string[] ExcludedPaths = ["/api/health", "/api/ping", "/api/notifications/send-code", "/internal"];
 
     public async Task InvokeAsync(HttpContext context)
     {

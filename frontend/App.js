@@ -22,6 +22,9 @@ import { Toast } from './src/components/Toast';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
+import { initSentry, setSentryUser, clearSentryUser } from './src/services/sentry';
+
+initSentry();
 import {
   registerForPushNotificationsAsync,
   addNotificationReceivedListener,
@@ -46,8 +49,10 @@ function AppContent() {
   useEffect(() => {
     if (token && user) {
       apiClient.setAuth(token, user.id);
+      setSentryUser(user.id);
     } else {
       apiClient.clearAuth();
+      clearSentryUser();
     }
   }, [token, user]);
 

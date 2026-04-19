@@ -55,14 +55,23 @@ public sealed class CommunityDbService : ICommunityDbService
     }
 
     private const string GetPostsSql = @"
-        WITH post_data AS (
+        WITH blocked AS (
+            SELECT blocked_id AS uid FROM community_blocks WHERE blocker_id = @currentUserId
+        ),
+        post_data AS (
             SELECT p.id, p.group_id, p.anonymous_name,
                    COALESCE((SELECT avatar_seed FROM anonymous_identities WHERE user_id = p.user_id AND group_id = p.group_id), 0) AS avatar_seed,
                    p.content, p.parent_id, p.created_at,
-                   (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND NOT is_hidden) AS reply_count
+                   (SELECT COUNT(*) FROM posts r
+                    WHERE r.parent_id = p.id
+                      AND NOT r.is_hidden
+                      AND r.user_id NOT IN (SELECT uid FROM blocked)) AS reply_count
             FROM posts p
             JOIN support_groups g ON g.id = p.group_id
-            WHERE g.slug = @slug AND p.parent_id IS NULL AND NOT p.is_hidden
+            WHERE g.slug = @slug
+              AND p.parent_id IS NULL
+              AND NOT p.is_hidden
+              AND p.user_id NOT IN (SELECT uid FROM blocked)
             ORDER BY p.created_at DESC
             LIMIT @limit OFFSET @offset
         ),
@@ -241,13 +250,142 @@ public sealed class CommunityDbService : ICommunityDbService
     public async Task ReportPostAsync(Guid postId, Guid reporterId, string reason)
     {
         await using var conn = await OpenAsync();
+        // Unique index on (reporter_id, post_id) keeps repeat taps idempotent.
         const string sql = @"
-            INSERT INTO reports (post_id, reporter_id, reason) VALUES (@postId, @reporterId, @reason)";
+            INSERT INTO reports (post_id, reporter_id, reason)
+            VALUES (@postId, @reporterId, @reason)
+            ON CONFLICT (reporter_id, post_id) DO NOTHING";
 
         await using var cmd = new NpgsqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("postId", postId);
         cmd.Parameters.AddWithValue("reporterId", reporterId);
         cmd.Parameters.AddWithValue("reason", reason);
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task BlockUserAsync(Guid blockerId, Guid blockedId, string? reason = null)
+    {
+        if (blockerId == blockedId)
+        {
+            throw new InvalidOperationException("A user cannot block themselves");
+        }
+
+        await using var conn = await OpenAsync();
+        const string sql = @"
+            INSERT INTO community_blocks (blocker_id, blocked_id, reason)
+            VALUES (@blockerId, @blockedId, @reason)
+            ON CONFLICT (blocker_id, blocked_id) DO NOTHING";
+
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("blockerId", blockerId);
+        cmd.Parameters.AddWithValue("blockedId", blockedId);
+        cmd.Parameters.AddWithValue("reason", (object?)reason ?? DBNull.Value);
+        await cmd.ExecuteNonQueryAsync();
+
+        _logger.LogInformation("User {Blocker} blocked user {Blocked}", blockerId, blockedId);
+    }
+
+    public async Task UnblockUserAsync(Guid blockerId, Guid blockedId)
+    {
+        await using var conn = await OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "DELETE FROM community_blocks WHERE blocker_id = @blockerId AND blocked_id = @blockedId",
+            conn);
+        cmd.Parameters.AddWithValue("blockerId", blockerId);
+        cmd.Parameters.AddWithValue("blockedId", blockedId);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<IReadOnlyList<BlockedUserResponse>> GetBlockedUsersAsync(Guid blockerId)
+    {
+        await using var conn = await OpenAsync();
+        await using var cmd = new NpgsqlCommand(
+            "SELECT blocked_id, created_at, reason FROM community_blocks WHERE blocker_id = @blockerId ORDER BY created_at DESC",
+            conn);
+        cmd.Parameters.AddWithValue("blockerId", blockerId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        var results = new List<BlockedUserResponse>();
+        while (await reader.ReadAsync())
+        {
+            results.Add(new BlockedUserResponse(
+                reader.GetGuid(0),
+                reader.GetDateTime(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2)));
+        }
+        return results;
+    }
+
+    public async Task<Guid?> BlockUserByPostAsync(Guid blockerId, Guid postId, string? reason = null)
+    {
+        await using var conn = await OpenAsync();
+
+        await using var lookup = new NpgsqlCommand("SELECT user_id FROM posts WHERE id = @postId", conn);
+        lookup.Parameters.AddWithValue("postId", postId);
+        var result = await lookup.ExecuteScalarAsync();
+        if (result is null || result is DBNull) return null;
+
+        var blockedId = (Guid)result;
+        if (blockedId == blockerId) return null; // ignore self-block
+
+        await BlockUserAsync(blockerId, blockedId, reason);
+        return blockedId;
+    }
+
+    public async Task DeleteUserDataAsync(Guid userId)
+    {
+        await using var conn = await OpenAsync();
+        await using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            // Reactions first (FK to posts, not cascade on user).
+            await ExecuteAsync(conn, tx, "DELETE FROM reactions WHERE user_id = @userId", userId);
+            // Reports filed by this user.
+            await ExecuteAsync(conn, tx, "DELETE FROM reports WHERE reporter_id = @userId", userId);
+            // Soft-remove top-level posts by blanking content so thread history does not break
+            // for other users' replies. Replies by this user are fully deleted.
+            await ExecuteAsync(conn, tx,
+                @"UPDATE posts
+                  SET content = '[deleted]', is_hidden = TRUE, anonymous_name = 'Former User'
+                  WHERE user_id = @userId AND parent_id IS NULL", userId);
+            await ExecuteAsync(conn, tx,
+                "DELETE FROM posts WHERE user_id = @userId AND parent_id IS NOT NULL", userId);
+            // Remove reports targeting the user's deleted replies (best-effort).
+            await ExecuteAsync(conn, tx,
+                "DELETE FROM reports WHERE post_id NOT IN (SELECT id FROM posts)", userId);
+            // Anonymous identities last.
+            await ExecuteAsync(conn, tx, "DELETE FROM anonymous_identities WHERE user_id = @userId", userId);
+            // Any blocks involving this user.
+            await ExecuteAsync(conn, tx,
+                "DELETE FROM community_blocks WHERE blocker_id = @userId OR blocked_id = @userId",
+                userId, ignoreMissingTable: true);
+
+            await tx.CommitAsync();
+            _logger.LogInformation("Deleted community data for user {UserId}", userId);
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    private static async Task ExecuteAsync(
+        NpgsqlConnection conn,
+        NpgsqlTransaction tx,
+        string sql,
+        Guid userId,
+        bool ignoreMissingTable = false)
+    {
+        try
+        {
+            await using var cmd = new NpgsqlCommand(sql, conn, tx);
+            cmd.Parameters.AddWithValue("userId", userId);
+            await cmd.ExecuteNonQueryAsync();
+        }
+        catch (PostgresException ex) when (ignoreMissingTable && ex.SqlState == "42P01")
+        {
+            // Table does not exist yet (community_blocks is added in Issue 3). Safe to skip.
+        }
     }
 }

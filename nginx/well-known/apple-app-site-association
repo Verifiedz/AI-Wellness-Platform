@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.sakina.app"],
+        "components": [
+          { "/": "/reset-password", "comment": "Password reset deep link" },
+          { "/": "/verify-email",   "comment": "Email verification link" },
+          { "/": "/community/*",    "comment": "Community post and group links" },
+          { "/": "/journal/*",      "comment": "Shared journal permalinks" },
+          { "/": "/privacy",        "comment": "Privacy policy landing" },
+          { "/": "/terms",          "comment": "Terms of service landing" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.sakina.app"]
+  }
+}

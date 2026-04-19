@@ -128,6 +128,36 @@ public class ChatDatabaseProvider : IChatDatabaseProvider
         await cmd.ExecuteNonQueryAsync();
     }
 
+    public async Task DeleteChatsByUserAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        using var conn = await _dataSource.OpenConnectionAsync(cancellationToken);
+        using var tx = await conn.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            // Remove all chat messages authored by this user across every session.
+            using (var chatCmd = new NpgsqlCommand("DELETE FROM public.chat WHERE chatuserid = $1", conn, tx))
+            {
+                chatCmd.Parameters.AddWithValue(userId);
+                await chatCmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            // Then purge the user's sessions themselves.
+            using (var sessionCmd = new NpgsqlCommand("DELETE FROM public.session WHERE externaluserid = $1", conn, tx))
+            {
+                sessionCmd.Parameters.AddWithValue(userId);
+                await sessionCmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            await tx.CommitAsync(cancellationToken);
+            _logger.LogInformation("Deleted chat data for user {UserId}", userId);
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
+
     private string selectStoreProcedure(string key)
     {
         return storeProceduresCall.TryGetValue(key, out var sql)

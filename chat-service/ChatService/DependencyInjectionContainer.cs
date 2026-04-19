@@ -3,7 +3,11 @@ using ChatService.APIs.Clients;
 using ChatService.APIs.Providers;
 using ChatService.Interfaces;
 using ChatService.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.RateLimiting;
+using RedisRateLimiting;
+using RedisRateLimiting.AspNetCore;
+using StackExchange.Redis;
 namespace ChatService;
 
 public static class DependencyInjectionContainer
@@ -59,21 +63,50 @@ public static class DependencyInjectionContainer
 
       services.AddAuthorization();
 
+      // Per-user rate limit for chat endpoints. When a Redis connection is
+      // configured we use a Redis-backed fixed-window limiter so counters are
+      // shared across every chat-service replica; otherwise we fall back to
+      // the in-memory limiter (suitable for single-instance local dev).
+      var redisConnectionString = configuration.GetConnectionString("Redis");
+      IConnectionMultiplexer? chatRedisConnection = null;
+      if (!string.IsNullOrWhiteSpace(redisConnectionString))
+      {
+          chatRedisConnection = ConnectionMultiplexer.Connect(redisConnectionString);
+          services.AddSingleton(chatRedisConnection);
+      }
+
       services.AddRateLimiter(options =>
       {
           options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
           options.AddPolicy("PerUser", context =>
-              RateLimitPartition.GetFixedWindowLimiter(
-                  partitionKey: context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                      ?? context.Connection.RemoteIpAddress?.ToString()
-                      ?? "anonymous",
+          {
+              var partitionKey = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                  ?? context.Connection.RemoteIpAddress?.ToString()
+                  ?? "anonymous";
+
+              if (chatRedisConnection is not null)
+              {
+                  return RedisRateLimitPartition.GetFixedWindowRateLimiter(
+                      partitionKey: partitionKey,
+                      factory: key => new RedisFixedWindowRateLimiterOptions
+                      {
+                          ConnectionMultiplexerFactory = () => chatRedisConnection,
+                          PermitLimit = 30,
+                          Window = TimeSpan.FromMinutes(1),
+                          RedisKey = $"sakina:ratelimit:chat:peruser:{key}",
+                      });
+              }
+
+              return RateLimitPartition.GetFixedWindowLimiter(
+                  partitionKey: partitionKey,
                   factory: _ => new FixedWindowRateLimiterOptions
                   {
                       PermitLimit = 30,
                       Window = TimeSpan.FromMinutes(1),
                       QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                       QueueLimit = 0
-                  }));
+                  });
+          });
       });
 
       services.AddStackExchangeRedisCache(options =>
@@ -84,5 +117,26 @@ public static class DependencyInjectionContainer
 
       services.AddScoped<ICacheServiceProvider, CacheServiceProvider>();
 
+      // Field-level encryption for chat messages (Issue 10).
+      //
+      // Messages at rest in chatservicedb are now encrypted with a key ring
+      // shared across every replica via Redis. If Redis is not configured we
+      // fall back to a local keys directory so dev data survives restarts.
+      var chatDpBuilder = services
+          .AddDataProtection()
+          .SetApplicationName("sakina-chat-service");
+
+      if (chatRedisConnection is not null)
+      {
+          chatDpBuilder.PersistKeysToStackExchangeRedis(chatRedisConnection, "sakina:dataprotection:chat");
+      }
+      else
+      {
+          var keyDir = configuration["DataProtection:KeyPath"] ?? "/var/keys/chat";
+          Directory.CreateDirectory(keyDir);
+          chatDpBuilder.PersistKeysToFileSystem(new DirectoryInfo(keyDir));
+      }
+
+      services.AddSingleton<IFieldProtector, FieldProtector>();
     }
 }

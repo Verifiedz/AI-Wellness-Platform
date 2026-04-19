@@ -13,4 +13,10 @@ public interface IChatDatabaseProvider
     public Task<Chat?> GetChatAsync(Guid chatReferenceId, CancellationToken cancellationToken = default);
 
     public Task<IReadOnlyList<Chat>> GetChatsBySessionAsync(Guid sessionId, int limit, int offset, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Permanently deletes all chat messages belonging to a user (across all their sessions).
+    /// Called by auth-service during account deletion (Apple Guideline 5.1.1(v)).
+    /// </summary>
+    public Task DeleteChatsByUserAsync(Guid userId, CancellationToken cancellationToken = default);
 }

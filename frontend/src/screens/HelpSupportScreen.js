@@ -30,7 +30,7 @@ const FAQ_ITEMS = [
   {
     question: 'Is my data private?',
     answer:
-      'Absolutely. Your journal entries and chat conversations are encrypted and only accessible to you. We do not sell or share your data with third parties. Visit Profile > Privacy for more details.',
+      'Yes. All traffic between the app and our servers is encrypted in transit using HTTPS (TLS 1.2+), your password is stored as a salted BCrypt hash, and data at rest lives on managed databases with disk-level encryption. We do not sell or share your personal data with third parties, and AI chat content is not used to train external models. You can review everything we store and delete your account any time from Profile > Privacy.',
   },
   {
     question: 'How do I change my password?',

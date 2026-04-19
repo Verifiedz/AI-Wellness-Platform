@@ -57,6 +57,14 @@ firebase-service-account.json
 *.p12
 *.pfx
 
+# ASP.NET Data Protection key rings (per-service dev fallback).
+# In production keys live in Redis; locally they land in these folders and
+# are equivalent to the encryption key for every journal/chat row written
+# since the last rotation. Never commit them.
+keys/
+**/keys/key-*.xml
+/var/keys/
+
 # ──────────────────────────────────────────────
 # Docker local overrides
 # ──────────────────────────────────────────────

@@ -39,13 +39,23 @@ public class DatabaseInitializer
                 return;
             }
 
-            var schemaPath = Path.Combine(databasePath, "01_schema.sql");
-            if (File.Exists(schemaPath))
+            foreach (var (fileName, label) in new[]
             {
-                var sql = await File.ReadAllTextAsync(schemaPath);
+                ("01_schema.sql", "schema"),
+                ("02_moderation.sql", "moderation"),
+            })
+            {
+                var scriptPath = Path.Combine(databasePath, fileName);
+                if (!File.Exists(scriptPath))
+                {
+                    _logger.LogWarning("Migration script {File} not found; skipping", fileName);
+                    continue;
+                }
+
+                var sql = await File.ReadAllTextAsync(scriptPath);
                 await using var command = new NpgsqlCommand(sql, connection) { CommandTimeout = 120 };
                 await command.ExecuteNonQueryAsync();
-                _logger.LogInformation("Schema script executed successfully");
+                _logger.LogInformation("Executed {Label} migration from {File}", label, fileName);
             }
 
             _logger.LogInformation("Community database initialization completed");

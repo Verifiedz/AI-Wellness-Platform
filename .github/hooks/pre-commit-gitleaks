@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# -----------------------------------------------------------------------------
+# pre-commit-gitleaks
+# -----------------------------------------------------------------------------
+# Runs gitleaks over the staged diff before every commit. Same config file as
+# CI, so what passes locally passes in CI. This is the primary guard that
+# stops a new secret from sneaking in while the historical leaks (see
+# security/SEC-ADV-03-git-history.md) stay allowlisted.
+#
+# Install:
+#   ln -sf ../../.github/hooks/pre-commit-gitleaks .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# gitleaks must be on PATH. macOS: `brew install gitleaks`.
+# Windows: https://github.com/gitleaks/gitleaks/releases
+# -----------------------------------------------------------------------------
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "[pre-commit] gitleaks not found on PATH."
+  echo "            install it (brew install gitleaks / scoop install gitleaks)"
+  echo "            or remove the pre-commit hook if you know what you're doing."
+  exit 1
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# --staged: only scan what is about to land in the commit.
+# --redact: never print the secret value to the terminal.
+# --no-banner: keep output scriptable.
+if ! gitleaks protect \
+      --source="$REPO_ROOT" \
+      --config="$REPO_ROOT/.gitleaks.toml" \
+      --staged --redact --no-banner; then
+  echo ""
+  echo "[pre-commit] gitleaks blocked this commit."
+  echo "            Rotate the value (see security/secret-rotation.md),"
+  echo "            remove the file from the index, and try again."
+  exit 1
+fi

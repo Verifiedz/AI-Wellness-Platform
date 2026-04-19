@@ -13,6 +13,7 @@ public class JournalEntryServiceTests
     private readonly Mock<IDatabaseService> _dbMock;
     private readonly Mock<ILogger<JournalEntryService>> _loggerMock;
     private readonly HtmlSanitizer _sanitizer;
+    private readonly Mock<IFieldProtector> _protectorMock;
     private readonly JournalEntryService _sut;
 
     public JournalEntryServiceTests()
@@ -22,7 +23,17 @@ public class JournalEntryServiceTests
         _sanitizer = new HtmlSanitizer();
         _sanitizer.AllowedTags.Clear();
         _sanitizer.AllowedAttributes.Clear();
-        _sut = new JournalEntryService(_dbMock.Object, _loggerMock.Object, _sanitizer);
+
+        // Pass-through protector so existing assertions against Content round-trip
+        // unchanged. Encryption is a thin transformation; correctness is already
+        // covered by FieldProtector's own contract, not by these service tests.
+        _protectorMock = new Mock<IFieldProtector>();
+        _protectorMock.Setup(p => p.Protect(It.IsAny<string>()))
+                      .Returns<string?>(s => s);
+        _protectorMock.Setup(p => p.Unprotect(It.IsAny<string>()))
+                      .Returns<string?>(s => s);
+
+        _sut = new JournalEntryService(_dbMock.Object, _loggerMock.Object, _sanitizer, _protectorMock.Object);
     }
 
     // ------------------------------------------------------------------ //

@@ -1,0 +1,12 @@
+# Install with: sudo cp sakina-backup.cron /etc/cron.d/sakina-backup
+# Runs as the 'sakina' user (adjust to a user that can talk to /var/run/docker.sock).
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Nightly backup at 02:00 UTC. Environment lives in /etc/sakina/backup.env
+# (chmod 600) so passwords never appear in process listings.
+0 2 * * * sakina . /etc/sakina/backup.env && /opt/sakina/scripts/backups/backup-postgres.sh >>/var/log/sakina/backup.log 2>&1
+
+# 30 minutes later: actually restore the latest dumps into a throwaway
+# container and fail loudly if any of them do not restore cleanly.
+30 2 * * * sakina . /etc/sakina/backup.env && /opt/sakina/scripts/backups/verify-restore.sh >>/var/log/sakina/backup-verify.log 2>&1

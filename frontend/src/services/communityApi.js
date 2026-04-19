@@ -45,4 +45,24 @@ export const communityApi = {
   reportPost(postId, reason) {
     return apiClient.post(`${BASE_PATH}/posts/${postId}/report`, { reason });
   },
+
+  /**
+   * Block the author of a post. Required for App Store compliance
+   * (Apple Guideline 1.2 and Google Play UGC policy). After a block, the
+   * server will filter all future posts and replies from the blocked user
+   * out of this user's feed.
+   */
+  blockPostAuthor(postId, reason = null) {
+    return apiClient.post(`${BASE_PATH}/posts/${postId}/block`, { reason });
+  },
+
+  /** Get the list of users the current user has blocked. */
+  getBlocks() {
+    return apiClient.get(`${BASE_PATH}/blocks`);
+  },
+
+  /** Remove an existing block. */
+  unblock(blockedUserId) {
+    return apiClient.delete(`${BASE_PATH}/blocks/${blockedUserId}`);
+  },
 };

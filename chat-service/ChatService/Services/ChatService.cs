@@ -12,17 +12,20 @@ public class ChatService : IChatService
   private readonly IChatWrapperClientInterface _chatWrapperClient;
   private readonly IChatDatabaseProvider _chatdatbaseProvider;
   private readonly Ganss.Xss.HtmlSanitizer _sanitizer;
+  private readonly IFieldProtector _fieldProtector;
 
   public ChatService(
       IChatWrapperClientInterface chatWrapperClient,
       ISessionService sessionService,
       IChatDatabaseProvider chatDatabaseProvider,
-      Ganss.Xss.HtmlSanitizer sanitizer)
+      Ganss.Xss.HtmlSanitizer sanitizer,
+      IFieldProtector fieldProtector)
   {
     _sessionService = sessionService;
     _chatWrapperClient = chatWrapperClient;
     _chatdatbaseProvider = chatDatabaseProvider;
     _sanitizer = sanitizer;
+    _fieldProtector = fieldProtector;
   }
 
   public async Task<ChatResponse> SendChatMessageAsync(ChatRequest chatRequest, CancellationToken cancellationToken = default)
@@ -50,10 +53,13 @@ public class ChatService : IChatService
     }
 
     var previousMessages = await _chatdatbaseProvider.GetChatsBySessionAsync(session.SessionId, 200, 0, cancellationToken);
+    // Decrypt stored messages before feeding them back to the LLM. The LLM
+    // wrapper has to see plaintext to maintain conversational context; the
+    // protector no-ops on legacy rows that were written pre-encryption.
     var history = previousMessages.Select((m, index) => new
     {
       role = index % 2 == 0 ? "user" : "assistant",
-      content = m.Message
+      content = _fieldProtector.Unprotect(m.Message) ?? m.Message
     });
     var contextJson = JsonSerializer.Serialize(history);
 
@@ -83,7 +89,13 @@ public class ChatService : IChatService
     }
 
     var session = await _sessionService.GetOrCreateSessionAsync(userId, sessionId);
-    return await _chatdatbaseProvider.GetChatsBySessionAsync(session.SessionId, limit, offset, cancellationToken);
+    var rows = await _chatdatbaseProvider.GetChatsBySessionAsync(session.SessionId, limit, offset, cancellationToken);
+
+    // Decrypt on read so API callers continue to see plaintext. Rows without
+    // the v1: prefix are returned unchanged (pre-encryption history).
+    return rows
+      .Select(c => { c.Message = _fieldProtector.Unprotect(c.Message) ?? c.Message; return c; })
+      .ToList();
   }
 
   private Chat CreateChatFromRequest(ChatRequest chatRequest, Guid sessionId)
@@ -93,11 +105,15 @@ public class ChatService : IChatService
       throw new NullReferenceException("chatResponse returned a null response");
     }
 
+    // Encrypt before handing the row to Dapper. The plaintext has already
+    // been sanitized upstream so the stored ciphertext represents safe HTML.
+    var storedMessage = _fieldProtector.Protect(chatRequest.MessageRequest) ?? chatRequest.MessageRequest;
+
     return new Chat
     {
       ChatUserId = chatRequest.ChatUserId,
       ChatReferenceId = Guid.NewGuid(),
-      Message = chatRequest.MessageRequest,
+      Message = storedMessage,
       SessionId = sessionId,
       Status = Status.Active,
       IsBookmarked = false,
@@ -126,11 +142,13 @@ public class ChatService : IChatService
       throw new NullReferenceException("there must be provided sessionId");
     }
 
+    var storedMessage = _fieldProtector.Protect(chatResponse.Message) ?? chatResponse.Message;
+
     return new Chat
     {
       ChatUserId = chatResponse.ChatUserId,
       ChatReferenceId = Guid.NewGuid(),
-      Message = chatResponse.Message,
+      Message = storedMessage,
       SessionId = sessionId,
       Status = Status.Active,
       IsBookmarked = false,

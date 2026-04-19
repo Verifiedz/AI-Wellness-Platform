@@ -1,0 +1,32 @@
+# gitleaks configuration for Sakina.
+#
+# Gitleaks runs on every PR (see .github/workflows/ci.yml) and locally via
+# the optional pre-commit hook at .github/hooks/pre-commit-gitleaks. Any new
+# match is a blocking failure; the only allowlisted values are the two
+# historical leaks we formally accepted in security/SEC-ADV-03-git-history.md.
+
+title = "Sakina gitleaks"
+
+# Inherit the default rule set. Gitleaks' built-in rules cover the major
+# cloud providers, database URLs, JWTs, private key blobs, etc.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Historical leaks formally accepted in SEC-ADV-03."
+# Regexes must match the exact string in history — we ONLY allow these two.
+# They are credentials we have already rotated and publicly documented.
+regexes = [
+  # The committed placeholder password for the community DB before rotation.
+  '''(?i)postgres["']?\s*=\s*["']postgres["']''',
+  # The RunPod proxy URL that once lived in docker-compose / appsettings.
+  '''https:\/\/a2rvppwc00nk1o-11434\.proxy\.runpod\.net\/v1\/?''',
+]
+# Paths we never want to scan. .env is gitignored but may exist locally; the
+# .env.example *documents* the historical strings so we allowlist that path.
+paths = [
+  '''\.env\.example$''',
+  '''security/SEC-ADV-03-git-history\.md$''',
+  '''security/secret-rotation\.md$''',
+  '''\.gitleaks\.toml$''',
+]

@@ -26,3 +26,22 @@ if (DEV_MODE && typeof __DEV__ !== 'undefined' && !__DEV__) {
 
 /** HTTP request timeout in milliseconds. */
 export const API_TIMEOUT = 15_000;
+
+/**
+ * Public URLs for the hosted Privacy Policy and Terms of Service.
+ *
+ * Apple App Store Connect and Google Play Console both require a publicly
+ * reachable Privacy Policy URL before an app can be submitted for review, and
+ * Apple additionally requires that the in-app account deletion flow (Guideline
+ * 5.1.1(v)) link to the policy.
+ *
+ * These default to the production domain served by nginx under `/privacy` and
+ * `/terms`, and can be overridden per-build via EXPO_PUBLIC_LEGAL_BASE_URL.
+ */
+const LEGAL_BASE_URL =
+  process.env.EXPO_PUBLIC_LEGAL_BASE_URL ||
+  'https://sakina.app';
+
+export const PRIVACY_POLICY_URL = `${LEGAL_BASE_URL}/privacy`;
+export const TERMS_OF_SERVICE_URL = `${LEGAL_BASE_URL}/terms`;
+export const SUPPORT_EMAIL = 'support@sakina.app';

@@ -309,4 +309,24 @@ public class DatabaseService
     }
 
     #endregion
+
+    #region Account Deletion (App Store Compliance — Apple Guideline 5.1.1(v))
+
+    /// <summary>
+    /// Permanently remove all notification data belonging to the given user:
+    /// preferences, delivery logs. Called by auth-service during account deletion.
+    /// </summary>
+    public async Task DeleteUserDataAsync(Guid userId)
+    {
+        _logger.LogInformation("Deleting all notification data for user {UserId}", userId);
+
+        var parameters = new[]
+        {
+            new NpgsqlParameter("p_user_id", NpgsqlDbType.Uuid) { Value = userId }
+        };
+
+        await _executor.ExecuteNonQueryAsync("sp_delete_user_data", parameters);
+    }
+
+    #endregion
 }

@@ -81,4 +81,11 @@ export const authApi = {
       newPassword2,
     });
   },
+
+  deleteAccount(password) {
+    // Apple Guideline 5.1.1(v) / Google User Data policy: in-app account deletion.
+    // Requires password re-authentication; server cascades deletion across
+    // journal, chat, community, and notification services.
+    return apiClient.delete('/api/auth/me', { password });
+  },
 };

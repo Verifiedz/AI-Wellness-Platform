@@ -105,21 +105,74 @@ export function GroupFeedScreen({ route }) {
     [loadPosts]
   );
 
-  const handleReport = useCallback((postId) => {
-    Alert.prompt
-      ? Alert.prompt('Report Post', "Please describe why you're reporting this post:", [
+  const submitReport = useCallback(
+    async (postId, reason) => {
+      const trimmed = reason?.trim();
+      if (!trimmed) return;
+      await communityApi.reportPost(postId, trimmed);
+      showToast({ message: 'Thank you. Our team will review this post.', variant: 'info' });
+    },
+    [showToast]
+  );
+
+  const confirmBlock = useCallback(
+    (postId) => {
+      Alert.alert(
+        'Block this user?',
+        "You won't see their posts or replies again. You can unblock them any time from Settings → Privacy.",
+        [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Report',
-            onPress: async (reason) => {
-              if (!reason?.trim()) return;
-              await communityApi.reportPost(postId, reason.trim());
-              showToast({ message: 'Thank you. Our team will review this post.', variant: 'info' });
+            text: 'Block',
+            style: 'destructive',
+            onPress: async () => {
+              const result = await communityApi.blockPostAuthor(postId);
+              if (result.error) {
+                showToast({
+                  message: result.error || 'Unable to block this user.',
+                  variant: 'error',
+                });
+                return;
+              }
+              showToast({ message: 'User blocked.', variant: 'info' });
+              loadPosts();
             },
           },
-        ])
-      : showToast({ message: 'Report submitted for review.', variant: 'info' });
-  }, []);
+        ]
+      );
+    },
+    [loadPosts, showToast]
+  );
+
+  const handlePostMenu = useCallback(
+    (postId) => {
+      // Apple Guideline 1.2 requires both "report" and "block" to be one tap
+      // away from every user-generated piece of content.
+      Alert.alert('Post options', 'What would you like to do?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Report',
+          onPress: () => {
+            if (Alert.prompt) {
+              Alert.prompt(
+                'Report Post',
+                "Please describe why you're reporting this post:",
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Report', onPress: (reason) => submitReport(postId, reason) },
+                ]
+              );
+            } else {
+              // Android fallback: submit a generic reason so the report is still captured.
+              submitReport(postId, 'Reported from Android (no prompt)');
+            }
+          },
+        },
+        { text: 'Block user', style: 'destructive', onPress: () => confirmBlock(postId) },
+      ]);
+    },
+    [submitReport, confirmBlock]
+  );
 
   const renderPost = ({ item }) => (
     <Card style={styles.postCard}>
@@ -137,8 +190,12 @@ export function GroupFeedScreen({ route }) {
             {format(new Date(item.createdAt), 'MMM d, h:mm a')}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => handleReport(item.id)}>
-          <Ionicons name="flag-outline" size={16} color={colors.textLight} />
+        <TouchableOpacity
+          onPress={() => handlePostMenu(item.id)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel="Post options"
+        >
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.textLight} />
         </TouchableOpacity>
       </View>
 

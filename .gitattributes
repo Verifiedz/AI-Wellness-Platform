@@ -1,0 +1,10 @@
+# Force LF line endings on files that must run inside Linux containers.
+# Without this, a Windows checkout rewrites them to CRLF and bash refuses
+# to parse them (symptom: `$'\r': command not found`).
+
+*.sh       text eol=lf
+*.bash     text eol=lf
+Dockerfile text eol=lf
+dockerfile text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf

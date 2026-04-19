@@ -23,4 +23,5 @@ public interface IUserRepository
   Task StoreRefreshTokenAsync(Guid userId, string tokenHash, DateTime expiresAt);
   Task<(Guid UserId, DateTime ExpiresAt, bool IsRevoked)?> GetRefreshTokenAsync(string tokenHash);
   Task RevokeRefreshTokenAsync(string tokenHash, string? replacedByHash = null);
+  Task DeleteUserAsync(Guid userId);
 }

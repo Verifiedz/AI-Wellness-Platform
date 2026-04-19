@@ -16,15 +16,21 @@ public class NotificationPreferencesController : ControllerBase
 {
     private readonly IUserContext _userContext;
     private readonly NotificationService _notificationService;
+    private readonly ExpoPushService _expoPushService;
+    private readonly FirebaseService _firebaseService;
     private readonly ILogger<NotificationPreferencesController> _logger;
 
     public NotificationPreferencesController(
         IUserContext userContext,
         NotificationService notificationService,
+        ExpoPushService expoPushService,
+        FirebaseService firebaseService,
         ILogger<NotificationPreferencesController> logger)
     {
         _userContext = userContext;
         _notificationService = notificationService;
+        _expoPushService = expoPushService;
+        _firebaseService = firebaseService;
         _logger = logger;
     }
 
@@ -173,5 +179,83 @@ public class NotificationPreferencesController : ControllerBase
             _logger.LogError(ex, "Error registering device token");
             throw;
         }
+    }
+
+    /// <summary>
+    /// End-to-end push test (Issue 14). Sends a canned notification to the
+    /// currently authenticated user's registered device token so operators can
+    /// verify APNs + FCM + Expo wiring from TestFlight / Play Internal without
+    /// waiting for the scheduler. The endpoint routes to ExpoPushService for
+    /// tokens in the Expo format (<c>ExponentPushToken[...]</c>) and falls
+    /// back to FirebaseService for raw FCM tokens.
+    /// </summary>
+    /// <response code="200">Test push dispatched (check the device)</response>
+    /// <response code="404">User has no registered device token</response>
+    /// <response code="503">No push backend is initialized</response>
+    [HttpPost("test-push")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> SendTestPush()
+    {
+        var userId = _userContext.CurrentUser.UserId;
+        _logger.LogInformation("Dispatching test push for user {UserId}", userId);
+
+        var preferences = await _notificationService.GetUserPreferencesAsync(userId);
+        if (preferences == null || string.IsNullOrWhiteSpace(preferences.DeviceToken))
+        {
+            return NotFound(new ErrorResponse
+            {
+                Error = "NoDeviceToken",
+                Message = "No device token registered for this user. Open the app once with push permission granted, then retry.",
+                Timestamp = DateTime.UtcNow
+            });
+        }
+
+        var token = preferences.DeviceToken;
+        const string Title = "Sakina push test";
+        const string Body = "If you can read this, end-to-end push delivery works on this device.";
+        var data = new Dictionary<string, string>
+        {
+            { "kind", "test-push" },
+            { "at", DateTime.UtcNow.ToString("O") }
+        };
+
+        bool delivered;
+        string backend;
+        // Expo tokens are always wrapped in ExponentPushToken[...] or
+        // ExpoPushToken[...]; anything else is an FCM / APNs token and must
+        // go through the Firebase Admin SDK instead.
+        if (token.StartsWith("ExponentPushToken[", StringComparison.Ordinal) ||
+            token.StartsWith("ExpoPushToken[", StringComparison.Ordinal))
+        {
+            backend = "expo";
+            delivered = await _expoPushService.SendNotificationWithRetryAsync(token, Title, Body, data);
+        }
+        else
+        {
+            backend = "firebase";
+            if (!_firebaseService.IsInitialized)
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, new ErrorResponse
+                {
+                    Error = "FirebaseUnavailable",
+                    Message = "Firebase is not initialized on this deployment. Configure Firebase__ServiceAccountPath or register an Expo-format device token.",
+                    Timestamp = DateTime.UtcNow
+                });
+            }
+            delivered = await _firebaseService.SendNotificationWithRetryAsync(token, Title, Body, data);
+        }
+
+        _logger.LogInformation(
+            "Test push via {Backend} for user {UserId}: delivered={Delivered}",
+            backend, userId, delivered);
+
+        return Ok(new
+        {
+            backend,
+            delivered,
+            dispatchedAt = DateTime.UtcNow
+        });
     }
 }

@@ -167,6 +167,22 @@ export function AuthProvider({ children }) {
     await clearSession();
   }, [clearSession]);
 
+  const deleteAccount = useCallback(
+    async (password) => {
+      // Apple Guideline 5.1.1(v) / Google User Data policy: in-app deletion
+      // with password re-auth. On success we wipe the local session and
+      // onboarding so the app returns to the first-run state.
+      const result = await authApi.deleteAccount(password);
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      await clearSession();
+      await resetOnboarding();
+      return true;
+    },
+    [clearSession, resetOnboarding]
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -177,6 +193,7 @@ export function AuthProvider({ children }) {
         login,
         verifyTwoFactor,
         logout,
+        deleteAccount,
       }}
     >
       {children}

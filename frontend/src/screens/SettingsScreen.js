@@ -1,12 +1,21 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Switch,
+  Linking,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { format, subDays } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useOnboarding } from '../context/OnboardingContext';
-import { DEV_MODE } from '../config';
+import { DEV_MODE, PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../config';
 import { journalApi } from '../services/journalApi';
 import { chatApi } from '../services/chatApi';
 import { Avatar } from '../components/Avatar';
@@ -73,6 +82,19 @@ export function SettingsScreen({ navigation }) {
       { text: 'Log Out', onPress: logout, style: 'destructive' },
     ]);
   };
+
+  const openExternalUrl = useCallback(async (url) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Cannot open link', url);
+      }
+    } catch {
+      Alert.alert('Cannot open link', url);
+    }
+  }, []);
 
   const handleResetOnboarding = () => {
     Alert.alert(
@@ -188,6 +210,20 @@ export function SettingsScreen({ navigation }) {
           sublabel: 'Mental health professionals & resources',
           color: colors.primary,
           screen: 'ProfessionalDirectory',
+        },
+        {
+          icon: 'lock-closed-outline',
+          label: 'Privacy Policy',
+          sublabel: 'How we handle your data',
+          color: colors.accent,
+          onPress: () => openExternalUrl(PRIVACY_POLICY_URL),
+        },
+        {
+          icon: 'reader-outline',
+          label: 'Terms of Service',
+          sublabel: 'Rules for using Sakina',
+          color: colors.textSecondary,
+          onPress: () => openExternalUrl(TERMS_OF_SERVICE_URL),
         },
       ],
     },

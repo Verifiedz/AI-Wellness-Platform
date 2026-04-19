@@ -4,6 +4,7 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { NotificationSettingsScreen } from '../screens/NotificationSettingsScreen';
 import { ProfileSettingsScreen } from '../screens/ProfileSettingsScreen';
 import { PrivacySettingsScreen } from '../screens/PrivacySettingsScreen';
+import { BlockedUsersScreen } from '../screens/BlockedUsersScreen';
 import { HelpSupportScreen } from '../screens/HelpSupportScreen';
 import { ExportScreen } from '../screens/ExportScreen';
 import { WearableSettingsScreen } from '../screens/WearableSettingsScreen';
@@ -42,6 +43,11 @@ export function SettingsStack() {
         name="PrivacySettings"
         component={PrivacySettingsScreen}
         options={{ title: 'Privacy' }}
+      />
+      <Stack.Screen
+        name="BlockedUsers"
+        component={BlockedUsersScreen}
+        options={{ title: 'Blocked Users' }}
       />
       <Stack.Screen
         name="HelpSupport"

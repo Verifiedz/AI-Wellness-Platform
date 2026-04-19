@@ -7,6 +7,7 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Linking,
 } from 'react-native';
 import { authApi } from '../services/authApi';
 import { useTheme } from '../context/ThemeContext';
@@ -14,6 +15,7 @@ import { Logo } from '../components/Logo';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Banner } from '../components/Banner';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../config';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_MIN_LENGTH = 8;
@@ -217,6 +219,34 @@ export function RegisterScreen({ navigation }) {
               loading={isLoading}
               style={{ marginTop: 8 }}
             />
+
+            <Text
+              style={[
+                fonts.caption,
+                {
+                  color: colors.textSecondary,
+                  textAlign: 'center',
+                  marginTop: 16,
+                  lineHeight: 18,
+                },
+              ]}
+            >
+              By creating an account you agree to our{' '}
+              <Text
+                style={{ color: colors.primary, fontWeight: '600' }}
+                onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}
+              >
+                Terms of Service
+              </Text>{' '}
+              and{' '}
+              <Text
+                style={{ color: colors.primary, fontWeight: '600' }}
+                onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+              >
+                Privacy Policy
+              </Text>
+              .
+            </Text>
 
             <View style={styles.footer}>
               <Text style={[fonts.body, { color: colors.textSecondary }]}>
