@@ -29,6 +29,7 @@ import { ThemeProbeScreen } from './src/screens/v2/ThemeProbeScreen';
 import { DesignSystemPlaygroundScreen } from './src/screens/v2/DesignSystemPlaygroundScreen';
 import { NavShellPreviewScreen } from './src/screens/v2/NavShellPreviewScreen';
 import { AuthPreviewScreen } from './src/screens/v2/AuthPreviewScreen';
+import { OnboardingPreviewScreen } from './src/screens/v2/OnboardingPreviewScreen';
 import { setupNavigationFeatureFlags } from './src/ui/v2';
 
 // One-time setup for Reanimated 4.2 shared element transitions and other nav flags.
@@ -176,12 +177,14 @@ export default function App() {
     search.includes('probe=1') ||
     search.includes('playground=1') ||
     search.includes('navshell=1') ||
-    search.includes('authpreview=1');
+    search.includes('authpreview=1') ||
+    search.includes('onboardingpreview=1');
   if (isDevSurface) {
     let DevSurface;
     if (search.includes('playground=1')) DevSurface = DesignSystemPlaygroundScreen;
     else if (search.includes('navshell=1')) DevSurface = NavShellPreviewScreen;
     else if (search.includes('authpreview=1')) DevSurface = AuthPreviewScreen;
+    else if (search.includes('onboardingpreview=1')) DevSurface = OnboardingPreviewScreen;
     else DevSurface = ThemeProbeScreen;
     return (
       <GestureHandlerRootView style={styles.root}>
