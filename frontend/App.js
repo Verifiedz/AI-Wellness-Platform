@@ -27,6 +27,11 @@ import { Toast } from './src/components/Toast';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
 import { ThemeProbeScreen } from './src/screens/v2/ThemeProbeScreen';
 import { DesignSystemPlaygroundScreen } from './src/screens/v2/DesignSystemPlaygroundScreen';
+import { NavShellPreviewScreen } from './src/screens/v2/NavShellPreviewScreen';
+import { setupNavigationFeatureFlags } from './src/ui/v2';
+
+// One-time setup for Reanimated 4.2 shared element transitions and other nav flags.
+setupNavigationFeatureFlags();
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
 import { initSentry, setSentryUser, clearSentryUser } from './src/services/sentry';
@@ -166,18 +171,20 @@ export default function App() {
   // expo-secure-store-on-web and other native-only init paths blowing up the page.
   const search =
     Platform.OS === 'web' && typeof window !== 'undefined' ? window.location?.search ?? '' : '';
-  if (search.includes('probe=1') || search.includes('playground=1')) {
+  const isDevSurface =
+    search.includes('probe=1') || search.includes('playground=1') || search.includes('navshell=1');
+  if (isDevSurface) {
+    let DevSurface;
+    if (search.includes('playground=1')) DevSurface = DesignSystemPlaygroundScreen;
+    else if (search.includes('navshell=1')) DevSurface = NavShellPreviewScreen;
+    else DevSurface = ThemeProbeScreen;
     return (
       <GestureHandlerRootView style={styles.root}>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <BottomSheetModalProvider>
             <View style={styles.root} onLayout={onLayoutRootView}>
               <ThemeProvider>
-                {search.includes('playground=1') ? (
-                  <DesignSystemPlaygroundScreen />
-                ) : (
-                  <ThemeProbeScreen />
-                )}
+                <DevSurface />
               </ThemeProvider>
             </View>
           </BottomSheetModalProvider>

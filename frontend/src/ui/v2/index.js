@@ -31,3 +31,10 @@ export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
 
 export { useHaptic, useReducedMotion, useDeviceTier } from './hooks';
+
+// Navigation shell
+export { TabBar } from './nav/TabBar';
+export { ScreenScaffold } from './nav/ScreenScaffold';
+export { ScreenHeader } from './nav/ScreenHeader';
+export { setupNavigationFeatureFlags } from './nav/setupNavigation';
+export { useScreenSystemBars } from './nav/useScreenSystemBars';
