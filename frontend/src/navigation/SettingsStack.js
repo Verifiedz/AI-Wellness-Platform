@@ -8,7 +8,7 @@ import { BlockedUsersScreen } from '../screens/BlockedUsersScreen';
 import { HelpSupportScreen } from '../screens/HelpSupportScreen';
 import { ExportScreen } from '../screens/ExportScreen';
 import { WearableSettingsScreen } from '../screens/WearableSettingsScreen';
-import { ProfessionalDirectoryScreen } from '../screens/ProfessionalDirectoryScreen';
+import { ProfessionalDirectoryScreen } from '../screens/v2/community';
 import { useTheme } from '../context/ThemeContext';
 import { CrisisButton } from '../components/CrisisButton';
 

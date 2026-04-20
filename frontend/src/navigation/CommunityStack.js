@@ -1,7 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { CommunityScreen } from '../screens/CommunityScreen';
-import { GroupFeedScreen } from '../screens/GroupFeedScreen';
+import { CommunityScreen, GroupFeedScreen } from '../screens/v2/community';
 import { useTheme } from '../context/ThemeContext';
 import { CrisisButton } from '../components/CrisisButton';
 
