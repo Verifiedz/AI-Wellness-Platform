@@ -17,7 +17,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import { useAuth } from '../../../context/AuthContext';
 import { useTip } from '../../../context/TipContext';
 import { journalApi } from '../../../services/journalApi';
@@ -51,17 +51,6 @@ function getGreeting() {
   if (h < 12) return 'Good morning';
   if (h < 17) return 'Good afternoon';
   return 'Good evening';
-}
-
-// kept in case downstream date-range logic returns
-// eslint-disable-next-line no-unused-vars
-function buildDateRange(days) {
-  const endDate = new Date();
-  const startDate = subDays(endDate, Math.max(days - 1, 0));
-  return {
-    startDate: format(startDate, 'yyyy-MM-dd'),
-    endDate: format(endDate, 'yyyy-MM-dd'),
-  };
 }
 
 export function HomeScreen({ navigation }) {
@@ -176,6 +165,11 @@ export function HomeScreen({ navigation }) {
     navigation.navigate('Assessment', { assessmentType: assessmentReminder.type });
   }, [navigation, assessmentReminder.type]);
 
+  const handleRefresh = useCallback(() => {
+    loadDashboard(true);
+    refreshInsights();
+  }, [loadDashboard, refreshInsights]);
+
   return (
     <ScreenScaffold
       ambient
@@ -184,10 +178,7 @@ export function HomeScreen({ navigation }) {
       paddingBottom="tabBar"
       refreshControl={{
         refreshing: isRefreshing,
-        onRefresh: () => {
-          loadDashboard(true);
-          refreshInsights();
-        },
+        onRefresh: handleRefresh,
       }}
     >
       <GreetingHero greeting={greeting} displayName={displayName} dateLabel={todayDate} />
@@ -195,7 +186,7 @@ export function HomeScreen({ navigation }) {
       {error ? (
         <View style={{ marginTop: v2.spacing[4] }}>
           <ErrorState
-            title="Couldn't load your day"
+            title="Couldn’t load your day"
             body={error}
             actionLabel="Retry"
             onRetry={() => {

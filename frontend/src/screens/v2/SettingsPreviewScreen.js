@@ -565,7 +565,7 @@ function BlockedPreview({ v2 }) {
         color="secondary"
         style={{ marginTop: 40, marginBottom: v2.spacing[3] }}
       >
-        Users you block won't appear in community feeds. You can unblock any of them here.
+        Users you block won’t appear in community feeds. You can unblock any of them here.
       </Text>
 
       <View style={{ gap: v2.spacing[2] }}>

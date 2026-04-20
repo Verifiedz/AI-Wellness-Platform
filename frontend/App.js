@@ -62,7 +62,7 @@ SplashScreen.preventAutoHideAsync();
 function AppContent() {
   const { isLoggedIn, token, user } = useAuth();
   const { setTip } = useTip();
-  const { isDarkMode, isThemeReady } = useTheme();
+  const { isDarkMode } = useTheme();
   const notificationListener = useRef();
   const responseListener = useRef();
 

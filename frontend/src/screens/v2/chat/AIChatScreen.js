@@ -254,7 +254,7 @@ export function AIChatScreen({ route, navigation }) {
   const handleMoodSelect = useCallback(
     (messageId, moodId) => {
       setMoodSelections((prev) => ({ ...prev, [messageId]: moodId }));
-      sendMessage(`I'm feeling ${moodId}`);
+      sendMessage(`I’m feeling ${moodId}`);
     },
     [sendMessage]
   );
@@ -312,7 +312,7 @@ export function AIChatScreen({ route, navigation }) {
           <LoadingState caption="Gathering your conversation" />
         ) : error && messages.length === 0 ? (
           <ErrorState
-            title="Conversation didn't load"
+            title="Conversation didn’t load"
             body={error}
             onRetry={() => loadHistory(activeSessionId)}
           />

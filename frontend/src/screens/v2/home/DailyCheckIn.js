@@ -40,7 +40,7 @@ export function DailyCheckIn({ hasCheckedIn, onSelectMood, onEdit }) {
               onEdit();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Edit today's journal"
+            accessibilityLabel="Edit today’s journal"
             style={{
               flexDirection: 'row',
               alignItems: 'center',

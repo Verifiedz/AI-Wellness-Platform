@@ -229,7 +229,7 @@ export function NavShellPreviewScreen() {
           <View style={{ flex: 1 }}>
             <Text variant="h3">A small reminder</Text>
             <Text variant="body-sm" color="secondary" style={{ marginTop: v2.spacing[1] }}>
-              You don't have to feel a certain way to begin.
+              You don’t have to feel a certain way to begin.
             </Text>
           </View>
           <IconButton icon={ArrowsClockwise} accessibilityLabel="Refresh" />

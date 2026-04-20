@@ -9,6 +9,7 @@ import { Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useDerivedValue,
   withSpring,
   withTiming,
   interpolateColor,
@@ -46,8 +47,12 @@ export function Switch({ value, onChange, disabled = false, accessibilityLabel, 
     ),
   }));
 
+  // Derive translateX off the spring-animated `t` instead of calling withTiming
+  // inside useAnimatedStyle (which is a worklet body — animation factories don't
+  // belong there in Reanimated 4).
+  const translateX = useDerivedValue(() => t.value * (TRACK_W - THUMB - 4));
   const thumbStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: withTiming(t.value * (TRACK_W - THUMB - 4), { duration: 200 }) }],
+    transform: [{ translateX: translateX.value }],
   }));
 
   const handle = useCallback(() => {

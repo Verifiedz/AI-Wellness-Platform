@@ -268,6 +268,7 @@ export function ChatDrawerContent({ navigation }) {
         ) : (
           <FlashList
             data={displayed}
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(item) => item.sessionId}
             renderItem={({ item }) => (
               <SessionItem

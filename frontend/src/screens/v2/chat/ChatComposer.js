@@ -10,7 +10,7 @@ import React from 'react';
 import { Platform, TextInput, View } from 'react-native';
 import { PaperPlaneTilt } from 'phosphor-react-native';
 import { useV2Theme } from '../../../theme/v2';
-import { useHaptic, IconButton } from '../../../ui/v2';
+import { IconButton } from '../../../ui/v2';
 import { VoiceInputButton } from '../../../components/VoiceInputButton';
 
 /**
@@ -24,7 +24,6 @@ import { VoiceInputButton } from '../../../components/VoiceInputButton';
  */
 export function ChatComposer({ value, onChange, onSend, disabled = false, voice }) {
   const v2 = useV2Theme();
-  const fireHaptic = useHaptic();
 
   const canSend = value.trim().length > 0 && !disabled;
 
@@ -83,7 +82,7 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
         haptic="firm"
         onPress={() => {
           if (!canSend) return;
-          fireHaptic('soft');
+          // IconButton already fires haptic="firm" on press-down — don't double-buzz.
           onSend();
         }}
       />

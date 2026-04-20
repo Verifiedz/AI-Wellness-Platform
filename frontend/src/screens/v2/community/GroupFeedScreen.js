@@ -229,6 +229,7 @@ export function GroupFeedScreen({ navigation, route }) {
         ) : (
           <FlashList
             data={posts}
+            keyboardShouldPersistTaps="handled"
             keyExtractor={(item) => String(item.id)}
             renderItem={renderItem}
             onRefresh={() => loadPosts(true)}

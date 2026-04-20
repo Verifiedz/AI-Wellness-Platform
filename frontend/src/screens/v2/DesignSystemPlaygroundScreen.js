@@ -223,7 +223,7 @@ export function DesignSystemPlaygroundScreen() {
             label="Email with error"
             value={errorEmail}
             onChangeText={setErrorEmail}
-            error="That doesn't look like a valid email."
+            error="That doesn’t look like a valid email."
           />
           <Input
             label="Reflection"

@@ -33,7 +33,9 @@ export function Stagger({ children, step = STEP_MS, duration = DURATION_MS, base
     <>
       {items.map((child, idx) => (
         <Animated.View
-          key={idx}
+          // Prefer the child's own key when present; fall back to index for
+          // static lists (the dashboard bento, settings sections, etc.).
+          key={child?.key ?? idx}
           entering={FadeInDown.delay(baseDelay + idx * step).duration(duration)}
           style={style}
         >

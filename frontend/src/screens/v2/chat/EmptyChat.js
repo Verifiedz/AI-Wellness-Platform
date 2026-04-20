@@ -12,7 +12,7 @@ const SUGGESTIONS = [
   'How am I doing this week?',
   'Help me relax',
   'Give me a journal prompt',
-  "I'm feeling stressed",
+  'I’m feeling stressed',
 ];
 
 /**
@@ -49,7 +49,7 @@ export function EmptyChat({ userName, onSuggestion }) {
         align="center"
         style={{ marginTop: v2.spacing[2], maxWidth: 320 }}
       >
-        I'm Sakina. Ask me anything about your wellness journey.
+        I’m Sakina. Ask me anything about your wellness journey.
       </Text>
       <View
         style={{

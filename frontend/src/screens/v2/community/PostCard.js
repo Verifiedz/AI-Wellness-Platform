@@ -108,13 +108,34 @@ function PostCardImpl({ item, onMenu, onReaction }) {
   );
 }
 
+function shallowReactionsEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  const ak = Object.keys(a);
+  const bk = Object.keys(b);
+  if (ak.length !== bk.length) return false;
+  for (let i = 0; i < ak.length; i++) {
+    if (a[ak[i]] !== b[ak[i]]) return false;
+  }
+  return true;
+}
+
+function arrayEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 export const PostCard = memo(PostCardImpl, (prev, next) => {
   return (
     prev.item.id === next.item.id &&
     prev.item.content === next.item.content &&
     prev.item.replyCount === next.item.replyCount &&
-    JSON.stringify(prev.item.reactions) === JSON.stringify(next.item.reactions) &&
-    JSON.stringify(prev.item.userReactions) === JSON.stringify(next.item.userReactions)
+    shallowReactionsEqual(prev.item.reactions, next.item.reactions) &&
+    arrayEqual(prev.item.userReactions, next.item.userReactions)
   );
 });
 
