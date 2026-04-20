@@ -1,7 +1,6 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { JournalScreen } from '../screens/JournalScreen';
-import { MoodCalendarScreen } from '../screens/MoodCalendarScreen';
+import { JournalScreen, MoodCalendarScreen } from '../screens/v2/journal';
 import { useTheme } from '../context/ThemeContext';
 import { CrisisButton } from '../components/CrisisButton';
 
