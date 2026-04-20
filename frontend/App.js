@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { View, ActivityIndicator, StyleSheet, UIManager, Platform } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -23,6 +26,7 @@ import { ToastProvider } from './src/context/ToastContext';
 import { Toast } from './src/components/Toast';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
 import { ThemeProbeScreen } from './src/screens/v2/ThemeProbeScreen';
+import { DesignSystemPlaygroundScreen } from './src/screens/v2/DesignSystemPlaygroundScreen';
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
 import { initSentry, setSentryUser, clearSentryUser } from './src/services/sentry';
@@ -114,16 +118,25 @@ function AppContent() {
     };
   }, [isLoggedIn, setTip]);
 
-  // Dev-only theme probe: append ?probe=1 to the web URL to render the v2 token gallery.
-  const isProbeMode =
-    Platform.OS === 'web' &&
-    typeof window !== 'undefined' &&
-    window.location?.search?.includes('probe=1');
+  // Dev-only design surfaces: append ?probe=1 or ?playground=1 to the web URL.
+  const search =
+    Platform.OS === 'web' && typeof window !== 'undefined' ? window.location?.search ?? '' : '';
+  const isProbeMode = search.includes('probe=1');
+  const isPlaygroundMode = search.includes('playground=1');
+
+  let body;
+  if (isPlaygroundMode) {
+    body = <DesignSystemPlaygroundScreen />;
+  } else if (isProbeMode) {
+    body = <ThemeProbeScreen />;
+  } else {
+    body = <AppNavigator />;
+  }
 
   return (
     <>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-      {isProbeMode ? <ThemeProbeScreen /> : <AppNavigator />}
+      {body}
     </>
   );
 }
@@ -148,26 +161,57 @@ export default function App() {
     return null;
   }
 
+  // Dev-only short circuit: render the v2 design surfaces with only ThemeProvider
+  // mounted, skipping AuthContext / NetworkBanner / push notifications. Avoids
+  // expo-secure-store-on-web and other native-only init paths blowing up the page.
+  const search =
+    Platform.OS === 'web' && typeof window !== 'undefined' ? window.location?.search ?? '' : '';
+  if (search.includes('probe=1') || search.includes('playground=1')) {
+    return (
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <BottomSheetModalProvider>
+            <View style={styles.root} onLayout={onLayoutRootView}>
+              <ThemeProvider>
+                {search.includes('playground=1') ? (
+                  <DesignSystemPlaygroundScreen />
+                ) : (
+                  <ThemeProbeScreen />
+                )}
+              </ThemeProvider>
+            </View>
+          </BottomSheetModalProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    );
+  }
+
   return (
-    <SafeAreaProvider>
-      <View style={styles.root} onLayout={onLayoutRootView}>
-        <ThemeProvider>
-          <NetworkProvider>
-            <ToastProvider>
-              <OnboardingProvider>
-                <AuthProvider>
-                  <TipProvider>
-                    <NetworkBanner />
-                    <AppContent />
-                  </TipProvider>
-                </AuthProvider>
-              </OnboardingProvider>
-              <Toast />
-            </ToastProvider>
-          </NetworkProvider>
-        </ThemeProvider>
-      </View>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <KeyboardProvider>
+          <BottomSheetModalProvider>
+            <View style={styles.root} onLayout={onLayoutRootView}>
+              <ThemeProvider>
+                <NetworkProvider>
+                  <ToastProvider>
+                    <OnboardingProvider>
+                      <AuthProvider>
+                        <TipProvider>
+                          <NetworkBanner />
+                          <AppContent />
+                        </TipProvider>
+                      </AuthProvider>
+                    </OnboardingProvider>
+                    <Toast />
+                  </ToastProvider>
+                </NetworkProvider>
+              </ThemeProvider>
+            </View>
+          </BottomSheetModalProvider>
+        </KeyboardProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
