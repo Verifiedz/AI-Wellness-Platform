@@ -31,7 +31,8 @@ export default {
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
-      backgroundColor: '#FAF8F5',
+      // matches Sage Mist palette bg.base for a seamless splash → app handoff.
+      backgroundColor: '#F5F4EE',
     },
     ios: {
       supportsTablet: true,

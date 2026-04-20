@@ -11,35 +11,40 @@ export const ACCENT_PRESETS = [
     id: 'sage',
     name: 'Sage',
     swatch: '#5B7F6E',
-    light: { primary: '#5B7F6E', primaryDark: '#4A6B5C', primaryLight: '#8FB5A3' },
+    // primary darkened from #5B7F6E to #507060 to clear WCAG AA contrast (4.5:1) on white.
+    light: { primary: '#507060', primaryDark: '#3F5C4D', primaryLight: '#8FB5A3' },
     dark: { primary: '#7BA893', primaryDark: '#5B8A73', primaryLight: '#A3CCBA' },
   },
   {
     id: 'ocean',
     name: 'Ocean',
     swatch: '#4A7FA5',
-    light: { primary: '#4A7FA5', primaryDark: '#3B6A8C', primaryLight: '#7BB0CC' },
+    // primary darkened to clear WCAG AA contrast (4.5:1) on white.
+    light: { primary: '#42729A', primaryDark: '#355C7C', primaryLight: '#7BB0CC' },
     dark: { primary: '#6BA3C8', primaryDark: '#4A8AB2', primaryLight: '#95C4DD' },
   },
   {
     id: 'sunset',
     name: 'Sunset',
     swatch: '#C4726A',
-    light: { primary: '#C4726A', primaryDark: '#A85E57', primaryLight: '#D9A09A' },
+    // primary darkened to clear WCAG AA contrast (4.5:1) on white.
+    light: { primary: '#A45048', primaryDark: '#854038', primaryLight: '#D9A09A' },
     dark: { primary: '#D4918A', primaryDark: '#C4726A', primaryLight: '#E5B5B0' },
   },
   {
     id: 'lavender',
     name: 'Lavender',
     swatch: '#8B7EB8',
-    light: { primary: '#8B7EB8', primaryDark: '#7568A0', primaryLight: '#B0A6D0' },
+    // primary darkened to clear WCAG AA contrast (4.5:1) on white.
+    light: { primary: '#6E5F9E', primaryDark: '#564885', primaryLight: '#B0A6D0' },
     dark: { primary: '#A498CC', primaryDark: '#8B7EB8', primaryLight: '#C4BBDD' },
   },
   {
     id: 'rose',
     name: 'Rose',
     swatch: '#B5708A',
-    light: { primary: '#B5708A', primaryDark: '#995F76', primaryLight: '#D0A0B4' },
+    // primary darkened to clear WCAG AA contrast (4.5:1) on white.
+    light: { primary: '#915368', primaryDark: '#724154', primaryLight: '#D0A0B4' },
     dark: { primary: '#CC8FA5', primaryDark: '#B5708A', primaryLight: '#DDB4C4' },
   },
   {

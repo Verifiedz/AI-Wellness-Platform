@@ -160,6 +160,9 @@ export const Input = forwardRef(function Input(
             onChangeText={onChangeText}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            // a11y: floating label is decorative — bind a real label to the input.
+            accessibilityLabel={rest.accessibilityLabel ?? label}
+            aria-label={rest['aria-label'] ?? label}
             placeholder={focused ? placeholder : ''}
             placeholderTextColor={v2.palette.text.tertiary}
             secureTextEntry={secureTextEntry}

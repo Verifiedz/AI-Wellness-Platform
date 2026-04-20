@@ -65,7 +65,8 @@ export const SAGE_MIST = {
   text: {
     primary: '#1A211E',
     secondary: '#4F5751',
-    tertiary: '#7A8079',
+    // tertiary darkened from #7A8079 to clear WCAG AA contrast (4.5:1) on white at 12px.
+    tertiary: '#6B716A',
     onPrimary: '#FFFFFF',
     onAccent: '#1A211E',
   },

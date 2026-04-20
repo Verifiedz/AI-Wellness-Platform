@@ -62,6 +62,9 @@ export function Switch({ value, onChange, disabled = false, accessibilityLabel, 
       accessibilityRole="switch"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: value, disabled }}
+      // Web a11y: RNW does not emit aria-checked for role="switch" automatically.
+      aria-checked={value}
+      aria-disabled={disabled || undefined}
       hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       style={[{ opacity: disabled ? 0.5 : 1 }, style]}
     >
