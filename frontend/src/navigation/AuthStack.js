@@ -1,11 +1,13 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginScreen } from '../screens/LoginScreen';
-import { RegisterScreen } from '../screens/RegisterScreen';
-import { VerifyEmailScreen } from '../screens/VerifyEmailScreen';
-import { TwoFactorScreen } from '../screens/TwoFactorScreen';
-import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
-import { ResetPasswordScreen } from '../screens/ResetPasswordScreen';
+import {
+  LoginScreen,
+  RegisterScreen,
+  VerifyEmailScreen,
+  TwoFactorScreen,
+  ForgotPasswordScreen,
+  ResetPasswordScreen,
+} from '../screens/v2/auth';
 
 const Stack = createNativeStackNavigator();
 
@@ -17,8 +19,16 @@ export function AuthStack({ initialRoute = 'Login' }) {
     >
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} options={{ gestureEnabled: false }} />
-      <Stack.Screen name="TwoFactor" component={TwoFactorScreen} options={{ gestureEnabled: false }} />
+      <Stack.Screen
+        name="VerifyEmail"
+        component={VerifyEmailScreen}
+        options={{ gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="TwoFactor"
+        component={TwoFactorScreen}
+        options={{ gestureEnabled: false }}
+      />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
     </Stack.Navigator>

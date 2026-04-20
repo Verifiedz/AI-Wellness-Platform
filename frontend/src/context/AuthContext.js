@@ -4,7 +4,7 @@ import { authApi } from '../services/authApi';
 import { apiClient } from '../services/api';
 import { useOnboarding } from './OnboardingContext';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
