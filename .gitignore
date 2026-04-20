@@ -112,7 +112,8 @@ test-results/
 # Misc project-specific
 # ──────────────────────────────────────────────
 journal-service-demo/
-docs/
+docs/*
+!docs/redesign/
 .planning/
 .claude/
 CLAUDE.md

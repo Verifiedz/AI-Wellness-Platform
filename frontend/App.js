@@ -10,6 +10,8 @@ import {
   DMSans_600SemiBold,
   DMSans_700Bold,
 } from '@expo-google-fonts/dm-sans';
+import { DMSerifDisplay_400Regular } from '@expo-google-fonts/dm-serif-display';
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { TipProvider, useTip } from './src/context/TipContext';
@@ -20,6 +22,7 @@ import { NetworkBanner } from './src/components/NetworkBanner';
 import { ToastProvider } from './src/context/ToastContext';
 import { Toast } from './src/components/Toast';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
+import { ThemeProbeScreen } from './src/screens/v2/ThemeProbeScreen';
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
 import { initSentry, setSentryUser, clearSentryUser } from './src/services/sentry';
@@ -111,10 +114,16 @@ function AppContent() {
     };
   }, [isLoggedIn, setTip]);
 
+  // Dev-only theme probe: append ?probe=1 to the web URL to render the v2 token gallery.
+  const isProbeMode =
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    window.location?.search?.includes('probe=1');
+
   return (
     <>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-      <AppNavigator />
+      {isProbeMode ? <ThemeProbeScreen /> : <AppNavigator />}
     </>
   );
 }
@@ -125,6 +134,8 @@ export default function App() {
     DMSans_500Medium,
     DMSans_600SemiBold,
     DMSans_700Bold,
+    DMSerifDisplay_400Regular,
+    JetBrainsMono_400Regular,
   });
 
   const onLayoutRootView = useCallback(async () => {
