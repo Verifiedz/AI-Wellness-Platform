@@ -60,7 +60,7 @@ export function WelcomeScreen({ navigation }) {
           align="center"
           style={{ marginTop: v2.spacing[6], maxWidth: 280, fontStyle: 'italic' }}
         >
-          Take a deep breath.{'\n'}We&rsquo;ll figure this out together.
+          Take a deep breath.{'\n'}We’ll figure this out together.
         </Text>
       </View>
 

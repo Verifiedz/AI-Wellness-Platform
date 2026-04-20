@@ -94,7 +94,7 @@ export function ForgotPasswordScreen({ navigation }) {
               <Text variant="body" style={{ fontFamily: 'DMSans_600SemiBold' }}>
                 {getValues('email')}
               </Text>
-              , you\u2019ll receive instructions shortly.
+              , you’ll receive instructions shortly.
             </Text>
           </Surface>
           <Button

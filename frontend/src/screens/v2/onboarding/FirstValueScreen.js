@@ -92,7 +92,7 @@ export function FirstValueScreen({ navigation, route }) {
                 align="center"
                 style={{ marginBottom: v2.spacing[8] }}
               >
-                Let&rsquo;s start with a moment of calm.
+                Let’s start with a moment of calm.
               </Text>
               <View style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center' }}>
                 <ProgressRing progress={progress} size={220} strokeWidth={2} />
@@ -128,7 +128,7 @@ export function FirstValueScreen({ navigation, route }) {
               style={{ alignItems: 'center' }}
             >
               <Text variant="display-lg" align="center">
-                You&rsquo;re ready.
+                You’re ready.
               </Text>
               <Text
                 variant="body-lg"
@@ -136,7 +136,7 @@ export function FirstValueScreen({ navigation, route }) {
                 align="center"
                 style={{ marginTop: v2.spacing[3], maxWidth: 300 }}
               >
-                That felt good, didn&rsquo;t it?{'\n'}Let&rsquo;s set up your account.
+                That felt good, didn’t it?{'\n'}Let’s set up your account.
               </Text>
             </MotiView>
           )}

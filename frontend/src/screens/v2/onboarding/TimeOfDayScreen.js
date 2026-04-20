@@ -32,7 +32,7 @@ export function TimeOfDayScreen({ navigation, route }) {
       total={3}
       onBack={() => navigation.goBack()}
       title="When do you feel most reflective?"
-      subtitle="We&rsquo;ll tailor the rhythm to this time."
+      subtitle="We’ll tailor the rhythm to this time."
       footer={
         <Button
           variant="primary"

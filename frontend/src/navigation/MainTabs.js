@@ -3,7 +3,7 @@ import { DeviceEventEmitter } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { HomeScreen } from '../screens/HomeScreen';
+import { HomeScreen } from '../screens/v2/home';
 import { BreathingExerciseScreen } from '../screens/BreathingExerciseScreen';
 import { AssessmentScreen } from '../screens/AssessmentScreen';
 import { AssessmentResultScreen } from '../screens/AssessmentResultScreen';
