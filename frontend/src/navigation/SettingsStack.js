@@ -1,13 +1,15 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SettingsScreen } from '../screens/SettingsScreen';
-import { NotificationSettingsScreen } from '../screens/NotificationSettingsScreen';
-import { ProfileSettingsScreen } from '../screens/ProfileSettingsScreen';
-import { PrivacySettingsScreen } from '../screens/PrivacySettingsScreen';
-import { BlockedUsersScreen } from '../screens/BlockedUsersScreen';
-import { HelpSupportScreen } from '../screens/HelpSupportScreen';
-import { ExportScreen } from '../screens/ExportScreen';
-import { WearableSettingsScreen } from '../screens/WearableSettingsScreen';
+import {
+  SettingsScreen,
+  NotificationSettingsScreen,
+  ProfileSettingsScreen,
+  PrivacySettingsScreen,
+  BlockedUsersScreen,
+  HelpSupportScreen,
+  ExportScreen,
+  WearableSettingsScreen,
+} from '../screens/v2/settings';
 import { ProfessionalDirectoryScreen } from '../screens/v2/community';
 import { useTheme } from '../context/ThemeContext';
 import { CrisisButton } from '../components/CrisisButton';

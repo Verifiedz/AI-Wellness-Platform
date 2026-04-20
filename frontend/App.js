@@ -35,6 +35,7 @@ import { ChatPreviewScreen } from './src/screens/v2/ChatPreviewScreen';
 import { JournalPreviewScreen } from './src/screens/v2/JournalPreviewScreen';
 import { BreathAssessPreviewScreen } from './src/screens/v2/BreathAssessPreviewScreen';
 import { CommunityPreviewScreen } from './src/screens/v2/CommunityPreviewScreen';
+import { SettingsPreviewScreen } from './src/screens/v2/SettingsPreviewScreen';
 import { setupNavigationFeatureFlags } from './src/ui/v2';
 
 // One-time setup for Reanimated 4.2 shared element transitions and other nav flags.
@@ -188,7 +189,8 @@ export default function App() {
     search.includes('chatpreview=1') ||
     search.includes('journalpreview=1') ||
     search.includes('breathassesspreview=1') ||
-    search.includes('communitypreview=1');
+    search.includes('communitypreview=1') ||
+    search.includes('settingspreview=1');
   if (isDevSurface) {
     let DevSurface;
     if (search.includes('playground=1')) DevSurface = DesignSystemPlaygroundScreen;
@@ -200,6 +202,7 @@ export default function App() {
     else if (search.includes('journalpreview=1')) DevSurface = JournalPreviewScreen;
     else if (search.includes('breathassesspreview=1')) DevSurface = BreathAssessPreviewScreen;
     else if (search.includes('communitypreview=1')) DevSurface = CommunityPreviewScreen;
+    else if (search.includes('settingspreview=1')) DevSurface = SettingsPreviewScreen;
     else DevSurface = ThemeProbeScreen;
     return (
       <GestureHandlerRootView style={styles.root}>
