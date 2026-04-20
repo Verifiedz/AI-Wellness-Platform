@@ -19,10 +19,14 @@
 
 import React, { useCallback } from 'react';
 import { Keyboard, Platform, Pressable, RefreshControl, ScrollView, View } from 'react-native';
+import Animated, { useAnimatedScrollHandler } from 'react-native-reanimated';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useV2Theme } from '../../../theme/v2';
 import { AuroraBackground } from '../AuroraBackground';
+import { useScrollProgress } from './ScrollProgressContext';
+
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 const TAB_BAR_RESERVED = 88; // tab bar height + breathing room
 
@@ -60,6 +64,13 @@ export function ScreenScaffold({
 }) {
   const v2 = useV2Theme();
   const insets = useSafeAreaInsets();
+  const { scrollY } = useScrollProgress();
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (e) => {
+      scrollY.value = e.contentOffset.y;
+    },
+  });
 
   const topPad = paddingTop === 'safe' ? insets.top : paddingTop;
   let bottomPad;
@@ -103,13 +114,15 @@ export function ScreenScaffold({
     );
   } else if (scrollable) {
     body = (
-      <ScrollView
+      <AnimatedScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[innerPad, contentContainerStyle]}
         refreshControl={refresh}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
       >
         {children}
-      </ScrollView>
+      </AnimatedScrollView>
     );
   } else {
     body = <View style={[{ flex: 1 }, innerPad, contentContainerStyle]}>{children}</View>;

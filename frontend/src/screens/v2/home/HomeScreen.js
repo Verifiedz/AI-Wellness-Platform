@@ -28,6 +28,7 @@ import { ASSESSMENTS } from '../../../constants/assessments';
 import { useV2Theme } from '../../../theme/v2';
 import {
   ScreenScaffold,
+  Stagger,
   Text,
   ErrorState,
   LoadingState,
@@ -212,6 +213,7 @@ export function HomeScreen({ navigation }) {
         </View>
       ) : (
         <View style={{ gap: v2.spacing[4], marginTop: v2.spacing[6] }}>
+          <Stagger>
           <DailyCheckIn
             hasCheckedIn={!!todayEntry}
             onSelectMood={(mood) => goToJournal(mood)}
@@ -271,6 +273,7 @@ export function HomeScreen({ navigation }) {
             </Text>
             <QuickActions onPress={handleQuickAction} />
           </View>
+          </Stagger>
         </View>
       )}
     </ScreenScaffold>

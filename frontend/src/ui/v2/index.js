@@ -13,6 +13,7 @@ export { BreathingPulse } from './BreathingPulse';
 export { Blob } from './Blob';
 export { ProgressRing } from './ProgressRing';
 export { ParticleBloom } from './ParticleBloom';
+export { Stagger, StaggerItem } from './Stagger';
 
 export { Button } from './Button';
 export { IconButton } from './IconButton';
@@ -38,3 +39,4 @@ export { ScreenScaffold } from './nav/ScreenScaffold';
 export { ScreenHeader } from './nav/ScreenHeader';
 export { setupNavigationFeatureFlags } from './nav/setupNavigation';
 export { useScreenSystemBars } from './nav/useScreenSystemBars';
+export { ScrollProgressProvider, useScrollProgress } from './nav/ScrollProgressContext';

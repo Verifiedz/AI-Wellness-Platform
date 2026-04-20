@@ -49,6 +49,7 @@ import {
   Text,
   LoadingState,
   Blob,
+  ParticleBloom,
 } from '../../../ui/v2';
 import { MoodPicker } from './MoodPicker';
 import { EnergyScale } from './EnergyScale';
@@ -76,6 +77,7 @@ export function JournalScreen({ navigation, route }) {
   const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
+  const bloomRef = useRef(null);
 
   // Voice transcript append
   useEffect(() => {
@@ -203,6 +205,7 @@ export function JournalScreen({ navigation, route }) {
         setSaveError(result.error || 'Failed to save. Tap Retry to try again.');
       } else {
         setExistingEntry(result.data);
+        bloomRef.current?.bloom({ x: 200, y: 400, count: 18 });
         showToast({
           message: existingEntry ? 'Journal entry updated' : 'Journal entry saved',
           variant: 'success',
@@ -259,6 +262,7 @@ export function JournalScreen({ navigation, route }) {
       keyboardAware
       paddingBottom="tabBar"
       refreshControl={{ refreshing, onRefresh }}
+      bottomAccessory={<ParticleBloom ref={bloomRef} />}
     >
       <ScreenHeader
         title="Journal"

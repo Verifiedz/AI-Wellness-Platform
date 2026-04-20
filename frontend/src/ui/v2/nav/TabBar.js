@@ -20,8 +20,11 @@ import { Pressable, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
+  useDerivedValue,
   withSpring,
+  withTiming,
   interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useV2Theme } from '../../../theme/v2';
@@ -29,6 +32,7 @@ import { useHaptic } from '../hooks/useHaptic';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { GlassPanel } from '../GlassPanel';
 import { Text } from '../Text';
+import { useScrollProgress } from './ScrollProgressContext';
 
 const PILL_HEIGHT = 56;
 const PILL_RADIUS = 28;
@@ -55,8 +59,20 @@ export function TabBar({ state, navigation, descriptors, onLayout }) {
   const insets = useSafeAreaInsets();
   const fireHaptic = useHaptic();
   const reduced = useReducedMotion();
+  const { scrollY } = useScrollProgress();
 
   const indicatorX = useSharedValue(state.index);
+
+  // Tab bar shrinks slightly + lifts off the bottom edge as content scrolls under it.
+  // 0–60px scroll range maps to a small but perceivable change.
+  const shrinkStyle = useAnimatedStyle(() => {
+    if (reduced) return {};
+    const scale = interpolate(scrollY.value, [0, 60], [1, 0.94], Extrapolation.CLAMP);
+    const translateY = interpolate(scrollY.value, [0, 60], [0, -2], Extrapolation.CLAMP);
+    return {
+      transform: [{ translateY: withTiming(translateY, { duration: 120 }) }, { scale: withTiming(scale, { duration: 120 }) }],
+    };
+  });
 
   useEffect(() => {
     if (reduced) {
@@ -87,6 +103,7 @@ export function TabBar({ state, navigation, descriptors, onLayout }) {
       }}
       onLayout={onLayout}
     >
+      <Animated.View style={shrinkStyle}>
       <GlassPanel radius="full" border padding={1}>
         <View
           style={{
@@ -189,6 +206,7 @@ export function TabBar({ state, navigation, descriptors, onLayout }) {
           })}
         </View>
       </GlassPanel>
+      </Animated.View>
     </View>
   );
 }

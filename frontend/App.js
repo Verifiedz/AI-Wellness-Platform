@@ -36,7 +36,7 @@ import { JournalPreviewScreen } from './src/screens/v2/JournalPreviewScreen';
 import { BreathAssessPreviewScreen } from './src/screens/v2/BreathAssessPreviewScreen';
 import { CommunityPreviewScreen } from './src/screens/v2/CommunityPreviewScreen';
 import { SettingsPreviewScreen } from './src/screens/v2/SettingsPreviewScreen';
-import { setupNavigationFeatureFlags } from './src/ui/v2';
+import { setupNavigationFeatureFlags, ScrollProgressProvider } from './src/ui/v2';
 
 // One-time setup for Reanimated 4.2 shared element transitions and other nav flags.
 setupNavigationFeatureFlags();
@@ -210,7 +210,9 @@ export default function App() {
           <BottomSheetModalProvider>
             <View style={styles.root} onLayout={onLayoutRootView}>
               <ThemeProvider>
-                <DevSurface />
+                <ScrollProgressProvider>
+                  <DevSurface />
+                </ScrollProgressProvider>
               </ThemeProvider>
             </View>
           </BottomSheetModalProvider>
@@ -226,19 +228,21 @@ export default function App() {
           <BottomSheetModalProvider>
             <View style={styles.root} onLayout={onLayoutRootView}>
               <ThemeProvider>
-                <NetworkProvider>
-                  <ToastProvider>
-                    <OnboardingProvider>
-                      <AuthProvider>
-                        <TipProvider>
-                          <NetworkBanner />
-                          <AppContent />
-                        </TipProvider>
-                      </AuthProvider>
-                    </OnboardingProvider>
-                    <Toast />
-                  </ToastProvider>
-                </NetworkProvider>
+                <ScrollProgressProvider>
+                  <NetworkProvider>
+                    <ToastProvider>
+                      <OnboardingProvider>
+                        <AuthProvider>
+                          <TipProvider>
+                            <NetworkBanner />
+                            <AppContent />
+                          </TipProvider>
+                        </AuthProvider>
+                      </OnboardingProvider>
+                      <Toast />
+                    </ToastProvider>
+                  </NetworkProvider>
+                </ScrollProgressProvider>
               </ThemeProvider>
             </View>
           </BottomSheetModalProvider>
