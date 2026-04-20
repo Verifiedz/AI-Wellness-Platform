@@ -4,10 +4,12 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/v2/home';
-import { BreathingExerciseScreen } from '../screens/BreathingExerciseScreen';
-import { AssessmentScreen } from '../screens/AssessmentScreen';
-import { AssessmentResultScreen } from '../screens/AssessmentResultScreen';
-import { AssessmentHistoryScreen } from '../screens/AssessmentHistoryScreen';
+import { BreathingExerciseScreen } from '../screens/v2/breathing';
+import {
+  AssessmentScreen,
+  AssessmentResultScreen,
+  AssessmentHistoryScreen,
+} from '../screens/v2/assessment';
 import { JournalStack } from './JournalStack';
 import { ChatStack } from './ChatStack';
 import { SettingsStack } from './SettingsStack';
