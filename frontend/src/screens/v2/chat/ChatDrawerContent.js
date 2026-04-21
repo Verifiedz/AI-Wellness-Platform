@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import {
   MagnifyingGlass,
   BookmarksSimple,
@@ -297,9 +298,13 @@ export function ChatDrawerContent({ navigation }) {
 
       {/* Search + new chat dock — bleeds to drawer edges by cancelling the
           ScreenScaffold paddingHorizontal, then re-inserts its own padding.
-          Sits flush with the bottom (we zeroed the scaffold's bottom padding)
-          with only safe-area inset below so it tucks against the system bar. */}
-      <View
+          KeyboardStickyView lifts the dock to the top of the keyboard when
+          the search input is focused, so the user can always see what they
+          are typing. The safe-area bottom padding applies only when the
+          keyboard is closed (offset.opened = 0 keeps it flush above the
+          keyboard); insets.bottom handles the closed-state system nav bar. */}
+      <KeyboardStickyView
+        offset={{ closed: 0, opened: 0 }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -349,7 +354,7 @@ export function ChatDrawerContent({ navigation }) {
           variant="accent"
           onPress={startNewChat}
         />
-      </View>
+      </KeyboardStickyView>
 
       {/* Rename sheet */}
       <Sheet ref={renameSheet} snapPoints={['40%']}>

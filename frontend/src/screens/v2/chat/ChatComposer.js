@@ -8,6 +8,7 @@
 
 import React from 'react';
 import { Platform, TextInput, View } from 'react-native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { PaperPlaneTilt } from 'phosphor-react-native';
 import { useV2Theme } from '../../../theme/v2';
 import { IconButton } from '../../../ui/v2';
@@ -28,7 +29,10 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <View
+    <KeyboardStickyView
+      // Sticks the composer to the top of the keyboard when it opens, so
+      // the text input is always visible while the user is typing.
+      offset={{ closed: 0, opened: 0 }}
       style={{
         paddingTop: v2.spacing[3],
         paddingBottom: v2.spacing[3],
@@ -87,7 +91,7 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
           onSend();
         }}
       />
-    </View>
+    </KeyboardStickyView>
   );
 }
 
