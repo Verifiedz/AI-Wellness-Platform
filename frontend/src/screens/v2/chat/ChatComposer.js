@@ -9,6 +9,7 @@
 import React from 'react';
 import { Platform, TextInput, View } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PaperPlaneTilt } from 'phosphor-react-native';
 import { useV2Theme } from '../../../theme/v2';
 import { IconButton } from '../../../ui/v2';
@@ -25,14 +26,19 @@ import { VoiceInputButton } from '../../../components/VoiceInputButton';
  */
 export function ChatComposer({ value, onChange, onSend, disabled = false, voice }) {
   const v2 = useV2Theme();
+  const insets = useSafeAreaInsets();
 
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
     <KeyboardStickyView
-      // Sticks the composer to the top of the keyboard when it opens, so
-      // the text input is always visible while the user is typing.
-      offset={{ closed: 0, opened: 0 }}
+      // The parent ScreenScaffold reserves insets.bottom of safe-area space
+      // below us. When the keyboard opens we want to sit flush against its
+      // top edge, so pull down by that same inset amount — this cancels the
+      // parent's bottom padding and leaves zero gap between our bottom edge
+      // and the keyboard. When closed, offset is 0 so we rest naturally
+      // above the system nav bar.
+      offset={{ closed: 0, opened: insets.bottom }}
       style={{
         paddingTop: v2.spacing[3],
         paddingBottom: v2.spacing[3],

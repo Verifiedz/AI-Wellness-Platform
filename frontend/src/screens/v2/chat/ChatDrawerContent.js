@@ -298,13 +298,13 @@ export function ChatDrawerContent({ navigation }) {
 
       {/* Search + new chat dock — bleeds to drawer edges by cancelling the
           ScreenScaffold paddingHorizontal, then re-inserts its own padding.
-          KeyboardStickyView lifts the dock to the top of the keyboard when
-          the search input is focused, so the user can always see what they
-          are typing. The safe-area bottom padding applies only when the
-          keyboard is closed (offset.opened = 0 keeps it flush above the
-          keyboard); insets.bottom handles the closed-state system nav bar. */}
+          KeyboardStickyView lifts the dock to sit flush above the keyboard
+          when the search input is focused. The dock owns its own safe-area
+          bottom padding (closed state), and offset.opened pulls the dock
+          down by that same safe-area amount so nothing gaps between the
+          dock's bottom edge and the keyboard when it is open. */}
       <KeyboardStickyView
-        offset={{ closed: 0, opened: 0 }}
+        offset={{ closed: 0, opened: Math.max(insets.bottom, v2.spacing[3]) }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
