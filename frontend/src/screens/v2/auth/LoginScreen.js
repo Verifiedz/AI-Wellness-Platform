@@ -20,8 +20,9 @@ import {
   ScreenScaffold,
   Text,
   Toast,
+  BreathingPulse,
+  SakinaLogo,
 } from '../../../ui/v2';
-import { BreathingPulse } from '../../../ui/v2';
 
 const schema = z.object({
   email: z.string().min(1, 'Please enter your email').email('Please enter a valid email'),
@@ -103,19 +104,15 @@ export function LoginScreen({ navigation, route }) {
 
   return (
     <ScreenScaffold ambient ambientIntensity="normal" keyboardAware paddingHorizontal={6}>
-      <View style={{ flex: 1, justifyContent: 'center', minHeight: 600 }}>
+      {/* flex:1 + justifyContent:'center' on the inner column lets the form
+          breathe in the vertical middle of the viewport. The previous
+          minHeight:600 was forcing the form to sit near the top on shorter
+          screens. */}
+      <View style={{ flex: 1, justifyContent: 'center', paddingVertical: v2.spacing[6] }}>
         {/* Brand mark */}
-        <View style={{ alignItems: 'center', marginBottom: v2.spacing[10] }}>
+        <View style={{ alignItems: 'center', marginBottom: v2.spacing[8] }}>
           <BreathingPulse>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: v2.palette.accent,
-                opacity: 0.85,
-              }}
-            />
+            <SakinaLogo size={72} />
           </BreathingPulse>
           <Text variant="display-lg" align="center" style={{ marginTop: v2.spacing[5] }}>
             Welcome back

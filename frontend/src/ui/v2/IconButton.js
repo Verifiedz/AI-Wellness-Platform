@@ -89,6 +89,8 @@ export function IconButton({
           alignItems: 'center',
           justifyContent: 'center',
           opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+          outlineStyle: 'none',
+          WebkitTapHighlightColor: 'transparent',
         })}
       >
         <View pointerEvents="none">

@@ -8,6 +8,7 @@ export { Surface } from './Surface';
 export { Divider } from './Divider';
 export { AuroraBackground } from './AuroraBackground';
 export { GlassPanel } from './GlassPanel';
+export { SakinaLogo } from './SakinaLogo';
 
 export { BreathingPulse } from './BreathingPulse';
 export { Blob } from './Blob';

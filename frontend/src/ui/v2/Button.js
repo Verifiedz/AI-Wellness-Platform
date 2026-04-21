@@ -104,6 +104,10 @@ export function Button({
           alignItems: 'center',
           justifyContent: 'center',
           opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
+          // Web: kill the rectangular focus ring + tap-highlight that clashes
+          // with our pill button. Press scale + opacity already feedback the tap.
+          outlineStyle: 'none',
+          WebkitTapHighlightColor: 'transparent',
         })}
       >
         {LeadingIcon ? (

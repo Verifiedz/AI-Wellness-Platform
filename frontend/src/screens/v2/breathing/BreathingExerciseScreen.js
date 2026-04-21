@@ -130,82 +130,86 @@ export function BreathingExerciseScreen({ navigation, route }) {
   // === Setup view ===
   if (phase === 'setup') {
     return (
-      <ScreenScaffold ambient ambientIntensity="subtle" paddingHorizontal={6}>
+      <ScreenScaffold ambient ambientIntensity="subtle" paddingHorizontal={6} scrollable={false}>
         <ScreenHeader onBack={() => navigation.goBack()} />
-        <View style={{ alignItems: 'center', marginTop: v2.spacing[6] }}>
-          <Text variant="display-lg" align="center">
-            Breathe
-          </Text>
-          <Text
-            variant="body"
-            color="secondary"
-            align="center"
-            style={{ marginTop: v2.spacing[2], maxWidth: 320 }}
-          >
-            Choose a pattern and find your calm.
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: v2.spacing[2],
-            marginTop: v2.spacing[8],
-          }}
-        >
-          {BREATHING_PATTERNS.map((pattern) => (
-            <Chip
-              key={pattern.id}
-              selected={selectedPattern.id === pattern.id}
-              onPress={() => setSelectedPattern(pattern)}
-              accessibilityLabel={`Pattern: ${pattern.label}`}
+        {/* Center the setup content vertically so it doesn't hug the top of
+            the viewport on tall screens. */}
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <View style={{ alignItems: 'center' }}>
+            <Text variant="display-lg" align="center">
+              Breathe
+            </Text>
+            <Text
+              variant="body"
+              color="secondary"
+              align="center"
+              style={{ marginTop: v2.spacing[2], maxWidth: 320 }}
             >
-              {pattern.label}
-            </Chip>
-          ))}
-        </View>
+              Choose a pattern and find your calm.
+            </Text>
+          </View>
 
-        <Card padding={5} style={{ marginTop: v2.spacing[6] }}>
-          <Text variant="h2" align="center">
-            {selectedPattern.label}
-          </Text>
-          <Text
-            variant="body-sm"
-            color="secondary"
-            align="center"
-            style={{ marginTop: v2.spacing[2] }}
-          >
-            {selectedPattern.description}
-          </Text>
           <View
             style={{
               flexDirection: 'row',
-              gap: v2.spacing[2],
-              marginTop: v2.spacing[4],
-              justifyContent: 'center',
               flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: v2.spacing[2],
+              marginTop: v2.spacing[6],
             }}
           >
-            <TimingBadge label="In" seconds={selectedPattern.inhaleMs / 1000} v2={v2} />
-            <TimingBadge label="Hold" seconds={selectedPattern.holdMs / 1000} v2={v2} />
-            <TimingBadge label="Out" seconds={selectedPattern.exhaleMs / 1000} v2={v2} />
-            {selectedPattern.hold2Ms > 0 ? (
-              <TimingBadge label="Hold" seconds={selectedPattern.hold2Ms / 1000} v2={v2} />
-            ) : null}
+            {BREATHING_PATTERNS.map((pattern) => (
+              <Chip
+                key={pattern.id}
+                selected={selectedPattern.id === pattern.id}
+                onPress={() => setSelectedPattern(pattern)}
+                accessibilityLabel={`Pattern: ${pattern.label}`}
+              >
+                {pattern.label}
+              </Chip>
+            ))}
           </View>
-          <Text
-            variant="caption"
-            color="tertiary"
-            align="center"
-            style={{ marginTop: v2.spacing[3] }}
-          >
-            {DEFAULT_CYCLES} cycles · ~{estimateLabel}
-          </Text>
-        </Card>
 
-        <View style={{ marginTop: v2.spacing[6] }}>
+          <Card padding={5} style={{ marginTop: v2.spacing[5] }}>
+            <Text variant="h2" align="center">
+              {selectedPattern.label}
+            </Text>
+            <Text
+              variant="body-sm"
+              color="secondary"
+              align="center"
+              style={{ marginTop: v2.spacing[2] }}
+            >
+              {selectedPattern.description}
+            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: v2.spacing[2],
+                marginTop: v2.spacing[4],
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              <TimingBadge label="In" seconds={selectedPattern.inhaleMs / 1000} v2={v2} />
+              <TimingBadge label="Hold" seconds={selectedPattern.holdMs / 1000} v2={v2} />
+              <TimingBadge label="Out" seconds={selectedPattern.exhaleMs / 1000} v2={v2} />
+              {selectedPattern.hold2Ms > 0 ? (
+                <TimingBadge label="Hold" seconds={selectedPattern.hold2Ms / 1000} v2={v2} />
+              ) : null}
+            </View>
+            <Text
+              variant="caption"
+              color="tertiary"
+              align="center"
+              style={{ marginTop: v2.spacing[3] }}
+            >
+              {DEFAULT_CYCLES} cycles · ~{estimateLabel}
+            </Text>
+          </Card>
+        </View>
+
+        <View style={{ paddingBottom: v2.spacing[4] }}>
           <Button variant="primary" size="lg" fullWidth onPress={startSession}>
             Begin
           </Button>

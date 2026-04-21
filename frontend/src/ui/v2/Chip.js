@@ -56,6 +56,8 @@ export function Chip({
           flexDirection: 'row',
           alignItems: 'center',
           opacity: pressed ? 0.85 : 1,
+          outlineStyle: 'none',
+          WebkitTapHighlightColor: 'transparent',
         },
         style,
       ]}

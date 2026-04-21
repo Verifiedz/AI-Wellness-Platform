@@ -107,24 +107,27 @@ export function CommunityScreen({ navigation }) {
           body="Community spaces are being prepared. Check back soon."
         />
       ) : (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: v2.spacing[3] }}>
+        // Single-column list — full group names ("Academic Wellness") are
+        // never truncated, and longer descriptions can run two lines without
+        // crowding a sibling tile.
+        <View style={{ gap: v2.spacing[3] }}>
           {groups.map((group) => {
             const Icon = getGroupIcon(group.icon) || UsersThree;
             return (
-              <View key={group.id || group.slug} style={{ width: '48%' }}>
-                <Card
-                  padding={4}
-                  onPress={() =>
-                    navigation.navigate('GroupFeed', { slug: group.slug, name: group.name })
-                  }
-                  accessibilityLabel={`Open ${group.name}`}
-                  style={{ alignItems: 'center' }}
-                >
+              <Card
+                key={group.id || group.slug}
+                padding={4}
+                onPress={() =>
+                  navigation.navigate('GroupFeed', { slug: group.slug, name: group.name })
+                }
+                accessibilityLabel={`Open ${group.name}`}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: v2.spacing[3] }}>
                   <View
                     style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 28,
+                      width: 52,
+                      height: 52,
+                      borderRadius: 26,
                       backgroundColor: v2.palette.bg.surfaceHigh,
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -132,34 +135,34 @@ export function CommunityScreen({ navigation }) {
                   >
                     <Icon size={26} color={v2.palette.primary} weight="duotone" />
                   </View>
-                  <Text
-                    variant="h3"
-                    align="center"
-                    style={{ marginTop: v2.spacing[3] }}
-                    numberOfLines={1}
-                  >
-                    {group.name}
-                  </Text>
-                  <Text
-                    variant="caption"
-                    color="tertiary"
-                    align="center"
-                    style={{ marginTop: 4 }}
-                    numberOfLines={2}
-                  >
-                    {group.description}
-                  </Text>
-                  {group.postCount > 0 ? (
+                  <View style={{ flex: 1, minWidth: 0 }}>
                     <Text
-                      variant="caption"
-                      color="secondary"
-                      style={{ marginTop: v2.spacing[2] }}
+                      variant="h3"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                     >
-                      {group.postCount} posts
+                      {group.name}
                     </Text>
-                  ) : null}
-                </Card>
-              </View>
+                    <Text
+                      variant="body-sm"
+                      color="tertiary"
+                      style={{ marginTop: 2 }}
+                      numberOfLines={2}
+                    >
+                      {group.description}
+                    </Text>
+                    {group.postCount > 0 ? (
+                      <Text
+                        variant="caption"
+                        color="secondary"
+                        style={{ marginTop: 6 }}
+                      >
+                        {group.postCount} posts
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              </Card>
             );
           })}
         </View>

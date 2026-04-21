@@ -37,19 +37,25 @@ export function ScreenHeader({
 }) {
   const v2 = useV2Theme();
 
-  const leftSlot =
-    left !== undefined
-      ? left
-      : onBack
-      ? (
-        <IconButton
-          icon={CaretLeft}
-          accessibilityLabel="Go back"
-          onPress={onBack}
-          variant="ghost"
-        />
-      )
-      : <View style={{ width: 48, height: 48 }} />;
+  // Only reserve a left spacer when we need symmetric layout (centered title
+  // with a right slot on the other side). For left-aligned headers without a
+  // back button (Journal, Community, top-level tab screens) we drop the
+  // spacer entirely so the title hugs the leading edge — no phantom gap.
+  let leftSlot = null;
+  if (left !== undefined) {
+    leftSlot = left;
+  } else if (onBack) {
+    leftSlot = (
+      <IconButton
+        icon={CaretLeft}
+        accessibilityLabel="Go back"
+        onPress={onBack}
+        variant="ghost"
+      />
+    );
+  } else if (align === 'center' && right) {
+    leftSlot = <View style={{ width: 48, height: 48 }} />;
+  }
 
   return (
     <View
@@ -81,7 +87,7 @@ export function ScreenHeader({
           </Text>
         ) : null}
       </View>
-      {right ?? <View style={{ width: 48, height: 48 }} />}
+      {right ?? null}
     </View>
   );
 }

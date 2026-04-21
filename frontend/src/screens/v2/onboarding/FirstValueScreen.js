@@ -74,8 +74,21 @@ export function FirstValueScreen({ navigation, route }) {
   }
 
   return (
-    <ScreenScaffold ambient ambientIntensity="vivid" paddingHorizontal={6}>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <ScreenScaffold
+      ambient
+      ambientIntensity="vivid"
+      paddingHorizontal={6}
+      scrollable={false}
+    >
+      {/* While the breath cycle runs the hero is centered; once done, the
+          headline + CTA group together so the gap between them is tight. */}
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <AnimatePresence>
           {!done ? (
             <MotiView
@@ -125,7 +138,7 @@ export function FirstValueScreen({ navigation, route }) {
               from={{ opacity: 0, translateY: 20 }}
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'spring', damping: 22, stiffness: 200 }}
-              style={{ alignItems: 'center' }}
+              style={{ alignItems: 'center', alignSelf: 'stretch' }}
             >
               <Text variant="display-lg" align="center">
                 You’re ready.
@@ -138,43 +151,45 @@ export function FirstValueScreen({ navigation, route }) {
               >
                 That felt good, didn’t it?{'\n'}Let’s set up your account.
               </Text>
+
+              {/* Group the CTAs with the headline so the spacing between
+                  "Let's set up your account." and "Create account" stays
+                  comfortable instead of pushing the buttons to the bottom. */}
+              <View
+                style={{
+                  alignSelf: 'stretch',
+                  marginTop: v2.spacing[6],
+                  gap: v2.spacing[3],
+                }}
+              >
+                <Button
+                  variant="primary"
+                  size="lg"
+                  fullWidth
+                  onPress={() => finish('Register')}
+                >
+                  Create account
+                </Button>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: v2.spacing[1],
+                  }}
+                >
+                  <Text variant="body" color="secondary">
+                    Already have an account?
+                  </Text>
+                  <Button variant="ghost" size="sm" onPress={() => finish('Login')}>
+                    Sign in
+                  </Button>
+                </View>
+              </View>
             </MotiView>
           )}
         </AnimatePresence>
       </View>
-
-      {done ? (
-        <MotiView
-          from={{ opacity: 0, translateY: 20 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 400, delay: 300 }}
-          style={{ gap: v2.spacing[3], paddingBottom: v2.spacing[4] }}
-        >
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onPress={() => finish('Register')}
-          >
-            Create account
-          </Button>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: v2.spacing[1],
-            }}
-          >
-            <Text variant="body" color="secondary">
-              Already have an account?
-            </Text>
-            <Button variant="ghost" size="sm" onPress={() => finish('Login')}>
-              Sign in
-            </Button>
-          </View>
-        </MotiView>
-      ) : null}
 
       <ParticleBloom ref={bloomRef} />
     </ScreenScaffold>

@@ -209,6 +209,7 @@ export function GroupFeedScreen({ navigation, route }) {
       paddingTop={0}
       paddingBottom={0}
       scrollable={false}
+      keyboardAware
     >
       <ScreenHeader title={name || 'Group'} onBack={() => navigation.goBack()} />
 

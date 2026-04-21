@@ -66,6 +66,10 @@ export function TimeOfDayScreen({ navigation, route }) {
                 accessibilityLabel={label}
                 style={{
                   alignItems: 'center',
+                  // Force a uniform card height so "No preference" doesn't
+                  // out-grow the three shorter labels.
+                  minHeight: 148,
+                  justifyContent: 'center',
                   ...(isSelected
                     ? {
                         borderColor: v2.palette.primary,
@@ -94,6 +98,7 @@ export function TimeOfDayScreen({ navigation, route }) {
                 </View>
                 <Text
                   variant="body"
+                  numberOfLines={1}
                   style={{
                     color: isSelected ? v2.palette.primary : v2.palette.text.primary,
                     fontFamily: isSelected ? 'DMSans_600SemiBold' : 'DMSans_400Regular',

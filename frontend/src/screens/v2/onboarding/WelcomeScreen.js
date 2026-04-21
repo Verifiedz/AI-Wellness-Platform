@@ -15,6 +15,7 @@ import {
   ScreenScaffold,
   Text,
   BreathingPulse,
+  SakinaLogo,
 } from '../../../ui/v2';
 
 export function WelcomeScreen({ navigation }) {
@@ -26,18 +27,16 @@ export function WelcomeScreen({ navigation }) {
   };
 
   return (
-    <ScreenScaffold ambient ambientIntensity="vivid" paddingHorizontal={6}>
+    <ScreenScaffold
+      ambient
+      ambientIntensity="vivid"
+      paddingHorizontal={6}
+      scrollable={false}
+    >
+      {/* Hero block — true vertical centering of the brand mark + headline */}
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <BreathingPulse pace="slow">
-          <View
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 48,
-              backgroundColor: v2.palette.accent,
-              opacity: 0.85,
-            }}
-          />
+          <SakinaLogo size={108} />
         </BreathingPulse>
         <Text
           variant="display-lg"
@@ -64,7 +63,8 @@ export function WelcomeScreen({ navigation }) {
         </Text>
       </View>
 
-      <View style={{ gap: v2.spacing[3], paddingBottom: v2.spacing[4] }}>
+      {/* CTAs — extra top spacing keeps a comfortable gap below the italic line */}
+      <View style={{ gap: v2.spacing[3], paddingTop: v2.spacing[6], paddingBottom: v2.spacing[4] }}>
         <Button
           variant="primary"
           size="lg"

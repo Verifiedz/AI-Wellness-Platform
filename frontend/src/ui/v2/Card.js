@@ -108,7 +108,11 @@ export function Card({
         onPressOut={onPressOut}
         accessibilityRole={accessibilityRole ?? 'button'}
         accessibilityLabel={accessibilityLabel}
-        style={
+        // Suppress the default browser tap-highlight + focus ring on web —
+        // Pressable's pressed state already provides our own visual feedback,
+        // and the rectangular outline clashes with the rounded card.
+        android_ripple={null}
+        style={({ pressed, focused }) => [
           variant === 'tonal'
             ? {
                 backgroundColor: v2.palette.bg.surface,
@@ -116,8 +120,12 @@ export function Card({
                 borderColor: v2.palette.border.subtle,
                 ...innerStyle,
               }
-            : { borderRadius: v2.radius[radius], overflow: 'hidden' }
-        }
+            : { borderRadius: v2.radius[radius], overflow: 'hidden' },
+          // Web-only: kill the focus ring; reinstate a soft accent border on
+          // keyboard focus so a11y users still see the active card.
+          { outlineStyle: 'none', WebkitTapHighlightColor: 'transparent' },
+          focused ? { borderColor: v2.palette.primary } : null,
+        ]}
       >
         {inner}
       </Pressable>
