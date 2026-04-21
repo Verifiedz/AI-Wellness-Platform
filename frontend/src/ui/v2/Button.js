@@ -84,7 +84,16 @@ export function Button({
   };
 
   return (
-    <Animated.View style={[fullWidth ? { alignSelf: 'stretch' } : null, animStyle, style]}>
+    <Animated.View
+      style={[
+        fullWidth ? { alignSelf: 'stretch' } : null,
+        // Match the Pressable's pill radius on the outer wrapper + clip, so
+        // no squared background/focus box can ever leak out around the pill.
+        { borderRadius: v2.radius.full, overflow: 'hidden' },
+        animStyle,
+        style,
+      ]}
+    >
       <Pressable
         onPress={isDisabled ? undefined : onPress}
         onPressIn={isDisabled ? undefined : onPressIn}

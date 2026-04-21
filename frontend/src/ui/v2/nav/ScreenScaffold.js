@@ -104,7 +104,11 @@ export function ScreenScaffold({
   if (scrollable && keyboardAware) {
     body = (
       <KeyboardAwareScrollView
-        bottomOffset={62}
+        // bottomOffset is the gap between the focused input and the top of
+        // the keyboard. 120 guarantees the full input (label + field + the
+        // 20px reserved error row below it) clears the keyboard on both
+        // short phones and devices with a tall autocorrect bar.
+        bottomOffset={120}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[innerPad, contentContainerStyle]}
         refreshControl={refresh}

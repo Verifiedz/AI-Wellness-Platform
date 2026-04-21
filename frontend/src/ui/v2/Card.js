@@ -29,6 +29,12 @@ import { GlassPanel } from './GlassPanel';
  *   style?: any,
  *   children?: any,
  * }} props
+ *
+ * Note: `style` is applied to the INNER Pressable/surface so that background
+ * colors, borders, and selected-state highlights respect the card's rounded
+ * corners. The outer Animated.View wrapper only carries the scale transform
+ * and matching borderRadius so no squared focus rectangle ever bleeds through
+ * from behind the rounded shape.
  */
 export function Card({
   variant = 'tonal',
@@ -79,28 +85,39 @@ export function Card({
     )
     : children;
 
+  // Shared rounding + clipping — applied to BOTH the outer wrapper and the
+  // inner surface so a custom `style` (e.g. a selected-state background) on
+  // the surface can never bleed past the rounded corners, and the outer
+  // wrapper never shows a sharp-cornered rectangle behind it.
+  const round = {
+    borderRadius: v2.radius[radius],
+    overflow: 'hidden',
+  };
+
   if (!pressable) {
     return (
-      <Animated.View
-        style={[
-          variant === 'tonal'
-            ? {
-                backgroundColor: v2.palette.bg.surface,
-                borderWidth: 1,
-                borderColor: v2.palette.border.subtle,
-                ...innerStyle,
-              }
-            : { borderRadius: v2.radius[radius] },
-          style,
-        ]}
-      >
-        {inner}
+      <Animated.View style={[round, style ? { backgroundColor: 'transparent' } : null]}>
+        <Animated.View
+          style={[
+            variant === 'tonal'
+              ? {
+                  backgroundColor: v2.palette.bg.surface,
+                  borderWidth: 1,
+                  borderColor: v2.palette.border.subtle,
+                  ...innerStyle,
+                }
+              : { borderRadius: v2.radius[radius] },
+            style,
+          ]}
+        >
+          {inner}
+        </Animated.View>
       </Animated.View>
     );
   }
 
   return (
-    <Animated.View style={[animStyle, style]}>
+    <Animated.View style={[round, animStyle]}>
       <Pressable
         onPress={handlePress}
         onLongPress={handleLongPress}
@@ -136,6 +153,10 @@ export function Card({
           },
           focused ? { borderColor: v2.palette.primary } : null,
           pressed ? { opacity: 0.92 } : null,
+          // Caller style applies LAST, on the inner surface — so custom
+          // backgrounds / borders (like a selected state) sit inside the
+          // rounded, clipped outer wrapper and cannot leak past it.
+          style,
         ]}
       >
         {inner}
