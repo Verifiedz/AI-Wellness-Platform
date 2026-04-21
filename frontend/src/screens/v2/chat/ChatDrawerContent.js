@@ -15,7 +15,6 @@ import { Alert, DeviceEventEmitter, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import {
   MagnifyingGlass,
@@ -47,7 +46,6 @@ function defaultTitle(sessionId) {
 
 export function ChatDrawerContent({ navigation }) {
   const v2 = useV2Theme();
-  const insets = useSafeAreaInsets();
   const [sessions, setSessions] = useState([]);
   const [search, setSearch] = useState('');
   const [bookmarksOnly, setBookmarksOnly] = useState(false);
@@ -298,22 +296,20 @@ export function ChatDrawerContent({ navigation }) {
 
       {/* Search + new chat dock — bleeds to drawer edges by cancelling the
           ScreenScaffold paddingHorizontal, then re-inserts its own padding.
-          Closed state: paddingBottom = max(insets.bottom, spacing[3]) so
-          the input row sits above the home indicator.
-          Open state: opened = insets.bottom shifts the whole dock DOWN by
-          that amount. KeyboardStickyView translates up by keyboardHeight
-          (which includes safe-area on iOS), so the dock's bottom ends up
-          at keyboardTop + insets.bottom. The dock's own insets.bottom of
-          bottom-padding now sits behind the keyboard (invisible), leaving
-          the input row flush against the keyboard top. */}
+          The drawer is hosted inside the bottom-tab navigator (MainTabs),
+          which already reserves insets.bottom for the home indicator beneath
+          the tab bar, so no marginBottom is needed. MainTabs uses
+          tabBarHideOnKeyboard so the tab bar collapses when the keyboard
+          opens, letting the dock translate up by the full keyboardHeight
+          (offset.opened = 0) and land flush against the keyboard top. */}
       <KeyboardStickyView
-        offset={{ closed: 0, opened: insets.bottom }}
+        offset={{ closed: 0, opened: 0 }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: v2.spacing[2],
           paddingTop: v2.spacing[3],
-          paddingBottom: Math.max(insets.bottom, v2.spacing[3]),
+          paddingBottom: v2.spacing[3],
           paddingHorizontal: v2.spacing[4],
           marginHorizontal: -v2.spacing[4],
           borderTopWidth: 1,

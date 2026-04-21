@@ -91,6 +91,10 @@ export function MainTabs() {
           },
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textSecondary,
+          // Collapse the tab bar while the keyboard is up so chat composers
+          // (Sakina, Community group feed) can sit flush against the keyboard
+          // top without the 64px tab bar getting between them.
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
             backgroundColor: colors.surface,
             borderTopColor: 'transparent',

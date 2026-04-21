@@ -28,6 +28,12 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
 
   const canSend = value.trim().length > 0 && !disabled;
 
+  // The parent bottom-tab navigator (MainTabs) already reserves insets.bottom
+  // for the home indicator underneath the tab bar, so the composer's natural
+  // bottom already sits above the safe area — no marginBottom needed.
+  // When the keyboard opens, MainTabs uses tabBarHideOnKeyboard so the tab
+  // bar collapses, and offset.opened = 0 lets the composer translate up by
+  // the full keyboardHeight, landing flush against the keyboard top.
   return (
     <KeyboardStickyView
       offset={{ closed: 0, opened: 0 }}

@@ -20,6 +20,7 @@ import React, { useCallback, useState } from 'react';
 import { Alert, View, TextInput, Platform, Keyboard, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
+import { KeyboardStickyView } from 'react-native-keyboard-controller';
 import { PaperPlaneTilt } from 'phosphor-react-native';
 import { communityApi } from '../../../services/communityApi';
 import { useToast } from '../../../context/ToastContext';
@@ -209,7 +210,6 @@ export function GroupFeedScreen({ navigation, route }) {
       paddingTop={0}
       paddingBottom={0}
       scrollable={false}
-      keyboardAware
     >
       <ScreenHeader title={name || 'Group'} onBack={() => navigation.goBack()} />
 
@@ -240,8 +240,15 @@ export function GroupFeedScreen({ navigation, route }) {
         )}
       </View>
 
-      {/* Composer — bleeds to screen edge for full-width top border, inset by spacing[4] */}
-      <View
+      {/* Composer — bleeds to screen edge for full-width top border, inset
+          by spacing[4]. The parent bottom-tab navigator already reserves
+          insets.bottom for the home indicator beneath the tab bar, so no
+          marginBottom is needed. When the keyboard opens, MainTabs uses
+          tabBarHideOnKeyboard so the tab bar collapses and the composer
+          translates up by the full keyboardHeight, landing flush on the
+          keyboard top. */}
+      <KeyboardStickyView
+        offset={{ closed: 0, opened: 0 }}
         style={{
           paddingTop: v2.spacing[3],
           paddingBottom: v2.spacing[3],
@@ -288,7 +295,7 @@ export function GroupFeedScreen({ navigation, route }) {
           disabled={!newPost.trim() || isPosting}
           onPress={handlePost}
         />
-      </View>
+      </KeyboardStickyView>
 
       {/* Character count under input when nearing limit */}
       {newPost.length > MAX_POST_LEN - 100 ? (
