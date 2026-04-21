@@ -58,9 +58,13 @@ export function Chip({
           alignItems: 'center',
           opacity: pressed ? 0.85 : 1,
           overflow: 'hidden',
+          outline: 'none',
           outlineStyle: 'none',
           outlineWidth: 0,
+          outlineColor: 'transparent',
+          outlineOffset: 0,
           WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
         },
         style,
       ]}

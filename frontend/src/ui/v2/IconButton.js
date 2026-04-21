@@ -79,6 +79,7 @@ export function IconButton({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={{ disabled }}
+        android_ripple={null}
         style={({ pressed }) => ({
           width: dim,
           height: dim,
@@ -89,8 +90,14 @@ export function IconButton({
           alignItems: 'center',
           justifyContent: 'center',
           opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+          overflow: 'hidden',
+          outline: 'none',
           outlineStyle: 'none',
+          outlineWidth: 0,
+          outlineColor: 'transparent',
+          outlineOffset: 0,
           WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
         })}
       >
         <View pointerEvents="none">
