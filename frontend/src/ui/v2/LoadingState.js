@@ -12,10 +12,11 @@ import { Blob } from './Blob';
  * @param {{
  *   caption?: string,
  *   size?: number,
+ *   fill?: boolean,
  *   style?: any,
  * }} props
  */
-export function LoadingState({ caption, size = 48, style }) {
+export function LoadingState({ caption, size = 48, fill = true, style }) {
   const v2 = useV2Theme();
   return (
     <View
@@ -27,6 +28,9 @@ export function LoadingState({ caption, size = 48, style }) {
           justifyContent: 'center',
           paddingVertical: v2.spacing[10],
         },
+        // Default to flex:1 so the loader sits at the optical center of the
+        // available body area rather than hugging the top below the header.
+        fill ? { flex: 1 } : null,
         style,
       ]}
     >

@@ -57,56 +57,63 @@ export function TimeOfDayScreen({ navigation, route }) {
           return (
             <View key={id} style={{ width: '48%' }}>
               <Card
-                padding={5}
+                padding={4}
                 onPress={() => {
                   fireHaptic('tap');
                   setSelected(id);
                 }}
                 accessibilityRole="radio"
                 accessibilityLabel={label}
-                style={{
-                  alignItems: 'center',
-                  // Force a uniform card height so "No preference" doesn't
-                  // out-grow the three shorter labels.
-                  minHeight: 148,
-                  justifyContent: 'center',
-                  ...(isSelected
+                style={
+                  isSelected
                     ? {
                         borderColor: v2.palette.primary,
                         backgroundColor: v2.palette.bg.surfaceHigh,
                       }
-                    : {}),
-                }}
+                    : undefined
+                }
               >
+                {/* Fixed-height content wrapper guarantees all four cards
+                    render at identical size regardless of label length. */}
                 <View
                   style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: isSelected
-                      ? v2.palette.bg.elevated
-                      : v2.palette.bg.surfaceHigh,
+                    height: 120,
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Icon
-                    size={28}
-                    weight={isSelected ? 'fill' : 'duotone'}
-                    color={isSelected ? v2.palette.primary : v2.palette.text.secondary}
-                  />
+                  <View
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: isSelected
+                        ? v2.palette.bg.elevated
+                        : v2.palette.bg.surfaceHigh,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Icon
+                      size={28}
+                      weight={isSelected ? 'fill' : 'duotone'}
+                      color={isSelected ? v2.palette.primary : v2.palette.text.secondary}
+                    />
+                  </View>
+                  <Text
+                    variant="body"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                    style={{
+                      color: isSelected ? v2.palette.primary : v2.palette.text.primary,
+                      fontFamily: isSelected ? 'DMSans_600SemiBold' : 'DMSans_400Regular',
+                      marginTop: 12,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {label}
+                  </Text>
                 </View>
-                <Text
-                  variant="body"
-                  numberOfLines={1}
-                  style={{
-                    color: isSelected ? v2.palette.primary : v2.palette.text.primary,
-                    fontFamily: isSelected ? 'DMSans_600SemiBold' : 'DMSans_400Regular',
-                    marginTop: 12,
-                  }}
-                >
-                  {label}
-                </Text>
               </Card>
             </View>
           );

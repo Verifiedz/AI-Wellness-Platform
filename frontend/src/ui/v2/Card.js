@@ -123,7 +123,7 @@ export function Card({
             : { borderRadius: v2.radius[radius], overflow: 'hidden' },
           // Web-only: kill the focus ring; reinstate a soft accent border on
           // keyboard focus so a11y users still see the active card.
-          { outlineStyle: 'none', WebkitTapHighlightColor: 'transparent' },
+          { outlineStyle: 'none', outlineWidth: 0, overflow: 'hidden', WebkitTapHighlightColor: 'transparent' },
           focused ? { borderColor: v2.palette.primary } : null,
         ]}
       >
