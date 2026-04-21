@@ -32,13 +32,14 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
 
   return (
     <KeyboardStickyView
-      // The parent ScreenScaffold reserves insets.bottom of safe-area space
-      // below us. When the keyboard opens we want to sit flush against its
-      // top edge, so pull down by that same inset amount — this cancels the
-      // parent's bottom padding and leaves zero gap between our bottom edge
-      // and the keyboard. When closed, offset is 0 so we rest naturally
-      // above the system nav bar.
-      offset={{ closed: 0, opened: insets.bottom }}
+      // KeyboardStickyView transforms with translateY = -keyboardHeight +
+      // offset.opened (height is supplied as a negative value). The parent
+      // ScreenScaffold reserves insets.bottom of safe-area space below us,
+      // so the default sticky position sits insets.bottom above the
+      // keyboard top. offset.opened = -insets.bottom pulls the composer
+      // down by that same amount, parking its bottom edge flush against
+      // the keyboard with zero visible gap.
+      offset={{ closed: 0, opened: -insets.bottom }}
       style={{
         paddingTop: v2.spacing[3],
         paddingBottom: v2.spacing[3],
