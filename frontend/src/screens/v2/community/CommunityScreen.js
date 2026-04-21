@@ -22,6 +22,7 @@ import {
   EmptyState,
   ErrorState,
   LoadingState,
+  SakinaLogo,
   ScreenHeader,
   ScreenScaffold,
   Surface,
@@ -74,7 +75,11 @@ export function CommunityScreen({ navigation }) {
       paddingBottom="tabBar"
       refreshControl={{ refreshing: isRefreshing, onRefresh: () => loadGroups(true) }}
     >
-      <ScreenHeader title="Community" subtitle="Anonymous, supportive, kind" />
+      <ScreenHeader
+        title="Community"
+        subtitle="Anonymous, supportive, kind"
+        left={<SakinaLogo size={32} />}
+      />
 
       <Surface
         elevation="raised"

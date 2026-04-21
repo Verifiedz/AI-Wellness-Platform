@@ -136,7 +136,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
       : v2.palette.text.tertiary;
 
   const renderHeader = () => (
-    <View>
+    <View style={{ paddingBottom: v2.spacing[4] }}>
       <View
         style={{
           flexDirection: 'row',
@@ -155,7 +155,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
       {comparison?.first &&
       comparison?.latest &&
       comparison.first.id !== comparison.latest.id ? (
-        <Card padding={4} style={{ marginTop: v2.spacing[4] }}>
+        <Card padding={4} style={{ marginTop: v2.spacing[6] }}>
           <Text variant="h3">Your progress</Text>
           <View
             style={{
@@ -311,7 +311,7 @@ export function AssessmentHistoryScreen({ navigation, route }) {
           onEndReachedThreshold={0.3}
           onRefresh={() => loadData(true)}
           refreshing={isRefreshing}
-          contentContainerStyle={{ paddingTop: v2.spacing[2], paddingBottom: v2.spacing[10] }}
+          contentContainerStyle={{ paddingTop: v2.spacing[2], paddingBottom: v2.spacing[16] }}
         />
       )}
     </ScreenScaffold>

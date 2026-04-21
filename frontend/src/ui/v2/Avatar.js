@@ -25,8 +25,8 @@ export function Avatar({ uri, initials, size = 'md', ring = false, blurhash, sty
   const dim = SIZES[size] ?? SIZES.md;
   // Ring geometry: outer ring stroke is RING_STROKE px, gap between ring and
   // avatar is RING_GAP px. Total outer diameter = dim + 2*(stroke+gap).
-  const RING_STROKE = 2;
-  const RING_GAP = 3;
+  const RING_STROKE = 1.5;
+  const RING_GAP = 4;
 
   const inner = uri ? (
     <Image
@@ -70,7 +70,7 @@ export function Avatar({ uri, initials, size = 'md', ring = false, blurhash, sty
           height: outer,
           borderRadius: outer / 2,
           borderWidth: RING_STROKE,
-          borderColor: v2.palette.accent,
+          borderColor: v2.palette.border.subtle,
           backgroundColor: 'transparent',
           alignItems: 'center',
           justifyContent: 'center',

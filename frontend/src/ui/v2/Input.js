@@ -125,17 +125,17 @@ export const Input = forwardRef(function Input(
           // Forward press to the underlying TextInput when user taps the label area.
         }}
         style={{
-          // Bumped to 60px tall and balanced top/bottom padding so the
-          // text baseline sits at the optical center of the field instead
-          // of riding up against the floating-label region.
+          // Symmetric padding top/bottom so the text baseline sits at the
+          // optical center of the field; floating label translates upward
+          // out of the padding box via translateY in labelStyle.
           minHeight: multiline ? 110 : 60,
           borderRadius: v2.radius.lg,
           borderWidth: 1,
           borderColor,
           backgroundColor: v2.palette.bg.surface,
           paddingHorizontal: 16,
-          paddingTop: multiline ? 22 : 20,
-          paddingBottom: multiline ? 14 : 14,
+          paddingTop: multiline ? 20 : 18,
+          paddingBottom: multiline ? 16 : 18,
           justifyContent: 'center',
         }}
       >
@@ -145,7 +145,7 @@ export const Input = forwardRef(function Input(
             {
               position: 'absolute',
               left: 16,
-              top: multiline ? 22 : 20,
+              top: multiline ? 20 : 18,
             },
             labelStyle,
           ]}

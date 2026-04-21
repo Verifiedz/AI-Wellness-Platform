@@ -32,13 +32,14 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
       style={{
         paddingTop: v2.spacing[3],
         paddingBottom: v2.spacing[3],
-        paddingHorizontal: v2.spacing[3],
+        paddingHorizontal: v2.spacing[4],
         flexDirection: 'row',
         alignItems: 'flex-end',
         gap: v2.spacing[2],
         borderTopWidth: 1,
         borderTopColor: v2.palette.border.subtle,
         backgroundColor: v2.palette.bg.base,
+        marginHorizontal: -v2.spacing[3],
       }}
     >
       {voice?.isAvailable ? (

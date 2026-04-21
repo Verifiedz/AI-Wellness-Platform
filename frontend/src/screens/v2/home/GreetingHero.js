@@ -7,7 +7,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { Sun, CloudSun, Moon } from 'phosphor-react-native';
 import { useV2Theme } from '../../../theme/v2';
-import { Text, BreathingPulse } from '../../../ui/v2';
+import { Text, BreathingPulse, SakinaLogo } from '../../../ui/v2';
 
 function timePeriodIcon() {
   const h = new Date().getHours();
@@ -30,15 +30,7 @@ export function GreetingHero({ greeting, displayName, dateLabel }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: v2.spacing[4] }}>
       <BreathingPulse pace="slow">
-        <View
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            backgroundColor: v2.palette.accent,
-            opacity: 0.85,
-          }}
-        />
+        <SakinaLogo size={56} />
       </BreathingPulse>
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: v2.spacing[2] }}>

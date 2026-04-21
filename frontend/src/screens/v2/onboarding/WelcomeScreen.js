@@ -63,8 +63,8 @@ export function WelcomeScreen({ navigation }) {
         </Text>
       </View>
 
-      {/* CTAs — extra top spacing keeps a comfortable gap below the italic line */}
-      <View style={{ gap: v2.spacing[3], paddingTop: v2.spacing[6], paddingBottom: v2.spacing[4] }}>
+      {/* CTAs — generous top spacing keeps the italic "breath" line visually separated */}
+      <View style={{ gap: v2.spacing[3], paddingTop: v2.spacing[10], paddingBottom: v2.spacing[6] }}>
         <Button
           variant="primary"
           size="lg"
