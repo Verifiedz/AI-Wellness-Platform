@@ -15,6 +15,7 @@ import { Alert, DeviceEventEmitter, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   MagnifyingGlass,
   BookmarksSimple,
@@ -45,6 +46,7 @@ function defaultTitle(sessionId) {
 
 export function ChatDrawerContent({ navigation }) {
   const v2 = useV2Theme();
+  const insets = useSafeAreaInsets();
   const [sessions, setSessions] = useState([]);
   const [search, setSearch] = useState('');
   const [bookmarksOnly, setBookmarksOnly] = useState(false);
@@ -232,7 +234,13 @@ export function ChatDrawerContent({ navigation }) {
   }, []);
 
   return (
-    <ScreenScaffold ambient ambientIntensity="subtle" paddingHorizontal={4} scrollable={false}>
+    <ScreenScaffold
+      ambient
+      ambientIntensity="subtle"
+      paddingHorizontal={4}
+      paddingBottom={0}
+      scrollable={false}
+    >
       <View
         style={{
           flexDirection: 'row',
@@ -288,18 +296,21 @@ export function ChatDrawerContent({ navigation }) {
       </View>
 
       {/* Search + new chat dock — bleeds to drawer edges by cancelling the
-          ScreenScaffold paddingHorizontal, then re-inserts its own padding. */}
+          ScreenScaffold paddingHorizontal, then re-inserts its own padding.
+          Sits flush with the bottom (we zeroed the scaffold's bottom padding)
+          with only safe-area inset below so it tucks against the system bar. */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: v2.spacing[2],
-          paddingTop: v2.spacing[4],
-          paddingBottom: v2.spacing[6],
+          paddingTop: v2.spacing[3],
+          paddingBottom: Math.max(insets.bottom, v2.spacing[3]),
           paddingHorizontal: v2.spacing[4],
           marginHorizontal: -v2.spacing[4],
           borderTopWidth: 1,
           borderTopColor: v2.palette.border.subtle,
+          backgroundColor: v2.palette.bg.base,
         }}
       >
         <View

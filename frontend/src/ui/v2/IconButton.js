@@ -70,7 +70,7 @@ export function IconButton({
   }, [scale, v2.motion.spring.snap]);
 
   return (
-    <Animated.View style={[animStyle, style]}>
+    <Animated.View style={[{ width: dim, height: dim, borderRadius: dim / 2 }, animStyle, style]}>
       <Pressable
         onPress={disabled ? undefined : onPress}
         onPressIn={disabled ? undefined : onPressIn}
@@ -90,7 +90,6 @@ export function IconButton({
           alignItems: 'center',
           justifyContent: 'center',
           opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
-          overflow: 'hidden',
           outline: 'none',
           outlineStyle: 'none',
           outlineWidth: 0,
