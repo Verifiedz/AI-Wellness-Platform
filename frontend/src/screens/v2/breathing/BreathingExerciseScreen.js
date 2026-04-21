@@ -318,24 +318,27 @@ export function BreathingExerciseScreen({ navigation, route }) {
           }}
         >
           <ProgressRing progress={cycleProgress} size={280} strokeWidth={2} />
-          {/* Position the orb so its CENTER aligns with the ring center.
-              The legacy BreathingCircle renders a column (circle + phase
-              text below); we anchor the top of that column so the 220 orb
-              sits centered on the 280 ring, and clip the phase label that
-              would otherwise overlap the ring stroke. The current phase
-              is re-rendered below the ring instead. */}
+          {/* Center the orb inside the ring. The legacy BreathingCircle
+              renders a column (circle + phase text below with marginTop),
+              so we center it with flex — the orb lands dead-center on the
+              ring, and the phase label sits below the ring but still
+              inside the 280 box. No overflow clipping (that was causing
+              the orb to disappear behind a visible square when the
+              scale-up animation pushed it against the clip bounds). */}
           <View
             style={{
               position: 'absolute',
-              top: 30,
-              left: 30,
-              width: 220,
-              height: 220,
-              overflow: 'hidden',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
+            pointerEvents="none"
           >
             <BreathingCircle
-              key={`${selectedPattern.id}-${phase}`}
+              key={selectedPattern.id}
               size={220}
               autoStart={phase === 'active'}
               inhaleMs={selectedPattern.inhaleMs}

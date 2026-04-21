@@ -128,9 +128,12 @@ export function ScreenScaffold({
     body = <View style={[{ flex: 1 }, innerPad, contentContainerStyle]}>{children}</View>;
   }
 
-  // The Pressable is the tap-outside-dismiss-keyboard surface.
-  // It's only active on native — on web, it would intercept clicks unnecessarily.
-  const Wrapper = Platform.OS === 'web' || !keyboardAware ? View : Pressable;
+  // Tap-outside-to-dismiss-keyboard is a universal UX expectation — any
+  // screen with a TextInput should dismiss the keyboard when the user taps
+  // empty space. We make this always-on (not gated by keyboardAware) on
+  // native. On web the browser handles focus/blur natively, so we skip it
+  // there to avoid intercepting click events that child elements need.
+  const Wrapper = Platform.OS === 'web' ? View : Pressable;
 
   return (
     <View
@@ -140,7 +143,7 @@ export function ScreenScaffold({
       {ambient ? <AuroraBackground intensity={ambientIntensity} /> : null}
       {topAccessory}
       <Wrapper
-        onPress={keyboardAware ? dismiss : undefined}
+        onPress={Platform.OS !== 'web' ? dismiss : undefined}
         // Pressable accessibility: announce the wrapper as nothing — it's an overlay.
         accessible={false}
         style={{ flex: 1 }}
