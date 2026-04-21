@@ -32,17 +32,19 @@ export function ChatComposer({ value, onChange, onSend, disabled = false, voice 
 
   return (
     <KeyboardStickyView
-      // KeyboardStickyView transforms with translateY = -keyboardHeight +
-      // offset.opened (height is supplied as a negative value). The parent
-      // ScreenScaffold reserves insets.bottom of safe-area space below us,
-      // so the default sticky position sits insets.bottom above the
-      // keyboard top. offset.opened = -insets.bottom pulls the composer
-      // down by that same amount, parking its bottom edge flush against
-      // the keyboard with zero visible gap.
-      offset={{ closed: 0, opened: -insets.bottom }}
+      // Canonical react-native-keyboard-controller chat pattern:
+      //   - The composer reserves its own bottom safe-area padding
+      //     (insets.bottom) so it sits above the home indicator when the
+      //     keyboard is closed.
+      //   - offset.opened = insets.bottom (positive) pulls the composer
+      //     DOWN by that same amount when the keyboard opens, collapsing
+      //     the now-redundant safe-area padding behind the keyboard and
+      //     parking the input row flush against the keyboard top.
+      // See: https://kirillzyusko.github.io/react-native-keyboard-controller/docs/recipes/chat-like-screens
+      offset={{ closed: 0, opened: insets.bottom }}
       style={{
         paddingTop: v2.spacing[3],
-        paddingBottom: v2.spacing[3],
+        paddingBottom: v2.spacing[3] + insets.bottom,
         paddingHorizontal: v2.spacing[4],
         flexDirection: 'row',
         alignItems: 'flex-end',

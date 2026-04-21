@@ -298,13 +298,14 @@ export function ChatDrawerContent({ navigation }) {
 
       {/* Search + new chat dock — bleeds to drawer edges by cancelling the
           ScreenScaffold paddingHorizontal, then re-inserts its own padding.
-          KeyboardStickyView lifts the dock to sit flush above the keyboard
-          when the search input is focused. The dock owns its own safe-area
-          bottom padding (closed state), and offset.opened pulls the dock
-          down by that same safe-area amount so nothing gaps between the
-          dock's bottom edge and the keyboard when it is open. */}
+          Canonical react-native-keyboard-controller chat pattern: the dock
+          reserves its own bottom safe-area padding (closed state, so it
+          sits above the home indicator), and offset.opened = insets.bottom
+          (positive) pulls the dock DOWN by that amount when the keyboard
+          opens, collapsing the safe-area padding behind the keyboard so
+          the input row sits flush against the keyboard top. */}
       <KeyboardStickyView
-        offset={{ closed: 0, opened: -Math.max(insets.bottom, v2.spacing[3]) }}
+        offset={{ closed: 0, opened: insets.bottom }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
