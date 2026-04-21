@@ -17,7 +17,7 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { Alert, View, TextInput, Platform } from 'react-native';
+import { Alert, View, TextInput, Platform, Keyboard, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
 import { PaperPlaneTilt } from 'phosphor-react-native';
@@ -240,11 +240,13 @@ export function GroupFeedScreen({ navigation, route }) {
         )}
       </View>
 
-      {/* Composer */}
+      {/* Composer — bleeds to screen edge for full-width top border, inset by spacing[4] */}
       <View
         style={{
           paddingTop: v2.spacing[3],
           paddingBottom: v2.spacing[3],
+          paddingHorizontal: v2.spacing[4],
+          marginHorizontal: -v2.spacing[4],
           flexDirection: 'row',
           alignItems: 'flex-end',
           gap: v2.spacing[2],

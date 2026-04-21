@@ -92,6 +92,7 @@ export function Button({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={accessibilityState}
+        android_ripple={null}
         style={({ pressed }) => ({
           minHeight: sizeCfg.minHeight,
           paddingHorizontal: sizeCfg.paddingX,
@@ -104,9 +105,12 @@ export function Button({
           alignItems: 'center',
           justifyContent: 'center',
           opacity: isDisabled ? 0.55 : pressed ? 0.92 : 1,
-          // Web: kill the rectangular focus ring + tap-highlight that clashes
-          // with our pill button. Press scale + opacity already feedback the tap.
+          overflow: 'hidden',
+          // Web + native: kill every rectangular focus/tap highlight that
+          // would clash with the pill shape. Press scale + opacity already
+          // feedback the tap.
           outlineStyle: 'none',
+          outlineWidth: 0,
           WebkitTapHighlightColor: 'transparent',
         })}
       >

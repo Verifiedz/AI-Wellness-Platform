@@ -43,6 +43,7 @@ import {
   Card,
   Input,
   IconButton,
+  SakinaLogo,
   ScreenScaffold,
   ScreenHeader,
   Surface,
@@ -267,6 +268,7 @@ export function JournalScreen({ navigation, route }) {
       <ScreenHeader
         title="Journal"
         subtitle={format(new Date(`${selectedDate}T00:00:00`), 'EEEE, MMMM d, yyyy')}
+        left={<SakinaLogo size={32} />}
         right={
           <IconButton
             icon={CalendarBlank}

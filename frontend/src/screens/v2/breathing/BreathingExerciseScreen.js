@@ -283,7 +283,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
           </View>
         </View>
 
-        <View style={{ gap: v2.spacing[2], paddingBottom: v2.spacing[4] }}>
+        <View style={{ gap: v2.spacing[3], paddingTop: v2.spacing[8], paddingBottom: v2.spacing[6] }}>
           <Button variant="primary" size="lg" fullWidth onPress={() => navigation.goBack()}>
             Done
           </Button>
@@ -318,7 +318,20 @@ export function BreathingExerciseScreen({ navigation, route }) {
           }}
         >
           <ProgressRing progress={cycleProgress} size={280} strokeWidth={2} />
-          <View style={{ position: 'absolute' }}>
+          {/* Absolute-fill + center so the breathing circle's center aligns
+              exactly with the progress ring's center, and its phase label
+              sits below the orb without cutting through the ring stroke. */}
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <BreathingCircle
               key={`${selectedPattern.id}-${phase}`}
               size={220}
@@ -338,7 +351,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
         <Text
           variant="mono"
           color="tertiary"
-          style={{ marginTop: v2.spacing[6] }}
+          style={{ marginTop: v2.spacing[10] }}
         >
           {formatTime(elapsedMs)}
         </Text>

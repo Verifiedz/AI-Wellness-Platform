@@ -103,7 +103,13 @@ export function LoginScreen({ navigation, route }) {
   };
 
   return (
-    <ScreenScaffold ambient ambientIntensity="normal" keyboardAware paddingHorizontal={6}>
+    <ScreenScaffold
+      ambient
+      ambientIntensity="normal"
+      keyboardAware
+      paddingHorizontal={6}
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
       {/* flex:1 + justifyContent:'center' on the inner column lets the form
           breathe in the vertical middle of the viewport. The previous
           minHeight:600 was forcing the form to sit near the top on shorter

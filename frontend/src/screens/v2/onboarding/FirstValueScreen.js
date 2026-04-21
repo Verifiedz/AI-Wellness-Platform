@@ -109,7 +109,17 @@ export function FirstValueScreen({ navigation, route }) {
               </Text>
               <View style={{ width: 220, height: 220, alignItems: 'center', justifyContent: 'center' }}>
                 <ProgressRing progress={progress} size={220} strokeWidth={2} />
-                <View style={{ position: 'absolute', alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
                   <MotiView
                     animate={{ scale }}
                     transition={{ type: 'timing', duration: 200 }}
@@ -158,7 +168,7 @@ export function FirstValueScreen({ navigation, route }) {
               <View
                 style={{
                   alignSelf: 'stretch',
-                  marginTop: v2.spacing[6],
+                  marginTop: v2.spacing[10],
                   gap: v2.spacing[3],
                 }}
               >
