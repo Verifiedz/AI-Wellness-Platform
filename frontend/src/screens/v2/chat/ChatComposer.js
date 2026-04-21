@@ -9,7 +9,6 @@
 import React from 'react';
 import { Platform, TextInput, View } from 'react-native';
 import { KeyboardStickyView } from 'react-native-keyboard-controller';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PaperPlaneTilt } from 'phosphor-react-native';
 import { useV2Theme } from '../../../theme/v2';
 import { IconButton } from '../../../ui/v2';
@@ -26,25 +25,15 @@ import { VoiceInputButton } from '../../../components/VoiceInputButton';
  */
 export function ChatComposer({ value, onChange, onSend, disabled = false, voice }) {
   const v2 = useV2Theme();
-  const insets = useSafeAreaInsets();
 
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
     <KeyboardStickyView
-      // Canonical react-native-keyboard-controller chat pattern:
-      //   - The composer reserves its own bottom safe-area padding
-      //     (insets.bottom) so it sits above the home indicator when the
-      //     keyboard is closed.
-      //   - offset.opened = insets.bottom (positive) pulls the composer
-      //     DOWN by that same amount when the keyboard opens, collapsing
-      //     the now-redundant safe-area padding behind the keyboard and
-      //     parking the input row flush against the keyboard top.
-      // See: https://kirillzyusko.github.io/react-native-keyboard-controller/docs/recipes/chat-like-screens
-      offset={{ closed: 0, opened: insets.bottom }}
+      offset={{ closed: 0, opened: 0 }}
       style={{
         paddingTop: v2.spacing[3],
-        paddingBottom: v2.spacing[3] + insets.bottom,
+        paddingBottom: v2.spacing[3],
         paddingHorizontal: v2.spacing[4],
         flexDirection: 'row',
         alignItems: 'flex-end',
