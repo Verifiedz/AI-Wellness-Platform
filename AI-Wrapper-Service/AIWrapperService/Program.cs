@@ -96,14 +96,16 @@ builder.Services.AddRateLimiter(options =>
 
         if (redisConnection is not null)
         {
+            // RedisRateLimiting 1.1.0: the partitionKey IS the Redis key suffix —
+            // there is no separate RedisKey property on the options type. Prefix
+            // the partitionKey instead so the on-disk keys stay namespaced.
             return RedisRateLimitPartition.GetFixedWindowRateLimiter(
-                partitionKey: clientIp,
-                factory: key => new RedisFixedWindowRateLimiterOptions
+                partitionKey: $"sakina:ratelimit:aiwrapper:chat:{clientIp}",
+                factory: _ => new RedisFixedWindowRateLimiterOptions
                 {
                     ConnectionMultiplexerFactory = () => redisConnection,
                     PermitLimit = rateLimitPerMinute,
                     Window = TimeSpan.FromMinutes(1),
-                    RedisKey = $"sakina:ratelimit:aiwrapper:chat:{key}",
                 });
         }
 

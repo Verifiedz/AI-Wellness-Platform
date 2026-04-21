@@ -86,14 +86,16 @@ public static class DependencyInjectionContainer
 
               if (chatRedisConnection is not null)
               {
+                  // RedisRateLimiting 1.1.0: the partitionKey IS the Redis key suffix —
+                  // there is no separate RedisKey property on the options type. Prefix
+                  // the partitionKey instead so the on-disk keys stay namespaced.
                   return RedisRateLimitPartition.GetFixedWindowRateLimiter(
-                      partitionKey: partitionKey,
-                      factory: key => new RedisFixedWindowRateLimiterOptions
+                      partitionKey: $"sakina:ratelimit:chat:peruser:{partitionKey}",
+                      factory: _ => new RedisFixedWindowRateLimiterOptions
                       {
                           ConnectionMultiplexerFactory = () => chatRedisConnection,
                           PermitLimit = 30,
                           Window = TimeSpan.FromMinutes(1),
-                          RedisKey = $"sakina:ratelimit:chat:peruser:{key}",
                       });
               }
 

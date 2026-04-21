@@ -75,28 +75,28 @@ builder.Services.AddRateLimiter(options =>
     // Redis so multiple auth-service replicas share the same budget. This is
     // the core App-Store-readiness fix: in-memory limiters were per-instance
     // and could be trivially bypassed by bouncing between replicas.
+    // RedisRateLimiting 1.1.0: the partitionKey IS the Redis key suffix —
+    // there is no separate RedisKey property on the options type. Prefix the
+    // partitionKey so we can still see and clear auth counters in redis-cli.
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
         RedisRateLimitPartition.GetFixedWindowRateLimiter(
-            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            factory: key => new RedisFixedWindowRateLimiterOptions
+            partitionKey: $"sakina:ratelimit:global:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+            factory: _ => new RedisFixedWindowRateLimiterOptions
             {
                 ConnectionMultiplexerFactory = () => redisConnection,
                 PermitLimit = maxRequestsPerMinute,
                 Window = TimeSpan.FromMinutes(1),
-                // Prefix so we can see and clear auth counters in redis-cli.
-                RedisKey = $"sakina:ratelimit:global:{key}",
             }));
 
     // Named policy for stricter login rate limit (5/min by default).
     options.AddPolicy("login", httpContext =>
         RedisRateLimitPartition.GetFixedWindowRateLimiter(
-            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            factory: key => new RedisFixedWindowRateLimiterOptions
+            partitionKey: $"sakina:ratelimit:login:{httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"}",
+            factory: _ => new RedisFixedWindowRateLimiterOptions
             {
                 ConnectionMultiplexerFactory = () => redisConnection,
                 PermitLimit = maxLoginAttemptsPerMinute,
                 Window = TimeSpan.FromMinutes(1),
-                RedisKey = $"sakina:ratelimit:login:{key}",
             }));
 
     options.OnRejected = async (context, cancellationToken) =>
