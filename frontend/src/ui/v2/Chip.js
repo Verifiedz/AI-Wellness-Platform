@@ -44,6 +44,7 @@ export function Chip({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       accessibilityLabel={accessibilityLabel}
+      android_ripple={null}
       style={({ pressed }) => [
         {
           minHeight: 40,
@@ -56,7 +57,9 @@ export function Chip({
           flexDirection: 'row',
           alignItems: 'center',
           opacity: pressed ? 0.85 : 1,
+          overflow: 'hidden',
           outlineStyle: 'none',
+          outlineWidth: 0,
           WebkitTapHighlightColor: 'transparent',
         },
         style,

@@ -92,9 +92,12 @@ export const Input = forwardRef(function Input(
     t.value = withTiming(isFloating ? 1 : 0, { duration: 160, easing: Easing.bezier(0.22, 1, 0.36, 1) });
   }, [isFloating, t]);
 
+  // Rest position: label sits at vertical center of the field so it reads
+  // like a normal placeholder. When focused/filled, it floats up above the
+  // input text and shrinks slightly.
   const labelStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: -8 - 12 * t.value }, { scale: 1 - 0.15 * t.value }],
-    opacity: 0.6 + 0.4 * t.value,
+    transform: [{ translateY: -20 * t.value }, { scale: 1 - 0.15 * t.value }],
+    opacity: 0.7 + 0.3 * t.value,
   }));
 
   const handleFocus = useCallback(() => {
@@ -139,13 +142,17 @@ export const Input = forwardRef(function Input(
           justifyContent: 'center',
         }}
       >
+        {/* Floating label — centered vertically at rest, floats up when
+            focused or filled. Computed top = container center minus half the
+            body line-height so the label text baseline aligns with what the
+            user types. */}
         <Animated.View
           pointerEvents="none"
           style={[
             {
               position: 'absolute',
               left: 16,
-              top: multiline ? 20 : 18,
+              top: multiline ? 20 : 21,
             },
             labelStyle,
           ]}

@@ -318,18 +318,20 @@ export function BreathingExerciseScreen({ navigation, route }) {
           }}
         >
           <ProgressRing progress={cycleProgress} size={280} strokeWidth={2} />
-          {/* Absolute-fill + center so the breathing circle's center aligns
-              exactly with the progress ring's center, and its phase label
-              sits below the orb without cutting through the ring stroke. */}
+          {/* Position the orb so its CENTER aligns with the ring center.
+              The legacy BreathingCircle renders a column (circle + phase
+              text below); we anchor the top of that column so the 220 orb
+              sits centered on the 280 ring, and clip the phase label that
+              would otherwise overlap the ring stroke. The current phase
+              is re-rendered below the ring instead. */}
           <View
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              alignItems: 'center',
-              justifyContent: 'center',
+              top: 30,
+              left: 30,
+              width: 220,
+              height: 220,
+              overflow: 'hidden',
             }}
           >
             <BreathingCircle
@@ -351,7 +353,7 @@ export function BreathingExerciseScreen({ navigation, route }) {
         <Text
           variant="mono"
           color="tertiary"
-          style={{ marginTop: v2.spacing[10] }}
+          style={{ marginTop: v2.spacing[8] }}
         >
           {formatTime(elapsedMs)}
         </Text>
