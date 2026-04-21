@@ -287,14 +287,17 @@ export function ChatDrawerContent({ navigation }) {
         )}
       </View>
 
-      {/* Search + new chat dock */}
+      {/* Search + new chat dock — bleeds to drawer edges by cancelling the
+          ScreenScaffold paddingHorizontal, then re-inserts its own padding. */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: v2.spacing[2],
-          paddingTop: v2.spacing[3],
-          paddingBottom: v2.spacing[3],
+          paddingTop: v2.spacing[4],
+          paddingBottom: v2.spacing[6],
+          paddingHorizontal: v2.spacing[4],
+          marginHorizontal: -v2.spacing[4],
           borderTopWidth: 1,
           borderTopColor: v2.palette.border.subtle,
         }}

@@ -109,9 +109,13 @@ export function Button({
           // Web + native: kill every rectangular focus/tap highlight that
           // would clash with the pill shape. Press scale + opacity already
           // feedback the tap.
+          outline: 'none',
           outlineStyle: 'none',
           outlineWidth: 0,
+          outlineColor: 'transparent',
+          outlineOffset: 0,
           WebkitTapHighlightColor: 'transparent',
+          userSelect: 'none',
         })}
       >
         {LeadingIcon ? (

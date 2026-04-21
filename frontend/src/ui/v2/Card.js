@@ -121,10 +121,21 @@ export function Card({
                 ...innerStyle,
               }
             : { borderRadius: v2.radius[radius], overflow: 'hidden' },
-          // Web-only: kill the focus ring; reinstate a soft accent border on
-          // keyboard focus so a11y users still see the active card.
-          { outlineStyle: 'none', outlineWidth: 0, overflow: 'hidden', WebkitTapHighlightColor: 'transparent' },
+          // Web-only: kill every flavor of browser-generated rectangle
+          // (focus ring, tap highlight, selection outline) so the rounded
+          // card shape is never clipped by a right-angled overlay.
+          {
+            outline: 'none',
+            outlineStyle: 'none',
+            outlineWidth: 0,
+            outlineColor: 'transparent',
+            outlineOffset: 0,
+            overflow: 'hidden',
+            WebkitTapHighlightColor: 'transparent',
+            userSelect: 'none',
+          },
           focused ? { borderColor: v2.palette.primary } : null,
+          pressed ? { opacity: 0.92 } : null,
         ]}
       >
         {inner}

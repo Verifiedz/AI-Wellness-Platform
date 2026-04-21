@@ -6,7 +6,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useV2Theme } from '../../../theme/v2';
-import { Text, BreathingPulse, Chip } from '../../../ui/v2';
+import { Text, BreathingPulse, Chip, SakinaLogo } from '../../../ui/v2';
 
 const SUGGESTIONS = [
   'How am I doing this week?',
@@ -26,15 +26,7 @@ export function EmptyChat({ userName, onSuggestion }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: v2.spacing[6] }}>
       <BreathingPulse pace="slow">
-        <View
-          style={{
-            width: 88,
-            height: 88,
-            borderRadius: 44,
-            backgroundColor: v2.palette.accent,
-            opacity: 0.85,
-          }}
-        />
+        <SakinaLogo size={88} />
       </BreathingPulse>
       <Text
         variant="display-lg"
