@@ -304,7 +304,7 @@ export function ChatDrawerContent({ navigation }) {
           down by that same safe-area amount so nothing gaps between the
           dock's bottom edge and the keyboard when it is open. */}
       <KeyboardStickyView
-        offset={{ closed: 0, opened: Math.max(insets.bottom, v2.spacing[3]) }}
+        offset={{ closed: 0, opened: -Math.max(insets.bottom, v2.spacing[3]) }}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
