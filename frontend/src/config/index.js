@@ -13,14 +13,13 @@
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5051';
 
 /** When true, sends userId as query param instead of relying on the gateway. */
-export const DEV_MODE = process.env.EXPO_PUBLIC_DEV_MODE === 'true';
-
-// Guard: warn loudly if DEV_MODE is enabled in a production build.
+const rawDevMode = process.env.EXPO_PUBLIC_DEV_MODE === 'true';
+// Never allow DEV_MODE in a production build, even if leaked into env.
 // __DEV__ is a global injected by Metro bundler: true in dev, false in prod.
-if (DEV_MODE && typeof __DEV__ !== 'undefined' && !__DEV__) {
+export const DEV_MODE = rawDevMode && (typeof __DEV__ === 'undefined' || __DEV__);
+if (rawDevMode && !DEV_MODE) {
   console.error(
-    '[Sakina] SECURITY WARNING: EXPO_PUBLIC_DEV_MODE is enabled in a production build. ' +
-    'This bypasses the authentication gateway. Set EXPO_PUBLIC_DEV_MODE to false.'
+    '[Sakina] EXPO_PUBLIC_DEV_MODE=true leaked into a production build; forcing to false.'
   );
 }
 

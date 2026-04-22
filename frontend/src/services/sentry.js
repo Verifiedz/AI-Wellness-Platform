@@ -55,3 +55,19 @@ export function clearSentryUser() {
     // ignore
   }
 }
+
+/**
+ * Reports a caught exception to Sentry. No-op when Sentry is not initialized
+ * (e.g. local dev without a DSN) — safe to call unconditionally.
+ *
+ * @param {unknown} error
+ * @param {{ context?: Record<string, unknown> }} [options]
+ */
+export function captureException(error, options = {}) {
+  if (!initialized) return;
+  try {
+    Sentry.captureException(error, options.context ? { extra: options.context } : undefined);
+  } catch {
+    // Never let observability break the app.
+  }
+}

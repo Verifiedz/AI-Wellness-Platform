@@ -18,10 +18,28 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://staging-api.sakina.app",
-        "EXPO_PUBLIC_APP_LINK_HOST": "staging.sakina.example.com"
+        "EXPO_PUBLIC_APP_LINK_HOST": "staging.sakina.example.com",
+        "EXPO_PUBLIC_DEV_MODE": "false"
       },
       "ios": {
         "resourceClass": "m-medium"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "demo": {
+      "distribution": "internal",
+      "channel": "demo",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_PROD_DOMAIN",
+        "EXPO_PUBLIC_APP_LINK_HOST": "REPLACE_WITH_PROD_DOMAIN",
+        "EXPO_PUBLIC_DEV_MODE": "false"
+      },
+      "ios": {
+        "resourceClass": "m-medium",
+        "simulator": false
       },
       "android": {
         "buildType": "apk"
@@ -32,7 +50,8 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.sakina.app",
-        "EXPO_PUBLIC_APP_LINK_HOST": "sakina.example.com"
+        "EXPO_PUBLIC_APP_LINK_HOST": "sakina.example.com",
+        "EXPO_PUBLIC_DEV_MODE": "false"
       },
       "ios": {
         "resourceClass": "m-medium"
