@@ -79,7 +79,8 @@ Do NOT include more than one of these markers per message. Do NOT explain or ref
         _logger = logger;
         _model = config["OpenAI:Model"] ?? DefaultModel;
 
-        var baseUrl = config["OpenAI:BaseUrl"] ?? "https://api.openai.com/v1/";
+        var baseUrl = config["OpenAI:BaseUrl"]
+            ?? throw new InvalidOperationException("OpenAI:BaseUrl is not configured");
         var apiKey = config["OpenAI:ApiKey"]
             ?? throw new InvalidOperationException("OpenAI:ApiKey is not configured");
 
