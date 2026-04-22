@@ -16,7 +16,7 @@
  *   - ScreenScaffold w/ keyboardAware + ambient aurora
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, View, TextInput, Platform, Keyboard, Pressable } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
@@ -44,6 +44,10 @@ export function GroupFeedScreen({ navigation, route }) {
   const fireHaptic = useHaptic();
   const { showToast } = useToast();
   const { slug, name } = route.params || {};
+
+  // TabBar self-hides on keyboard show (see ui/v2/nav/TabBar.js), so the
+  // composer is the bottom-most layout element whenever the keyboard is up
+  // and KeyboardStickyView can land flush against the keyboard top.
 
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -207,7 +211,6 @@ export function GroupFeedScreen({ navigation, route }) {
       ambient
       ambientIntensity="subtle"
       paddingHorizontal={4}
-      paddingTop={0}
       paddingBottom={0}
       scrollable={false}
     >
@@ -241,17 +244,17 @@ export function GroupFeedScreen({ navigation, route }) {
       </View>
 
       {/* Composer — bleeds to screen edge for full-width top border, inset
-          by spacing[4]. The parent bottom-tab navigator already reserves
-          insets.bottom for the home indicator beneath the tab bar, so no
-          marginBottom is needed. When the keyboard opens, MainTabs uses
-          tabBarHideOnKeyboard so the tab bar collapses and the composer
-          translates up by the full keyboardHeight, landing flush on the
-          keyboard top. */}
+          by spacing[4]. No safe-area padding on the composer itself: when
+          the keyboard is closed the TabBar sits below and already reserves
+          insets.bottom for the home indicator; when the keyboard is open
+          the TabBar self-unmounts (see ui/v2/nav/TabBar.js) and the keyboard
+          covers the home-indicator strip. KeyboardStickyView parks the view
+          flush against the keyboard top by default. */}
       <KeyboardStickyView
         offset={{ closed: 0, opened: 0 }}
         style={{
           paddingTop: v2.spacing[3],
-          paddingBottom: v2.spacing[3],
+          paddingBottom: v2.spacing[2],
           paddingHorizontal: v2.spacing[4],
           marginHorizontal: -v2.spacing[4],
           flexDirection: 'row',

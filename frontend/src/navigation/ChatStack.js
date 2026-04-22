@@ -3,23 +3,21 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BreathingExerciseScreen } from '../screens/v2/breathing';
 import { useTheme } from '../context/ThemeContext';
-import { CrisisButton } from '../components/CrisisButton';
 import { AIChatScreen, ChatDrawerContent } from '../screens/v2/chat';
 
 const Drawer = createDrawerNavigator();
 const ChatNativeStack = createNativeStackNavigator();
 const CHAT_ROUTE = 'AIChatConversation';
 
+// Drawer header is hidden — AIChatScreen renders its own glass ScreenHeader
+// with a drawer-toggle button (left) and CrisisButton (right).
 function ChatDrawerNav() {
-  const { colors, fonts } = useTheme();
+  const { colors } = useTheme();
 
   return (
     <Drawer.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
-        headerTitleStyle: { ...fonts.heading3, color: colors.text },
-        headerRight: () => <CrisisButton />,
+        headerShown: false,
         drawerType: 'slide',
         swipeEdgeWidth: 40,
         swipeMinDistance: 50,
@@ -33,8 +31,6 @@ function ChatDrawerNav() {
 }
 
 export function ChatStack() {
-  const { colors, fonts } = useTheme();
-
   return (
     <ChatNativeStack.Navigator screenOptions={{ headerShown: false }}>
       <ChatNativeStack.Screen name="ChatDrawer" component={ChatDrawerNav} />
@@ -42,15 +38,9 @@ export function ChatStack() {
         name="BreathingExercise"
         component={BreathingExerciseScreen}
         options={{
-          headerShown: true,
-          title: 'Breathe',
           presentation: 'modal',
           animation: 'slide_from_bottom',
           animationDuration: 350,
-          headerStyle: { backgroundColor: colors.surface },
-          headerTintColor: colors.text,
-          headerTitleStyle: { ...fonts.heading3, color: colors.text },
-          headerShadowVisible: false,
         }}
       />
     </ChatNativeStack.Navigator>

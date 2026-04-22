@@ -1,31 +1,22 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { JournalScreen, MoodCalendarScreen } from '../screens/v2/journal';
-import { useTheme } from '../context/ThemeContext';
-import { CrisisButton } from '../components/CrisisButton';
 
 const Stack = createNativeStackNavigator();
 
+// Native header is hidden throughout — each screen renders its own v2
+// ScreenHeader (scroll-reactive glass) so the futuristic aesthetic stays
+// consistent and nothing double-stacks above it.
 export function JournalStack() {
-  const { colors, fonts } = useTheme();
-
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.primary,
-        headerTitleStyle: { ...fonts.heading3, color: colors.text },
-        headerShadowVisible: false,
-        headerRight: () => <CrisisButton />,
+        headerShown: false,
         animationDuration: 350,
       }}
     >
-      <Stack.Screen name="JournalHome" component={JournalScreen} options={{ title: 'Journal' }} />
-      <Stack.Screen
-        name="MoodCalendar"
-        component={MoodCalendarScreen}
-        options={{ title: 'Mood Calendar' }}
-      />
+      <Stack.Screen name="JournalHome" component={JournalScreen} />
+      <Stack.Screen name="MoodCalendar" component={MoodCalendarScreen} />
     </Stack.Navigator>
   );
 }

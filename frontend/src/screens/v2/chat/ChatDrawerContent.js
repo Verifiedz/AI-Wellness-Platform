@@ -294,14 +294,13 @@ export function ChatDrawerContent({ navigation }) {
         )}
       </View>
 
-      {/* Search + new chat dock — bleeds to drawer edges by cancelling the
-          ScreenScaffold paddingHorizontal, then re-inserts its own padding.
-          The drawer is hosted inside the bottom-tab navigator (MainTabs),
-          which already reserves insets.bottom for the home indicator beneath
-          the tab bar, so no marginBottom is needed. MainTabs uses
-          tabBarHideOnKeyboard so the tab bar collapses when the keyboard
-          opens, letting the dock translate up by the full keyboardHeight
-          (offset.opened = 0) and land flush against the keyboard top. */}
+      {/* Search + new chat dock — bleeds to drawer edges. No safe-area
+          padding on the dock itself: when the keyboard is closed the TabBar
+          sits below and already reserves insets.bottom for the home
+          indicator; when the keyboard is open the TabBar self-unmounts (see
+          ui/v2/nav/TabBar.js) and the keyboard covers the home-indicator
+          strip. KeyboardStickyView parks the dock flush against the keyboard
+          top by default. */}
       <KeyboardStickyView
         offset={{ closed: 0, opened: 0 }}
         style={{
@@ -309,7 +308,7 @@ export function ChatDrawerContent({ navigation }) {
           alignItems: 'center',
           gap: v2.spacing[2],
           paddingTop: v2.spacing[3],
-          paddingBottom: v2.spacing[3],
+          paddingBottom: v2.spacing[2],
           paddingHorizontal: v2.spacing[4],
           marginHorizontal: -v2.spacing[4],
           borderTopWidth: 1,

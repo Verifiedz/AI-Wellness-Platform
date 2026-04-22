@@ -28,7 +28,9 @@ import { useScrollProgress } from './ScrollProgressContext';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-const TAB_BAR_RESERVED = 88; // tab bar height + breathing room
+// Docked tab bar owns its own safe-area inset, so scaffold only needs to
+// reserve the bar's content height. Keeping a small breathing cushion.
+const TAB_BAR_RESERVED = 8;
 
 /**
  * @param {{
@@ -75,7 +77,7 @@ export function ScreenScaffold({
   const topPad = paddingTop === 'safe' ? insets.top : paddingTop;
   let bottomPad;
   if (paddingBottom === 'safe') bottomPad = insets.bottom;
-  else if (paddingBottom === 'tabBar') bottomPad = insets.bottom + TAB_BAR_RESERVED;
+  else if (paddingBottom === 'tabBar') bottomPad = TAB_BAR_RESERVED;
   else bottomPad = paddingBottom;
 
   const dismiss = useCallback(() => {

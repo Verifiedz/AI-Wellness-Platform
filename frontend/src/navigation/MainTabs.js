@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { House, NotePencil, UsersThree, ChatCircleDots, UserCircle } from 'phosphor-react-native';
 import { HomeScreen } from '../screens/v2/home';
 import { BreathingExerciseScreen } from '../screens/v2/breathing';
 import {
@@ -14,65 +14,46 @@ import { JournalStack } from './JournalStack';
 import { ChatStack } from './ChatStack';
 import { SettingsStack } from './SettingsStack';
 import { CommunityStack } from './CommunityStack';
-import { useTheme } from '../context/ThemeContext';
-import { CrisisButton } from '../components/CrisisButton';
+import { TabBar } from '../ui/v2';
 import { CrisisResourceModal } from '../components/CrisisResourceModal';
 
 const Tab = createBottomTabNavigator();
 const HomeStackNav = createNativeStackNavigator();
 
-const TAB_ICONS = {
-  Home: { focused: 'home', default: 'home-outline' },
-  Journal: { focused: 'journal', default: 'journal-outline' },
-  Community: { focused: 'people', default: 'people-outline' },
-  Sakina: { focused: 'chatbubbles', default: 'chatbubbles-outline' },
-  Profile: { focused: 'person-circle', default: 'person-circle-outline' },
-};
-
+/**
+ * Home tab uses a native stack nav for push transitions into Breathing /
+ * Assessment. Each screen owns its own v2 ScreenHeader (HomeScreen included),
+ * so the native RN header is hidden throughout.
+ */
 function HomeStack() {
-  const { colors, fonts } = useTheme();
-
   return (
-    <HomeStackNav.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.text,
-        headerTitleStyle: { ...fonts.heading3, color: colors.text },
-        headerShadowVisible: false,
-        headerRight: () => <CrisisButton />,
-      }}
-    >
-      <HomeStackNav.Screen name="HomeScreen" component={HomeScreen} options={{ title: 'Home' }} />
+    <HomeStackNav.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStackNav.Screen name="HomeScreen" component={HomeScreen} />
       <HomeStackNav.Screen
         name="BreathingExercise"
         component={BreathingExerciseScreen}
-        options={{ title: 'Breathe', animation: 'slide_from_right', animationDuration: 350 }}
+        options={{ animation: 'slide_from_right', animationDuration: 350 }}
       />
       <HomeStackNav.Screen
         name="Assessment"
         component={AssessmentScreen}
-        options={{ title: 'Assessment', animation: 'slide_from_right', animationDuration: 350 }}
+        options={{ animation: 'slide_from_right', animationDuration: 350 }}
       />
       <HomeStackNav.Screen
         name="AssessmentResult"
         component={AssessmentResultScreen}
-        options={{ title: 'Results', animation: 'slide_from_right', animationDuration: 350 }}
+        options={{ animation: 'slide_from_right', animationDuration: 350 }}
       />
       <HomeStackNav.Screen
         name="AssessmentHistory"
         component={AssessmentHistoryScreen}
-        options={{
-          title: 'Assessment History',
-          animation: 'slide_from_right',
-          animationDuration: 350,
-        }}
+        options={{ animation: 'slide_from_right', animationDuration: 350 }}
       />
     </HomeStackNav.Navigator>
   );
 }
 
 export function MainTabs() {
-  const { colors, fonts } = useTheme();
   const [showCrisis, setShowCrisis] = useState(false);
 
   useEffect(() => {
@@ -83,40 +64,36 @@ export function MainTabs() {
   return (
     <>
       <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            const icons = TAB_ICONS[route.name] || {};
-            const iconName = focused ? icons.focused : icons.default;
-            return <Ionicons name={iconName} size={size} color={color} />;
-          },
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textSecondary,
-          // Collapse the tab bar while the keyboard is up so chat composers
-          // (Sakina, Community group feed) can sit flush against the keyboard
-          // top without the 64px tab bar getting between them.
+        tabBar={(props) => <TabBar {...props} />}
+        screenOptions={{
+          // The custom glass TabBar handles keyboard auto-hide internally via
+          // its scroll-aware animation. React Navigation also needs this flag
+          // so the native bottom bar chrome doesn't intercept while composers
+          // are up. The glass TabBar renders inside our safe-area container,
+          // so it collapses cleanly when the keyboard opens.
           tabBarHideOnKeyboard: true,
-          tabBarStyle: {
-            backgroundColor: colors.surface,
-            borderTopColor: 'transparent',
-            paddingBottom: 6,
-            paddingTop: 6,
-            height: 64,
-            ...shadowTop,
-          },
-          tabBarLabelStyle: {
-            fontFamily: fonts.caption.fontFamily,
-            fontSize: 11,
-            fontWeight: '500',
-          },
           headerShown: false,
-        })}
+        }}
       >
-        <Tab.Screen name="Home" component={HomeStack} />
-        <Tab.Screen name="Journal" component={JournalStack} />
-        <Tab.Screen name="Community" component={CommunityStack} />
+        <Tab.Screen
+          name="Home"
+          component={HomeStack}
+          options={{ tabBarV2: { Icon: House, label: 'Home' } }}
+        />
+        <Tab.Screen
+          name="Journal"
+          component={JournalStack}
+          options={{ tabBarV2: { Icon: NotePencil, label: 'Journal' } }}
+        />
+        <Tab.Screen
+          name="Community"
+          component={CommunityStack}
+          options={{ tabBarV2: { Icon: UsersThree, label: 'Community' } }}
+        />
         <Tab.Screen
           name="Sakina"
           component={ChatStack}
+          options={{ tabBarV2: { Icon: ChatCircleDots, label: 'Sakina' } }}
           listeners={({ navigation }) => ({
             tabPress: (e) => {
               // If the user is already on the Sakina tab, let the default
@@ -137,17 +114,13 @@ export function MainTabs() {
             },
           })}
         />
-        <Tab.Screen name="Profile" component={SettingsStack} />
+        <Tab.Screen
+          name="Profile"
+          component={SettingsStack}
+          options={{ tabBarV2: { Icon: UserCircle, label: 'Profile' } }}
+        />
       </Tab.Navigator>
       <CrisisResourceModal visible={showCrisis} onClose={() => setShowCrisis(false)} />
     </>
   );
 }
-
-const shadowTop = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: -2 },
-  shadowOpacity: 0.05,
-  shadowRadius: 6,
-  elevation: 8,
-};

@@ -28,6 +28,7 @@ import { ASSESSMENTS } from '../../../constants/assessments';
 import { useV2Theme } from '../../../theme/v2';
 import {
   ScreenScaffold,
+  ScreenHeader,
   Stagger,
   Text,
   ErrorState,
@@ -181,6 +182,7 @@ export function HomeScreen({ navigation }) {
         onRefresh: handleRefresh,
       }}
     >
+      <ScreenHeader title="Sakina" serif />
       <GreetingHero greeting={greeting} displayName={displayName} dateLabel={todayDate} />
 
       {error ? (
