@@ -212,6 +212,11 @@ builder.Services.AddHttpClient<INotificationService, NotificationService>((servi
   client.BaseAddress = new Uri(config["NotificationService:BaseUrl"]
       ?? throw new InvalidOperationException("NotificationService:BaseUrl not configured"));
 
+  // Defense in depth: notification-service enqueues and returns in <1s. If it
+  // does not respond within 5s something is wrong and we should fail the
+  // upstream login/register call before the frontend's 15s timeout trips.
+  client.Timeout = TimeSpan.FromSeconds(5);
+
   var apiKey = config["NotificationService:ApiKey"];
   if (!string.IsNullOrEmpty(apiKey))
     client.DefaultRequestHeaders.Add("X-Internal-Api-Key", apiKey);

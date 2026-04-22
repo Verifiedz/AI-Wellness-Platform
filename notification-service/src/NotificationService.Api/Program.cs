@@ -46,6 +46,11 @@ builder.Services.AddScoped<NotificationService.Api.Services.NotificationService>
 builder.Services.AddScoped<WellnessTipService>();
 builder.Services.AddHttpClient<CodeDeliveryService>();
 
+// Async code delivery: the controller enqueues, the background service drains.
+// Keeps /api/notifications/send-code from blocking on slow SMTP handshakes.
+builder.Services.AddSingleton<CodeDeliveryQueue>();
+builder.Services.AddHostedService<NotificationService.Api.BackgroundServices.CodeDeliveryBackgroundService>();
+
 // Push notification provider: Expo Push API (works with Expo Go on iOS & Android)
 builder.Services.AddHttpClient<ExpoPushService>();
 

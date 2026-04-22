@@ -90,7 +90,11 @@ public class CodeDeliveryService
             using var smtp = new SmtpClient(host, port)
             {
                 EnableSsl = enableSsl,
-                Credentials = new NetworkCredential(username, password)
+                Credentials = new NetworkCredential(username, password),
+                // Defense in depth: SmtpClient defaults to 100s, which would stall
+                // the background worker on a bad handshake. 10s is plenty for any
+                // healthy SMTP provider.
+                Timeout = 10_000
             };
 
             using var message = new MailMessage

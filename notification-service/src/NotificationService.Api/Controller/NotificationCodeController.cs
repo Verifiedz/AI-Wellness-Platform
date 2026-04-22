@@ -16,16 +16,16 @@ using NotificationService.Api.Services;
 public class NotificationCodeController : ControllerBase
 {
     private readonly IConfiguration _configuration;
-    private readonly CodeDeliveryService _codeDeliveryService;
+    private readonly CodeDeliveryQueue _codeDeliveryQueue;
     private readonly ILogger<NotificationCodeController> _logger;
 
     public NotificationCodeController(
         IConfiguration configuration,
-        CodeDeliveryService codeDeliveryService,
+        CodeDeliveryQueue codeDeliveryQueue,
         ILogger<NotificationCodeController> logger)
     {
         _configuration = configuration;
-        _codeDeliveryService = codeDeliveryService;
+        _codeDeliveryQueue = codeDeliveryQueue;
         _logger = logger;
     }
 
@@ -34,10 +34,10 @@ public class NotificationCodeController : ControllerBase
     /// and deliver it to the user via email (SMTP) and/or SMS (Twilio).
     /// </summary>
     [HttpPost("send-code")]
-    [ProducesResponseType(typeof(SendCodeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(SendCodeResponse), StatusCodes.Status202Accepted)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> SendCode([FromBody] SendCodeRequest request)
+    public IActionResult SendCode([FromBody] SendCodeRequest request)
     {
         if (!ValidateApiKey())
         {
@@ -67,27 +67,29 @@ public class NotificationCodeController : ControllerBase
             "Verification code received - Type: {Type}, Email: {Email}, UserId: {UserId}, Channel: {Channel}",
             request.Type, request.Email, request.UserId, request.Channel);
 
-        var (emailSent, smsSent) = await _codeDeliveryService.SendAsync(
+        // Enqueue and return immediately. The background worker performs the real
+        // SMTP/SMS call so slow provider handshakes cannot block the login flow.
+        var correlationId = HttpContext.TraceIdentifier;
+        var job = new CodeSendJob(
+            request.UserId,
             request.Email,
             request.Phone,
             request.Type,
             request.Code,
-            request.Channel);
+            request.Channel,
+            correlationId,
+            DateTime.UtcNow);
 
-        if (!emailSent && !smsSent)
-        {
-            return StatusCode(StatusCodes.Status502BadGateway, new ErrorResponse
-            {
-                Error = "DeliveryFailed",
-                Message = "Unable to deliver verification code via configured providers",
-                Timestamp = DateTime.UtcNow
-            });
-        }
+        _codeDeliveryQueue.Enqueue(job);
 
-        return Ok(new SendCodeResponse
+        // 202 Accepted: delivery is in progress, not guaranteed. Response shape
+        // is preserved for the existing auth-service caller. Success reflects
+        // acceptance of the job, NOT the actual provider outcome — auth-service
+        // does not surface these booleans to end users.
+        return Accepted(new SendCodeResponse
         {
             Success = true,
-            Message = $"Code delivered. EmailSent={emailSent}, SmsSent={smsSent}"
+            Message = "Code delivery queued."
         });
     }
 
