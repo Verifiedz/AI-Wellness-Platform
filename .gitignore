@@ -36,6 +36,7 @@ yarn-error.log*
 # Frontend / Expo / React Native
 # ──────────────────────────────────────────────
 frontend/.expo/
+.expo/
 frontend/dist/
 frontend/web-build/
 frontend/.env
@@ -68,6 +69,11 @@ keys/
 # ──────────────────────────────────────────────
 # Docker local overrides
 # ──────────────────────────────────────────────
+# docker-compose.override.yml is auto-loaded by `docker compose up` and used
+# to leak dev-only DB host ports into production boots. We no longer use it —
+# use docker-compose.dev.yml (committed, explicit -f flag) instead. Keep the
+# old name ignored so stale copies on developer machines don't re-introduce
+# the footgun if they're accidentally recreated.
 docker-compose.override.yml
 
 # ──────────────────────────────────────────────

@@ -1,21 +1,25 @@
 # =============================================================================
-# nginx.conf — Production configuration for TLS termination, HTTP redirect,
-#              security headers, and reverse proxy to auth-service.
+# default.conf.template — Production nginx config, envsubst'd at container start.
 #
 # PURPOSE:
-#   This is the production nginx config used AFTER Let's Encrypt certificates
-#   have been provisioned via nginx-bootstrap.conf + certbot.
-#   nginx terminates TLS at the edge; all internal services communicate over
-#   plain HTTP within the Docker network.
+#   This file is mounted at /etc/nginx/templates/default.conf.template inside
+#   the nginx:alpine container. On startup the image's docker-entrypoint runs
+#   20-envsubst-on-templates.sh, which expands ${VAR} tokens using the
+#   container environment and writes the result to /etc/nginx/conf.d/default.conf.
 #
-# BOOTSTRAP WORKFLOW:
-#   1. Start with nginx-bootstrap.conf to obtain certificates (see that file).
-#   2. Once certificates exist, switch to this file in docker-compose.yml:
-#        ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-#   3. Reload nginx: docker compose exec nginx nginx -s reload
+#   Required env var: DOMAIN_NAME (e.g. sakina.example.com). It is wired
+#   through docker-compose.yml from the root .env file.
 #
-# REQUIRED: Replace every occurrence of ${DOMAIN_NAME} with your actual domain.
-#   Example: sakina.example.com
+#   Note: this is the PRODUCTION config (TLS on 443). For first-time cert
+#   issuance use nginx-bootstrap.conf and the certbot service; see the
+#   comments in docker-compose.yml near the `nginx` service definition.
+#
+#   Nginx's own runtime variables ($host, $remote_addr, $scheme, etc.) use
+#   bare $VAR syntax without braces. envsubst replaces those too — so DO NOT
+#   define env vars in compose named `host`, `remote_addr`, `scheme`,
+#   `proxy_add_x_forwarded_for`, `request_uri`, or they will collide and
+#   break the config. Always use ${DOMAIN_NAME} (with braces) for template
+#   variables in this file for clarity.
 # =============================================================================
 
 # ---------------------------------------------------------------------------
@@ -25,7 +29,6 @@
 server {
     listen 80;
 
-    # REPLACE: Set your domain name here (e.g., sakina.example.com)
     server_name ${DOMAIN_NAME};
 
     # Serve ACME challenge files for certbot renewal
@@ -45,11 +48,9 @@ server {
 server {
     listen 443 ssl;
 
-    # REPLACE: Change ${DOMAIN_NAME} to your actual domain (e.g., sakina.example.com)
     server_name ${DOMAIN_NAME};
 
     # Let's Encrypt certificate paths (set by certbot)
-    # REPLACE: Change ${DOMAIN_NAME} to your actual domain in both paths below
     ssl_certificate     /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
 

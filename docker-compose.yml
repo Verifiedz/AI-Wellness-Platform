@@ -66,11 +66,18 @@ services:
     ports:
       - '80:80'
       - '443:443'
+    environment:
+      # Substituted into /etc/nginx/templates/default.conf.template at
+      # container start by the image's 20-envsubst-on-templates.sh entrypoint
+      # script. See nginx/templates/default.conf.template for the template
+      # itself. Required — boot fails with an invalid config if unset.
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      NGINX_ENVSUBST_TEMPLATE_SUFFIX: .template
     volumes:
-      # To bootstrap certificates for the first time, temporarily replace
-      # nginx.conf with nginx-bootstrap.conf in the volume mount below,
-      # run certbot, then switch back.
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # For first-time cert issuance, swap this template mount for the static
+      # nginx-bootstrap.conf (mount it directly at
+      # /etc/nginx/conf.d/default.conf), run certbot, then switch back.
+      - ./nginx/templates:/etc/nginx/templates:ro
       - ./nginx/legal:/etc/nginx/legal:ro
       - ./nginx/well-known:/etc/nginx/well-known:ro
       - certbot_webroot:/var/www/certbot:ro
@@ -241,7 +248,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - AiService__InternalApiKey=${AI_INTERNAL_API_KEY}
       - OpenAI__ApiKey=${OPENAI_API_KEY:-}
-      - OpenAI__BaseUrl=${OPENAI_BASE_URL:-https://api.openai.com/v1/}
+      - OpenAI__BaseUrl=${OPENAI_BASE_URL:?OPENAI_BASE_URL must be set in .env}
       - OpenAI__Model=${OPENAI_MODEL:-wellness-chat:latest}
       - AiService__RateLimitPerMinute=60
       # Distributed rate limiting: share counters across replicas via Redis.

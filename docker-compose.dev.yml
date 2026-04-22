@@ -1,0 +1,72 @@
+# Local development overlay — NOT for production use.
+#
+# This file restores host port mappings so developers can connect to databases
+# directly (TablePlus, DBeaver, pgAdmin, redis-cli) and reach internal services
+# for debugging. It also keeps nginx out of the default boot (the `production`
+# profile) because local dev has no TLS certs.
+#
+# It is NOT auto-loaded. It used to be named docker-compose.override.yml,
+# which Docker Compose auto-merges on every `docker compose up` — meaning
+# those DB host ports would have leaked into any production boot that shared
+# the working tree. Renaming it closes that footgun. Use an explicit -f flag:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+#
+# For production use docker-compose.prod.yml (see that file for details).
+# This file is committed so every developer shares the same local dev ports.
+
+services:
+  notification-db:
+    ports:
+      - '5333:5432'
+
+  auth-db:
+    ports:
+      - '5334:5432'
+
+  chat-db:
+    ports:
+      - '5335:5432'
+
+  journal-db:
+    ports:
+      - '5336:5432'
+
+  community-db:
+    ports:
+      - '5337:5432'
+
+  redis-cache:
+    ports:
+      - '16379:6379'
+
+  # Internal service ports — re-exposed for local debugging only.
+  # NOTE: Windows Hyper-V reserves the 7986-8585 TCP range dynamically. Any
+  # binding inside that range will fail with "ports are not available". All
+  # affected services were remapped from 808x to 908x to clear the zone.
+  notification-service:
+    ports:
+      - '9082:8080'
+  ai-wrapper-service:
+    ports:
+      - '9085:8080'
+  chat-service:
+    ports:
+      - '5050:8080'
+  journal-service:
+    ports:
+      - '9083:8080'
+  community-service:
+    ports:
+      - '9084:8080'
+
+  # Expose auth-service (YARP gateway) so the frontend can reach it locally.
+  # Frontend config points to http://localhost:5051 by default.
+  auth-service:
+    ports:
+      - '5051:8080'
+
+  # Disable nginx in local dev — no TLS certs available.
+  nginx:
+    profiles:
+      - production

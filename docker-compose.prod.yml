@@ -1,0 +1,51 @@
+# Production overlay for docker-compose.yml.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# The base docker-compose.yml is already prod-safe on its own: every service
+# uses `restart: unless-stopped` via the *-defaults anchors, and DB containers
+# expose ports only on the internal Docker network (`expose:`, not `ports:`).
+# This overlay exists so prod boots have an explicit, documented entry point
+# (no accidental auto-merge of the legacy docker-compose.override.yml) and so
+# future prod-only policy — e.g. log shipping, stricter healthchecks, CPU
+# reservations — has a home that is separate from dev tweaks.
+#
+# What this overlay does NOT do:
+#   - Re-expose database ports (leave that to docker-compose.dev.yml only)
+#   - Disable nginx (nginx has no profile in the base, so it starts by default;
+#     only docker-compose.dev.yml gates it behind `profiles: [production]`)
+
+services:
+  # Restart policies are already `unless-stopped` via the base anchors; the
+  # duplicates below are intentional belt-and-braces so an operator editing
+  # the base can't silently regress prod behaviour without also touching this
+  # file. They are no-ops when the base is unchanged.
+  nginx:
+    restart: unless-stopped
+  certbot:
+    restart: unless-stopped
+  auth-service:
+    restart: unless-stopped
+  chat-service:
+    restart: unless-stopped
+  ai-wrapper-service:
+    restart: unless-stopped
+  notification-service:
+    restart: unless-stopped
+  journal-service:
+    restart: unless-stopped
+  community-service:
+    restart: unless-stopped
+  auth-db:
+    restart: unless-stopped
+  chat-db:
+    restart: unless-stopped
+  notification-db:
+    restart: unless-stopped
+  journal-db:
+    restart: unless-stopped
+  community-db:
+    restart: unless-stopped
+  redis-cache:
+    restart: unless-stopped
