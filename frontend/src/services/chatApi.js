@@ -2,6 +2,14 @@ import { apiClient } from './api';
 
 const BASE_PATH = '/chat/chatService/api';
 
+/**
+ * Timeout (ms) for chat send requests. Longer than the default 15s
+ * because the Llama 3.1 8B model on RunPod can take 10-30s to load
+ * into VRAM on the very first request after a pod resume. Subsequent
+ * requests usually return in under 5s once the model is warm.
+ */
+const CHAT_SEND_TIMEOUT_MS = 45_000;
+
 function normalizeMessage(raw, fallbackRole = 'assistant') {
   if (!raw || typeof raw !== 'object') return null;
 
@@ -84,7 +92,30 @@ export const chatApi = {
       sessionId,
     };
 
-    return apiClient.post(`${BASE_PATH}/chatRequest`, body);
+    return apiClient.post(`${BASE_PATH}/chatRequest`, body, {
+      timeoutMs: CHAT_SEND_TIMEOUT_MS,
+    });
+  },
+
+  /**
+   * Fire a tiny chat request to warm up the RunPod model into VRAM.
+   *
+   * Used at app boot so the user's first real send isn't the one that
+   * pays the 10-30s cold-start cost. Callers should fire-and-forget:
+   * errors are intentionally swallowed to avoid user-facing noise.
+   */
+  warmup() {
+    const chatUserId = String(apiClient.userId || '');
+    const body = {
+      chatUserId,
+      messageRequest: 'hi',
+      context: '',
+      sessionId: null,
+    };
+
+    return apiClient.post(`${BASE_PATH}/chatRequest`, body, {
+      timeoutMs: CHAT_SEND_TIMEOUT_MS,
+    });
   },
   setSessionBookmark(sessionId, isBookmarked) {
     return apiClient.patch(`${BASE_PATH}/sessions/${sessionId}/bookmark`, {

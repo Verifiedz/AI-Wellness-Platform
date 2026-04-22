@@ -112,14 +112,23 @@ class ApiClient {
    * @param {string} method HTTP method
    * @param {string} path   URL path relative to baseUrl
    * @param {object|null} body Request body (JSON-serializable)
-   * @param {boolean} _isRetry Internal flag to prevent infinite retry loops
+   * @param {{ timeoutMs?: number }} [options] Per-request overrides.
+   *   - timeoutMs: override the default API_TIMEOUT (ms) for this request.
+   *     Useful for chat calls where the model may cold-start on the backend
+   *     and the default 15s is too tight.
+   * @param {boolean} [_isRetry] Internal flag to prevent infinite retry loops
    */
-  async _request(method, path, body = null, _isRetry = false) {
+  async _request(method, path, body = null, options = {}, _isRetry = false) {
     const url = this._buildUrl(path);
     const headers = this._buildHeaders();
 
+    const timeoutMs =
+      typeof options?.timeoutMs === 'number' && options.timeoutMs > 0
+        ? options.timeoutMs
+        : API_TIMEOUT;
+
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const options = { method, headers, signal: controller.signal };
@@ -151,7 +160,7 @@ class ApiClient {
                 this._onTokenRefresh(this.token, this.refreshToken);
               }
               // Retry the original request once with the new token.
-              return this._request(method, path, body, true);
+              return this._request(method, path, body, options, true);
             }
           }
         }
@@ -192,20 +201,20 @@ class ApiClient {
     }
   }
 
-  get(path) {
-    return this._request('GET', path);
+  get(path, options = {}) {
+    return this._request('GET', path, null, options);
   }
-  post(path, body) {
-    return this._request('POST', path, body);
+  post(path, body, options = {}) {
+    return this._request('POST', path, body, options);
   }
-  put(path, body) {
-    return this._request('PUT', path, body);
+  put(path, body, options = {}) {
+    return this._request('PUT', path, body, options);
   }
-  patch(path, body) {
-    return this._request('PATCH', path, body);
+  patch(path, body, options = {}) {
+    return this._request('PATCH', path, body, options);
   }
-  delete(path, body = null) {
-    return this._request('DELETE', path, body);
+  delete(path, body = null, options = {}) {
+    return this._request('DELETE', path, body, options);
   }
 }
 

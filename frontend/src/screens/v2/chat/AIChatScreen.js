@@ -23,12 +23,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DeviceEventEmitter, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useFocusEffect } from '@react-navigation/native';
+import { DrawerActions } from '@react-navigation/native';
+import { List } from 'phosphor-react-native';
 import { useAuth } from '../../../context/AuthContext';
 import { chatApi } from '../../../services/chatApi';
 import { useVoiceInput } from '../../../hooks/useVoiceInput';
 import { useV2Theme } from '../../../theme/v2';
 import {
   Blob,
+  IconButton,
+  ScreenHeader,
   ScreenScaffold,
   Text,
   LoadingState,
@@ -55,6 +59,9 @@ export function AIChatScreen({ route, navigation }) {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [moodSelections, setMoodSelections] = useState({});
+  // Shown after ~5s of waiting so the user knows the delay is model
+  // cold-start (loading ~4.5GB into VRAM on RunPod), not a broken app.
+  const [showWarmupHint, setShowWarmupHint] = useState(false);
 
   const voice = useVoiceInput();
   const historyLoadedCount = useRef(0);
@@ -72,6 +79,22 @@ export function AIChatScreen({ route, navigation }) {
       isMountedRef.current = false;
     };
   }, []);
+
+  // Surface a subtle "waking up the model" hint after 5s of waiting so
+  // first-time users (and demo-day strangers) don't assume the app is
+  // broken during a Llama cold-start.
+  useEffect(() => {
+    if (!isSending) {
+      setShowWarmupHint(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setShowWarmupHint(true), 5000);
+    return () => clearTimeout(timer);
+  }, [isSending]);
+
+  // TabBar self-hides on keyboard show (see ui/v2/nav/TabBar.js), so the
+  // composer is the bottom-most layout element whenever the keyboard is up
+  // and KeyboardStickyView can land flush against the keyboard top.
 
   // Append voice transcript to input when recognition stops.
   useEffect(() => {
@@ -303,10 +326,21 @@ export function AIChatScreen({ route, navigation }) {
       ambient
       ambientIntensity="subtle"
       paddingHorizontal={3}
-      paddingTop={0}
       paddingBottom={0}
       scrollable={false}
     >
+      <ScreenHeader
+        title={screenTitle}
+        left={
+          <IconButton
+            icon={List}
+            accessibilityLabel="Open chat history"
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            variant="ghost"
+            weight="bold"
+          />
+        }
+      />
       <View style={{ flex: 1, paddingTop: v2.spacing[2] }}>
         {isLoadingHistory ? (
           <LoadingState caption="Gathering your conversation" />
@@ -334,17 +368,31 @@ export function AIChatScreen({ route, navigation }) {
         {isSending ? (
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
               paddingHorizontal: v2.spacing[4],
               paddingVertical: v2.spacing[2],
             }}
           >
-            <Blob size={18} />
-            <Text variant="body-sm" color="secondary">
-              Sakina is gathering a thought…
-            </Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Blob size={18} />
+              <Text variant="body-sm" color="secondary">
+                Sakina is gathering a thought…
+              </Text>
+            </View>
+            {showWarmupHint ? (
+              <Text
+                variant="body-sm"
+                color="tertiary"
+                style={{ marginTop: v2.spacing[1], marginLeft: 26 }}
+              >
+                Waking up the model, this may take a moment…
+              </Text>
+            ) : null}
           </View>
         ) : null}
 

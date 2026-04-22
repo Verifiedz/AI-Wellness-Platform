@@ -87,7 +87,8 @@ describe('chatApi', () => {
           messageRequest: 'Hello, how are you?',
           context: '',
           sessionId: null,
-        })
+        }),
+        expect.objectContaining({ timeoutMs: expect.any(Number) })
       );
     });
 
@@ -106,7 +107,8 @@ describe('chatApi', () => {
 
       expect(apiClient.post).toHaveBeenCalledWith(
         expect.any(String),
-        expect.objectContaining({ chatUserId: 'user-123' })
+        expect.objectContaining({ chatUserId: 'user-123' }),
+        expect.objectContaining({ timeoutMs: expect.any(Number) })
       );
     });
   });

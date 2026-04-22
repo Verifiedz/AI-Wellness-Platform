@@ -24,6 +24,7 @@ import { NetworkProvider } from './src/context/NetworkContext';
 import { NetworkBanner } from './src/components/NetworkBanner';
 import { ToastProvider } from './src/context/ToastContext';
 import { Toast } from './src/components/Toast';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { AppNavigator, navigate } from './src/navigation/AppNavigator';
 import { ThemeProbeScreen } from './src/screens/v2/ThemeProbeScreen';
 import { DesignSystemPlaygroundScreen } from './src/screens/v2/DesignSystemPlaygroundScreen';
@@ -42,6 +43,7 @@ import { setupNavigationFeatureFlags, ScrollProgressProvider } from './src/ui/v2
 setupNavigationFeatureFlags();
 import { apiClient } from './src/services/api';
 import { notificationApi } from './src/services/notificationApi';
+import { chatApi } from './src/services/chatApi';
 import { initSentry, setSentryUser, clearSentryUser } from './src/services/sentry';
 
 initSentry();
@@ -95,6 +97,20 @@ function AppContent() {
     return () => {
       mounted = false;
     };
+  }, [isLoggedIn]);
+
+  // Warm up the RunPod Llama model the moment the user is authenticated so
+  // their first real chat send doesn't pay the 10-30s cold-start cost. This
+  // is fire-and-forget and silently swallows errors — the warmup is a
+  // best-effort optimization, never a user-facing operation.
+  //
+  // TODO: once chat-service exposes a dedicated /chat/warmup endpoint we
+  // should call that instead of burning a full inference on every login.
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    chatApi.warmup().catch(() => {
+      // Swallow errors — warmup failure must never surface to the user.
+    });
   }, [isLoggedIn]);
 
   useEffect(() => {
@@ -228,21 +244,23 @@ export default function App() {
           <BottomSheetModalProvider>
             <View style={styles.root} onLayout={onLayoutRootView}>
               <ThemeProvider>
-                <ScrollProgressProvider>
-                  <NetworkProvider>
-                    <ToastProvider>
-                      <OnboardingProvider>
-                        <AuthProvider>
-                          <TipProvider>
-                            <NetworkBanner />
-                            <AppContent />
-                          </TipProvider>
-                        </AuthProvider>
-                      </OnboardingProvider>
-                      <Toast />
-                    </ToastProvider>
-                  </NetworkProvider>
-                </ScrollProgressProvider>
+                <ErrorBoundary>
+                  <ScrollProgressProvider>
+                    <NetworkProvider>
+                      <ToastProvider>
+                        <OnboardingProvider>
+                          <AuthProvider>
+                            <TipProvider>
+                              <NetworkBanner />
+                              <AppContent />
+                            </TipProvider>
+                          </AuthProvider>
+                        </OnboardingProvider>
+                        <Toast />
+                      </ToastProvider>
+                    </NetworkProvider>
+                  </ScrollProgressProvider>
+                </ErrorBoundary>
               </ThemeProvider>
             </View>
           </BottomSheetModalProvider>
